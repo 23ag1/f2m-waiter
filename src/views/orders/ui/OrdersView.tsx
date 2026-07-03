@@ -9,6 +9,7 @@ import { OrdersList } from "@/widgets/orders-list";
 import type { ActiveTable } from "@/entities/table";
 import { ProfileSheet } from "@/widgets/profile";
 import { ContextMenu, type ContextMenuItem } from "@/shared/ui/ContextMenu";
+import { ActionSheet } from "@/shared/ui/Sheet";
 import {
   PaymentSheet,
   WaiterPickerSheet,
@@ -18,6 +19,27 @@ import {
 } from "@/features/order-actions";
 
 type TabType = "mine" | "all" | "external";
+type SortKey = "time_desc" | "time_asc" | "table" | "amount";
+
+const SORT_LABELS: Record<SortKey, string> = {
+  time_desc: "Сначала новые",
+  time_asc: "Сначала старые",
+  table: "По номеру стола",
+  amount: "По сумме (убыв.)",
+};
+
+const orderTime = (t: ActiveTable) => new Date((t.created_at || "").replace(" ", "T")).getTime() || 0;
+
+function sortTables(list: ActiveTable[], key: SortKey): ActiveTable[] {
+  const arr = [...list];
+  switch (key) {
+    case "time_asc": return arr.sort((a, b) => orderTime(a) - orderTime(b));
+    case "time_desc": return arr.sort((a, b) => orderTime(b) - orderTime(a));
+    case "table": return arr.sort((a, b) => (Number(a.table_number) || 0) - (Number(b.table_number) || 0));
+    case "amount": return arr.sort((a, b) => b.total_price - a.total_price);
+    default: return arr;
+  }
+}
 
 // Icons for the long-press card menu (iiko-style).
 const IcoPay = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>);
@@ -42,6 +64,9 @@ export function OrdersView() {
   const [nameOverrides, setNameOverrides] = useState<Record<number, string>>({});
   const [orderComments, setOrderComments] = useState<Record<number, string>>({});
   const [waiterByTable, setWaiterByTable] = useState<Record<number, string>>({});
+  const [sortBy, setSortBy] = useState<SortKey>("time_desc");
+  const [sortSheet, setSortSheet] = useState(false);
+  const [menuSheet, setMenuSheet] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
   const [tab, setTab] = useState<TabType>("mine");
   const [showProfile, setShowProfile] = useState(false);
@@ -133,7 +158,7 @@ export function OrdersView() {
 
   if (!token) return <div className="p-4">Загрузка...</div>;
 
-  const displayTables = tab === "external" ? [] : tables;
+  const displayTables = tab === "external" ? [] : sortTables(tables, sortBy);
 
   const cardMenuItems: ContextMenuItem[] = cardMenu ? [
     { label: "Оплатить", icon: IcoPay, onClick: () => setAction({ type: "pay", table: cardMenu.table }) },
@@ -174,13 +199,13 @@ export function OrdersView() {
 
           {/* Icons — separate white pill */}
           <div className="flex items-center bg-surface rounded-full shadow-sm px-1 flex-shrink-0">
-            <button onClick={fetchTables} className="w-9 h-11 flex items-center justify-center text-ink active:scale-90 transition-transform">
+            <button onClick={() => setSortSheet(true)} aria-label="Сортировка" className="w-9 h-11 flex items-center justify-center text-ink active:scale-90 transition-transform">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
               </svg>
             </button>
-            <button className="w-9 h-11 flex items-center justify-center text-ink active:scale-90 transition-transform">
-              <span className="w-7 h-7 rounded-full border-2 border-black flex items-center justify-center">
+            <button onClick={() => setMenuSheet(true)} aria-label="Меню" className="w-9 h-11 flex items-center justify-center text-ink active:scale-90 transition-transform">
+              <span className="w-7 h-7 rounded-full border-2 border-current flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 12h.01M12 12h.01M19 12h.01" />
                 </svg>
@@ -227,6 +252,29 @@ export function OrdersView() {
       {cardMenu && (
         <ContextMenu anchor={cardMenu.anchor} items={cardMenuItems} onClose={() => setCardMenu(null)} />
       )}
+
+      {/* Sort sheet (↑↓) */}
+      <ActionSheet
+        open={sortSheet}
+        onClose={() => setSortSheet(false)}
+        header="Сортировка"
+        actions={(Object.keys(SORT_LABELS) as SortKey[]).map((k) => ({
+          label: `${SORT_LABELS[k]}${sortBy === k ? "  ✓" : ""}`,
+          tone: sortBy === k ? ("primary" as const) : undefined,
+          onClick: () => { setSortBy(k); setSortSheet(false); },
+        }))}
+      />
+
+      {/* Overflow menu (⋯) */}
+      <ActionSheet
+        open={menuSheet}
+        onClose={() => setMenuSheet(false)}
+        actions={[
+          { label: "Обновить список", onClick: () => { setMenuSheet(false); fetchTables(); showToast("Обновлено"); } },
+          { label: "Профиль", onClick: () => { setMenuSheet(false); setShowProfile(true); } },
+          { label: "Выйти", tone: "danger" as const, onClick: () => { setMenuSheet(false); deleteCookie("waiter_token"); localStorage.removeItem("waiter_pin"); router.push("/"); } },
+        ]}
+      />
 
       {/* Order-action sheets */}
       <PaymentSheet
