@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { Toast } from "@/shared/ui/Toast";
+import { useToast } from "@/shared/lib/use-toast";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { RecommendationCard } from "@/entities/recommendation";
+import { BackButton } from "@/shared/ui/BackButton";
 import { useSendOrder } from "@/features/send-order";
 import { useGuestBasket } from "../model/use-guest-basket";
 
@@ -14,11 +17,7 @@ export function SingleGuestBasketView() {
   const tableParam = searchParams.get("table") || "";
   const cid = Number(clientId);
 
-  const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
-  const showToast = (msg: string, type: "ok" | "err" = "ok") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 1500);
-  };
+  const { toast, showToast } = useToast();
 
   const gb = useGuestBasket(cid, showToast);
   const [tableNum, setTableNum] = useState(tableParam);
@@ -41,14 +40,7 @@ export function SingleGuestBasketView() {
     <div className="min-h-screen bg-app flex flex-col pb-56">
       <header className="p-4 bg-surface shadow-sm flex items-center justify-between border-b border-hair-soft sticky top-0 z-10">
         <div className="flex items-center">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="text-ink-muted p-2 -ml-2 rounded-full hover:bg-inset"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
+          <BackButton variant="inline" onClick={() => router.push("/dashboard")} />
           <div className="ml-2">
             <h1 className="text-lg font-bold text-ink leading-tight">Корзина Гостя</h1>
             <p className="text-xs text-ink-muted">
@@ -188,15 +180,7 @@ export function SingleGuestBasketView() {
           </div>
         </div>
       )}
-
-      {/* Toast notification */}
-      {toast && (
-        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold animate-fade-in ${
-          toast.type === "ok" ? "bg-green-500 text-white" : "bg-red-500 text-white"
-        }`}>
-          {toast.msg}
-        </div>
-      )}
+      <Toast toast={toast} />
     </div>
   );
 }

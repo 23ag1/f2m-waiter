@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
+import { Toast } from "@/shared/ui/Toast";
+import { useToast } from "@/shared/lib/use-toast";
 import { useRouter } from "next/navigation";
 import { getActiveTables, closeTable, getIikoTables, printBill } from "@/shared/api";
 import { getCookie, deleteCookie } from "@/shared/lib/cookies";
@@ -10,6 +12,7 @@ import type { ActiveTable } from "@/entities/table";
 import { ProfileSheet } from "@/widgets/profile";
 import { ContextMenu, type ContextMenuItem } from "@/shared/ui/ContextMenu";
 import { ActionSheet } from "@/shared/ui/Sheet";
+import { Avatar } from "@/shared/ui/Avatar";
 import {
   PaymentSheet,
   WaiterPickerSheet,
@@ -67,7 +70,7 @@ export function OrdersView() {
   const [sortBy, setSortBy] = useState<SortKey>("time_desc");
   const [sortSheet, setSortSheet] = useState(false);
   const [menuSheet, setMenuSheet] = useState(false);
-  const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
+  const { toast, showToast } = useToast();
   const [tab, setTab] = useState<TabType>("mine");
   const [showProfile, setShowProfile] = useState(false);
   const [tick, setTick] = useState(0);
@@ -111,11 +114,6 @@ export function OrdersView() {
     const t = setInterval(() => setTick((n) => n + 1), 30000);
     return () => clearInterval(t);
   }, []);
-
-  const showToast = (msg: string, type: "ok" | "err" = "ok") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 1500);
-  };
 
   const handleClose = async (tableId: number) => {
     setClosingId(tableId);
@@ -175,12 +173,7 @@ export function OrdersView() {
       <header className="bg-inset pt-2">
         {/* Top row: avatar | tabs pill | icons pill */}
         <div className="flex items-center gap-2 px-3 py-2">
-          <button
-            onClick={() => setShowProfile(true)}
-            className="w-11 h-11 rounded-full bg-gray-400 flex items-center justify-center text-white font-bold text-base flex-shrink-0 active:scale-95 transition-transform"
-          >
-            W
-          </button>
+          <Avatar initial="W" size="md" onClick={() => setShowProfile(true)} />
 
           {/* Segmented tabs — white pill, selected tab highlighted grey */}
           <div className="flex-1 flex bg-surface rounded-full p-1 shadow-sm">
@@ -358,13 +351,7 @@ export function OrdersView() {
         </div>
       )}
 
-      {toast && (
-        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold ${
-          toast.type === "ok" ? "bg-green-500 text-white" : "bg-red-500 text-white"
-        }`}>
-          {toast.msg}
-        </div>
-      )}
+      <Toast toast={toast} />
     </div>
   );
 }

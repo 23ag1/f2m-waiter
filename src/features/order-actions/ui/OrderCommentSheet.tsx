@@ -19,7 +19,7 @@ export function OrderCommentSheet({
   useEffect(() => { if (open) setValue(initial); }, [open, initial]);
 
   return (
-    <Sheet open={open} onClose={onClose} title="Комментарий к заказу" side="top">
+    <Sheet open={open} onClose={onClose} title="Комментарий к заказу">
       <textarea
         autoFocus
         value={value}

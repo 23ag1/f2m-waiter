@@ -24,7 +24,7 @@ export function RenameOrderSheet({
   };
 
   return (
-    <Sheet open={open} onClose={onClose} title="Переименовать заказ" side="top">
+    <Sheet open={open} onClose={onClose} title="Переименовать заказ">
       <input
         autoFocus
         value={value}

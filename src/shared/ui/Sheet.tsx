@@ -20,29 +20,25 @@ function CloseButton({ onClose }: { onClose: () => void }) {
 }
 
 /**
- * Form/content sheet. `side="bottom"` slides from the bottom (default);
- * `side="top"` pins to the top so inputs stay visible above the keyboard.
+ * Form/content sheet. Always slides from the bottom (iiko-style) so every
+ * popup in the app is consistent. The viewport is set to resize when the
+ * keyboard opens (see app/layout.tsx), so inputs stay visible above it.
  */
 export function Sheet({
   open,
   onClose,
   title,
-  side = "bottom",
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title?: string;
-  side?: "bottom" | "top";
   children: ReactNode;
 }) {
   if (!open) return null;
-  const align = side === "top" ? "items-start" : "items-end";
-  const round = side === "top" ? "rounded-b-3xl" : "rounded-t-3xl";
-  const pad = side === "top" ? "pt-12 pb-6" : "pt-4 pb-8";
   return (
-    <div className={`fixed inset-0 z-[60] flex ${align} bg-black/40`} onClick={onClose}>
-      <div className={`bg-inset w-full ${round} px-4 ${pad}`} onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[60] flex items-end bg-black/40" onClick={onClose}>
+      <div className="bg-inset w-full rounded-t-3xl px-4 pt-4 pb-8" onClick={(e) => e.stopPropagation()}>
         {title && (
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-ink">{title}</h3>

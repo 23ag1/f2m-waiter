@@ -18,6 +18,9 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  // Shrink the layout when the on-screen keyboard opens so bottom sheets with
+  // inputs stay visible above it (all our popups slide from the bottom now).
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({

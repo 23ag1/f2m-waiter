@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Sheet } from "@/shared/ui/Sheet";
+import { BackButton } from "@/shared/ui/BackButton";
+import { Avatar } from "@/shared/ui/Avatar";
 import { useTheme, type ThemeMode } from "@/shared/lib/theme";
 
 // iiko-style waiter profile screen.
@@ -94,20 +96,13 @@ export function ProfileSheet({
     <div className="fixed inset-0 z-50 bg-inset overflow-y-auto">
       {/* Nav — back circle */}
       <div className="px-4 pt-12 pb-1">
-        <button
-          onClick={onClose}
-          className="w-9 h-9 rounded-full bg-surface shadow-sm flex items-center justify-center active:scale-95 transition-transform"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
+        <BackButton onClick={onClose} />
       </div>
 
       {/* Avatar + name */}
       <div className="flex flex-col items-center pt-1 pb-5">
-        <div className="w-20 h-20 rounded-full bg-gray-400 flex items-center justify-center text-3xl font-bold text-white mb-3">
-          {initial}
+        <div className="mb-3">
+          <Avatar initial={initial} size="lg" />
         </div>
         <p className="text-xl font-bold text-ink">{name}</p>
       </div>
@@ -214,7 +209,7 @@ export function ProfileSheet({
       </p>
 
       {/* Мой процент — top sheet so the input stays visible above the keyboard */}
-      <Sheet open={editPercent} onClose={() => setEditPercent(false)} title="Мой процент" side="top">
+      <Sheet open={editPercent} onClose={() => setEditPercent(false)} title="Мой процент">
         <input
           autoFocus
           inputMode="decimal"

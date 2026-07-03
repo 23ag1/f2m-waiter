@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { Toast } from "@/shared/ui/Toast";
+import { useToast } from "@/shared/lib/use-toast";
 import { Sheet, ActionSheet } from "@/shared/ui/Sheet";
+import { BackButton } from "@/shared/ui/BackButton";
 import { DishRow } from "@/entities/dish";
 import { MenuPanel } from "@/widgets/menu-panel";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -22,11 +25,7 @@ export function TableOrderView() {
   const tableIdParam = searchParams.get("tableId");
   const tableParam = searchParams.get("table") || "";
 
-  const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
-  const showToast = (msg: string, type: "ok" | "err" = "ok") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 1500);
-  };
+  const { toast, showToast } = useToast();
 
   const [loading, setLoading] = useState(true);
 
@@ -127,14 +126,7 @@ export function TableOrderView() {
       <div className="h-screen bg-app flex flex-col overflow-hidden">
         {/* Header — iiko style */}
         <header className="shrink-0 bg-inset px-3 pt-3 pb-2 flex items-center gap-3 z-10">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="w-10 h-10 rounded-full bg-surface shadow-sm flex items-center justify-center active:scale-95 transition-transform flex-shrink-0"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+          <BackButton onClick={() => router.push("/dashboard")} />
           <div className="flex-1 min-w-0 text-center">
             <h1 className="text-lg font-bold text-ink leading-tight truncate">Стол {tableParam}</h1>
             <p className="text-xs text-ink-muted">Гостей {guests.length}</p>
@@ -325,7 +317,7 @@ export function TableOrderView() {
         />
 
         {/* Количество */}
-        <Sheet open={!!qtyEdit} onClose={() => setQtyEdit(null)} title="Количество" side="top">
+        <Sheet open={!!qtyEdit} onClose={() => setQtyEdit(null)} title="Количество">
           {qtyEdit && (
             <>
               <input
@@ -396,7 +388,7 @@ export function TableOrderView() {
         />
 
         {/* Имя гостя */}
-        <Sheet open={!!renameGuest} onClose={() => setRenameGuest(null)} title="Имя гостя" side="top">
+        <Sheet open={!!renameGuest} onClose={() => setRenameGuest(null)} title="Имя гостя">
           {renameGuest && (
             <>
               <input
@@ -467,15 +459,7 @@ export function TableOrderView() {
             </div>
           </div>
         )}
-
-        {/* Toast */}
-        {toast && (
-          <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold animate-fade-in ${
-            toast.type === "ok" ? "bg-green-500 text-white" : "bg-red-500 text-white"
-          }`}>
-            {toast.msg}
-          </div>
-        )}
+        <Toast toast={toast} />
 
         {showQRScanner && (
           <QRScannerModal

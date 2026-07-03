@@ -1,10 +1,13 @@
 "use client";
 
 import { Suspense, useEffect, useState, useMemo, useCallback } from "react";
+import { Toast } from "@/shared/ui/Toast";
+import { useToast } from "@/shared/lib/use-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getMenu, modifyBasket, getDishDetail, getDishModifiers, getStopList } from "@/shared/api";
 import type { ModifierSelection } from "@/shared/api";
 import { categoryColor } from "@/shared/lib/category-color";
+import { BackButton } from "@/shared/ui/BackButton";
 
 interface Dish {
   id: number;
@@ -52,11 +55,7 @@ function MenuContent() {
   const [selectedDish, setSelectedDish] = useState<any>(null);
   const [addedIds, setAddedIds] = useState<Set<number>>(new Set());
   const [stoppedIds, setStoppedIds] = useState<Set<number>>(new Set());
-  const [toast, setToast] = useState<{ msg: string; type: "ok" | "err" } | null>(null);
-  const showToast = (msg: string, type: "ok" | "err" = "ok") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 1500);
-  };
+  const { toast, showToast } = useToast();
 
   // Modifiers modal state
   const [modifiersDish, setModifiersDish] = useState<Dish | null>(null);
@@ -183,11 +182,7 @@ function MenuContent() {
     <div className="min-h-screen bg-app flex flex-col">
       {/* Header */}
       <header className="p-4 bg-surface shadow-sm flex items-center border-b border-hair-soft sticky top-0 z-20">
-        <button onClick={goBack} className="text-ink-muted p-2 -ml-2 rounded-full hover:bg-inset">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </button>
+        <BackButton variant="inline" onClick={goBack} />
         <h1 className="text-lg font-bold ml-2 text-ink">
           {mode === "add" ? "Добавить блюда" : "Каталог меню"}
         </h1>
@@ -450,15 +445,7 @@ function MenuContent() {
           </div>
         </div>
       )}
-
-      {/* Toast notification */}
-      {toast && (
-        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold animate-fade-in ${
-          toast.type === "ok" ? "bg-green-500 text-white" : "bg-red-500 text-white"
-        }`}>
-          {toast.msg}
-        </div>
-      )}
+      <Toast toast={toast} />
     </div>
   );
 }
