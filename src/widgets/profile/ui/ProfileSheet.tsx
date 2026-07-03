@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Sheet } from "@/shared/ui/Sheet";
 import { BackButton } from "@/shared/ui/BackButton";
 import { Avatar } from "@/shared/ui/Avatar";
+import { SegmentedControl } from "@/shared/ui/SegmentedControl";
 import { useTheme, type ThemeMode } from "@/shared/lib/theme";
 
 // iiko-style waiter profile screen.
@@ -124,19 +125,12 @@ export function ProfileSheet({
       <div className="px-4 mb-3">
         <div className="bg-surface rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3">
           <p className="text-sm font-bold text-ink">Тема оформления</p>
-          <div className="flex bg-inset rounded-full p-1">
-            {([["light", "Светлая"], ["dark", "Тёмная"]] as [ThemeMode, string][]).map(([m, label]) => (
-              <button
-                key={m}
-                onClick={() => setTheme(m)}
-                className={`px-4 py-1.5 text-sm font-semibold rounded-full transition ${
-                  mode === m ? "bg-surface text-ink shadow-sm" : "text-ink-muted"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl<ThemeMode>
+            size="sm"
+            options={[{ value: "light", label: "Светлая" }, { value: "dark", label: "Тёмная" }]}
+            value={mode}
+            onChange={setTheme}
+          />
         </div>
       </div>
 
@@ -187,19 +181,12 @@ export function ProfileSheet({
           </div>
 
           {/* Period segmented control */}
-          <div className="mt-3 flex bg-inset rounded-full p-1">
-            {([["day", "День"], ["week", "Неделя"], ["month", "Месяц"]] as [Period, string][]).map(([p, label]) => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={`flex-1 py-2 text-sm font-semibold rounded-full transition ${
-                  period === p ? "bg-surface text-ink shadow-sm" : "text-ink-muted"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl<Period>
+            className="mt-3"
+            options={[{ value: "day", label: "День" }, { value: "week", label: "Неделя" }, { value: "month", label: "Месяц" }]}
+            value={period}
+            onChange={setPeriod}
+          />
         </div>
       </div>
 

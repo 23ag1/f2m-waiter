@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState, useRef, useCallback } from "react";
 import { Toast } from "@/shared/ui/Toast";
+import { CloseButton } from "@/shared/ui/CloseButton";
 import { useToast } from "@/shared/lib/use-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -662,9 +663,7 @@ function NewOrderPage() {
               <h3 className="text-lg font-bold text-ink flex items-center gap-2">
                 Подсказки для {recsPopup.name}
               </h3>
-              <button onClick={() => setRecsPopup(null)} className="text-ink-subtle hover:text-ink-muted">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
+              <CloseButton variant="plain" onClose={() => setRecsPopup(null)} />
             </div>
             {recsPopup.loading ? (
               <div className="flex items-center justify-center py-8 text-ink-subtle">

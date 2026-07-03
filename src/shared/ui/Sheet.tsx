@@ -1,23 +1,10 @@
 "use client";
 
 import { ReactNode } from "react";
+import { CloseButton } from "./CloseButton";
 
 // Reusable overlay sheets — replaces the 21 hand-copied `fixed inset-0` overlays.
 // Spacing follows the 4pt grid (see DESIGN-SYSTEM.md).
-
-function CloseButton({ onClose }: { onClose: () => void }) {
-  return (
-    <button
-      onClick={onClose}
-      className="w-8 h-8 rounded-full bg-inset flex items-center justify-center active:scale-95 transition-transform"
-      aria-label="Закрыть"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-ink-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    </button>
-  );
-}
 
 /**
  * Form/content sheet. Always slides from the bottom (iiko-style) so every

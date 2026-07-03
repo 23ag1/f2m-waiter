@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { modifyBasket, removeBasketDish, addGuestToTable, removeGuestFromTable } from "@/shared/api";
 import { CATEGORY_COLORS, fetchRealHints, type HintDish } from "@/entities/recommendation";
 import { HungerDropdown } from "@/entities/guest";
+import { Stepper } from "@/shared/ui/Stepper";
 import type { HungerLevel } from "@/shared/lib/hunger";
 import type { BasketItem } from "@/entities/dish";
 import type { Dish, Category } from "@/entities/menu";
@@ -180,27 +181,23 @@ export function FillStep({
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
                               </button>
                             </div>
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                              <button
-                                onClick={async () => {
-                                  if (item.quantity <= 1) {
-                                    await removeBasketDish(guest.client_id, item.dish_id);
-                                  } else {
-                                    await modifyBasket(guest.client_id, item.dish_id, -1);
-                                  }
-                                  refreshGuest(guest.client_id);
-                                }}
-                                className="w-6 h-6 rounded-md bg-inset text-ink-muted flex items-center justify-center text-xs font-bold active:scale-95"
-                              >-</button>
-                              <span className="text-xs font-bold text-ink w-4 text-center">{item.quantity}</span>
-                              <button
-                                onClick={async () => {
-                                  await modifyBasket(guest.client_id, item.dish_id, 1);
-                                  refreshGuest(guest.client_id);
-                                }}
-                                className="w-6 h-6 rounded-md bg-blue-500 text-white flex items-center justify-center text-xs font-bold active:scale-95"
-                              >+</button>
-                            </div>
+                            <Stepper
+                              value={item.quantity}
+                              size="sm"
+                              accent="blue"
+                              onDec={async () => {
+                                if (item.quantity <= 1) {
+                                  await removeBasketDish(guest.client_id, item.dish_id);
+                                } else {
+                                  await modifyBasket(guest.client_id, item.dish_id, -1);
+                                }
+                                refreshGuest(guest.client_id);
+                              }}
+                              onInc={async () => {
+                                await modifyBasket(guest.client_id, item.dish_id, 1);
+                                refreshGuest(guest.client_id);
+                              }}
+                            />
                           </div>
                           {item.modifiers && item.modifiers.length > 0 && (
                             <p className="text-xs text-ink-subtle mt-1 truncate">

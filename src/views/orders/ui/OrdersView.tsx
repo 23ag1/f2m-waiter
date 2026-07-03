@@ -13,6 +13,7 @@ import { ProfileSheet } from "@/widgets/profile";
 import { ContextMenu, type ContextMenuItem } from "@/shared/ui/ContextMenu";
 import { ActionSheet } from "@/shared/ui/Sheet";
 import { Avatar } from "@/shared/ui/Avatar";
+import { SegmentedControl } from "@/shared/ui/SegmentedControl";
 import {
   PaymentSheet,
   WaiterPickerSheet,
@@ -176,19 +177,13 @@ export function OrdersView() {
           <Avatar initial="W" size="md" onClick={() => setShowProfile(true)} />
 
           {/* Segmented tabs — white pill, selected tab highlighted grey */}
-          <div className="flex-1 flex bg-surface rounded-full p-1 shadow-sm">
-            {(["mine", "all", "external"] as TabType[]).map((t, i) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`flex-1 py-2 text-sm font-bold rounded-full transition truncate ${
-                  tab === t ? "bg-inset text-ink" : "text-ink"
-                }`}
-              >
-                {i === 0 ? "Мои" : i === 1 ? "Все" : "Внеш…"}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl<TabType>
+            className="flex-1 shadow-sm"
+            variant="inset"
+            options={[{ value: "mine", label: "Мои" }, { value: "all", label: "Все" }, { value: "external", label: "Внеш…" }]}
+            value={tab}
+            onChange={setTab}
+          />
 
           {/* Icons — separate white pill */}
           <div className="flex items-center bg-surface rounded-full shadow-sm px-1 flex-shrink-0">
