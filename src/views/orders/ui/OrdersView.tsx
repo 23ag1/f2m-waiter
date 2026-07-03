@@ -13,6 +13,7 @@ import { ProfileSheet } from "@/widgets/profile";
 import { ContextMenu, type ContextMenuItem } from "@/shared/ui/ContextMenu";
 import { ActionSheet } from "@/shared/ui/Sheet";
 import { Avatar } from "@/shared/ui/Avatar";
+import { IconButton } from "@/shared/ui/IconButton";
 import { SegmentedControl } from "@/shared/ui/SegmentedControl";
 import {
   PaymentSheet,
@@ -187,18 +188,18 @@ export function OrdersView() {
 
           {/* Icons — separate white pill */}
           <div className="flex items-center bg-surface rounded-full shadow-sm px-1 flex-shrink-0">
-            <button onClick={() => setSortSheet(true)} aria-label="Сортировка" className="w-9 h-11 flex items-center justify-center text-ink active:scale-90 transition-transform">
+            <IconButton size="tall" ariaLabel="Сортировка" onClick={() => setSortSheet(true)}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
               </svg>
-            </button>
-            <button onClick={() => setMenuSheet(true)} aria-label="Меню" className="w-9 h-11 flex items-center justify-center text-ink active:scale-90 transition-transform">
+            </IconButton>
+            <IconButton size="tall" ariaLabel="Меню" onClick={() => setMenuSheet(true)}>
               <span className="w-7 h-7 rounded-full border-2 border-current flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 12h.01M12 12h.01M19 12h.01" />
                 </svg>
               </span>
-            </button>
+            </IconButton>
           </div>
         </div>
 
