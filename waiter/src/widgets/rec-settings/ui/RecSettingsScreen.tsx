@@ -95,39 +95,61 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
         </p>
       </div>
 
-      {/* Reorderable list */}
-      <div className="px-4">
+      {/* Reorderable list — the colour picker expands inline under the selected row */}
+      <div className="px-4 pb-10">
         <div className="bg-surface rounded-2xl overflow-hidden shadow-sm divide-y divide-hair-soft">
           {order.map((cat, idx) => {
             const isDrag = dragIdx === idx;
             const color = REC_COLORS[colorKeyFor(cat)];
             const isSel = selected === cat;
+            const showPicker = isSel && dragIdx === null;
             return (
-              <div
-                key={cat}
-                className={`relative flex items-center gap-3 px-3 ${isDrag ? "z-10 shadow-lg scale-[1.02]" : "transition-transform duration-150"} ${isSel ? "bg-inset/70" : "bg-surface"}`}
-                style={{ height: ROW_H, transform: isDrag ? `translateY(${dragY}px)` : undefined }}
-                onClick={() => setSelected(cat)}
-              >
-                {/* drag handle */}
-                <button
-                  aria-label="Перетащить"
-                  className="shrink-0 -ml-1 p-1 text-ink-subtle touch-none cursor-grab active:cursor-grabbing"
-                  onPointerDown={(e) => onDown(e, idx)}
-                  onPointerMove={onMove}
-                  onPointerUp={onUp}
-                  onPointerCancel={onUp}
-                  onClick={(e) => e.stopPropagation()}
+              <div key={cat} className={isDrag ? "relative z-10" : ""}>
+                {/* Row */}
+                <div
+                  className={`relative flex items-center gap-3 px-3 ${isDrag ? "shadow-lg scale-[1.02] bg-surface" : "transition-transform duration-150"} ${isSel && !isDrag ? "bg-inset/70" : "bg-surface"}`}
+                  style={{ height: ROW_H, transform: isDrag ? `translateY(${dragY}px)` : undefined }}
+                  onClick={() => setSelected((s) => (s === cat ? null : cat))}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                    <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" />
-                    <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
-                    <circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" />
-                  </svg>
-                </button>
-                <span className="flex-1 min-w-0 truncate text-[15px] font-semibold text-ink">{cat}</span>
-                {/* current colour dot */}
-                <span className={`shrink-0 w-7 h-7 rounded-full ${color.dot} ${isSel ? "ring-2 ring-offset-2 ring-offset-surface ring-ink/30" : ""}`} />
+                  {/* drag handle */}
+                  <button
+                    aria-label="Перетащить"
+                    className="shrink-0 -ml-1 p-1 text-ink-subtle touch-none cursor-grab active:cursor-grabbing"
+                    onPointerDown={(e) => onDown(e, idx)}
+                    onPointerMove={onMove}
+                    onPointerUp={onUp}
+                    onPointerCancel={onUp}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" />
+                      <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
+                      <circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" />
+                    </svg>
+                  </button>
+                  <span className="flex-1 min-w-0 truncate text-[15px] font-semibold text-ink">{cat}</span>
+                  {/* current colour dot — also toggles the picker */}
+                  <span className={`shrink-0 w-7 h-7 rounded-full ${color.dot} transition ${isSel ? "ring-2 ring-offset-2 ring-offset-surface ring-ink/40" : ""}`} />
+                </div>
+
+                {/* Inline colour picker for this category */}
+                {showPicker && (
+                  <div className="animate-panel-expand bg-inset/50 px-3 pt-2 pb-3">
+                    <div className="flex items-center justify-between gap-1">
+                      {REC_COLOR_KEYS.map((key) => {
+                        const active = colorKeyFor(cat) === key;
+                        return (
+                          <button
+                            key={key}
+                            aria-label={key}
+                            onClick={(e) => { e.stopPropagation(); setCategoryColor(cat, key); }}
+                            className={`w-8 h-8 rounded-full ${REC_COLORS[key].dot} active:scale-90 transition ${active ? "ring-2 ring-offset-2 ring-offset-inset ring-ink" : ""}`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -135,27 +157,9 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
             <div className="py-10 text-center text-sm text-ink-subtle">Загрузка категорий…</div>
           )}
         </div>
-      </div>
-
-      {/* Colour picker for the selected category */}
-      <div className="px-4 mt-4 pb-10">
-        <p className="text-xs text-ink-muted mb-2 px-1">
-          Цвет категории {selected ? <span className="font-semibold text-ink">«{selected}»</span> : null}
+        <p className="text-xs text-ink-subtle mt-3 px-1">
+          Потяните <span className="font-semibold text-ink-muted">⠿</span> чтобы изменить порядок · нажмите на категорию, чтобы выбрать цвет
         </p>
-        <div className="bg-surface rounded-2xl shadow-sm px-3 py-3 flex items-center justify-between gap-2">
-          {REC_COLOR_KEYS.map((key) => {
-            const active = selected != null && colorKeyFor(selected) === key;
-            return (
-              <button
-                key={key}
-                aria-label={key}
-                disabled={!selected}
-                onClick={() => selected && setCategoryColor(selected, key)}
-                className={`w-9 h-9 rounded-full ${REC_COLORS[key].dot} active:scale-90 transition ${active ? "ring-2 ring-offset-2 ring-offset-surface ring-ink" : ""}`}
-              />
-            );
-          })}
-        </div>
       </div>
     </div>
   );

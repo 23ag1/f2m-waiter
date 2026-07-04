@@ -6,6 +6,8 @@ import { SwipeUpDismiss } from "./SwipeUpDismiss";
 import { categoryOrderIndex, recColorFor, useRecSettings } from "../model/rec-settings";
 import type { HintDish } from "../model/hints-mock";
 
+const COLLAPSE_KEY = "waiter_hints_collapsed";
+
 // Horizontal recommendation strip under a guest's dishes.
 // - Collapsible via the header (title + chevron).
 // - Cards ordered by the waiter's category order and coloured per category.
@@ -21,7 +23,15 @@ export function HintStrip({
   onDismiss?: (hint: HintDish) => void;
 }) {
   useRecSettings(); // re-render on colour/order changes
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState<boolean>(
+    () => typeof window !== "undefined" && window.localStorage.getItem(COLLAPSE_KEY) === "1",
+  );
+
+  const toggle = () => setCollapsed((c) => {
+    const next = !c;
+    try { window.localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0"); } catch { /* ignore */ }
+    return next;
+  });
 
   if (hints.length === 0) return null;
 
@@ -33,7 +43,7 @@ export function HintStrip({
     <div className="bg-inset/60 border-t border-hair-soft">
       {/* Header — tap to collapse/expand */}
       <button
-        onClick={() => setCollapsed((c) => !c)}
+        onClick={toggle}
         className="w-full flex items-center gap-1.5 px-4 py-1.5 active:opacity-70 transition"
       >
         <span className="text-xs">💡</span>

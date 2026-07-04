@@ -60,7 +60,7 @@ export function SwipeUpDismiss({
       if (dyRef.current < -THRESHOLD) {
         setLeaving(true);
         setDy(-FLY);
-        window.setTimeout(onDismiss, 180);
+        window.setTimeout(onDismiss, 260); // fly-up + width-collapse both finish
       } else {
         dyRef.current = 0;
         setDy(0);
@@ -83,8 +83,14 @@ export function SwipeUpDismiss({
   return (
     <div
       ref={el}
-      className={`touch-pan-x ${className} ${dragging ? "" : "transition-all duration-200 ease-out"}`}
-      style={{ transform: `translateY(${dy}px)`, opacity: leaving ? 0 : 1 - progress * 0.7 }}
+      className={`touch-pan-x overflow-hidden ${className} ${dragging ? "" : "transition-all duration-[250ms] ease-out"}`}
+      style={{
+        transform: `translateY(${dy}px)`,
+        opacity: leaving ? 0 : 1 - progress * 0.7,
+        // On dismissal the card collapses its width + trailing gap so the
+        // neighbours slide in smoothly instead of snapping.
+        ...(leaving ? { width: 0, minWidth: 0, marginRight: "-0.5rem" } : {}),
+      }}
     >
       {children}
     </div>
