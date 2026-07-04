@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food2Mood - Broadcast</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f5f7;
+            --surface: #ffffff;
+            --border: #e8e8ed;
+            --border-light: #f0f0f5;
+            --text: #1a1a2e;
+            --text-secondary: #6e6e80;
+            --text-muted: #9e9eae;
+            --accent: #f45d22;
+            --accent-light: #fff3ee;
+            --accent-hover: #e04d15;
+            --green: #12b76a;
+            --green-bg: #ecfdf3;
+            --red: #f04438;
+            --red-bg: #fef3f2;
+            --orange: #f79009;
+            --orange-bg: #fffaeb;
+            --blue: #2e90fa;
+            --blue-bg: #eff8ff;
+            --sidebar-w: 240px;
+            --radius: 10px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 10;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 8px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-brand .logo {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .sidebar-brand .brand-text {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .sidebar-brand .brand-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .sidebar-section {
+            margin-top: 24px;
+            margin-bottom: 8px;
+            padding: 0 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sidebar-nav li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+
+        .sidebar-nav li a:hover { background: var(--bg); color: var(--text); }
+
+        .sidebar-nav li a.active {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .sidebar-nav li a .nav-icon { display: none; }
+
+        .sidebar-nav li a .badge {
+            margin-left: auto;
+            background: var(--bg);
+            color: var(--text-muted);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .sidebar-nav li a.active .badge {
+            background: var(--accent);
+            color: white;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+
+        /* ===== MAIN ===== */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        .topbar h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .content {
+            padding: 24px 32px;
+            max-width: 1120px;
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ===== STATS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 8px;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .stat-change.up { background: var(--green-bg); color: var(--green); }
+        .stat-change.down { background: var(--red-bg); color: var(--red); }
+        .stat-change.neutral { background: var(--bg); color: var(--text-muted); }
+
+        /* ===== FORM ===== */
+        textarea {
+            width: 100%;
+            min-height: 88px;
+            padding: 12px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 13.5px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.15s;
+        }
+
+        textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+        textarea::placeholder { color: var(--text-muted); }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            margin-top: 14px;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        select {
+            padding: 9px 36px 9px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 13.5px;
+            font-family: inherit;
+            cursor: pointer;
+            width: 100%;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6e80' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+
+        /* Header top-bar selects are compact */
+        .topbar select { width: auto; padding: 7px 30px 7px 10px; font-size: 13px; }
+
+        .segment-row {
+            display: grid;
+            grid-template-columns: 1fr 1.6fr 1.4fr;
+            gap: 14px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        @media (max-width: 768px) {
+            .segment-row { grid-template-columns: 1fr; }
+        }
+
+        /* ===== AGE DUAL-SLIDER ===== */
+        .age-slider-wrap .age-slider-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+
+        .age-slider-wrap .age-slider-head .age-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .age-slider {
+            position: relative;
+            height: 36px;
+            padding: 0 9px;
+        }
+
+        .age-slider .track {
+            position: absolute;
+            left: 0; right: 0; top: 50%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            transform: translateY(-50%);
+        }
+
+        .age-slider .fill {
+            position: absolute;
+            top: 50%;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .age-slider input[type="range"] {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 36px;
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            border: 0;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            pointer-events: none;
+        }
+
+        .age-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            pointer-events: auto;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2px solid var(--accent);
+            cursor: grab;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            transition: transform 0.1s;
+        }
+        .age-slider input[type="range"]::-webkit-slider-thumb:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        .age-slider input[type="range"]::-moz-range-thumb {
+            pointer-events: auto;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2px solid var(--accent);
+            cursor: grab;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+        .age-slider input[type="range"]::-moz-range-track { background: transparent; border: 0; }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 9px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-send { background: var(--green); color: white; }
+        .btn-send:hover { opacity: 0.9; }
+        .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-outline {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .btn-outline:hover { background: var(--bg); color: var(--text); }
+
+        /* ===== FILTER BADGES ===== */
+        .filters-bar { display: flex; flex-wrap: wrap; gap: 6px; }
+
+        .filter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 10px;
+            background: var(--bg);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .filter-badge strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        /* ===== TABLE ===== */
+        .table-wrap { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        th {
+            text-align: left;
+            padding: 11px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        th:first-child { border-radius: 8px 0 0 0; }
+        th:last-child { border-radius: 0 8px 0 0; }
+
+        td {
+            padding: 12px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: top;
+            color: var(--text);
+        }
+
+        tr:hover td { background: #fafafe; }
+
+        .msg-cell {
+            max-width: 420px;
+            line-height: 1.5;
+        }
+
+        .msg-cell textarea {
+            min-height: 56px;
+            font-size: 12.5px;
+            border-color: var(--border-light);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11.5px;
+            font-weight: 500;
+        }
+
+        .reason-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-width: 200px;
+        }
+
+        .reason-chip {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: var(--green-bg);
+            color: var(--green);
+            font-size: 11.5px;
+            font-weight: 500;
+            line-height: 1.3;
+            white-space: nowrap;
+        }
+
+        .reason-chip.muted {
+            background: var(--bg);
+            color: var(--text-muted);
+        }
+
+        .status-badge.sent { background: var(--green-bg); color: var(--green); }
+        .status-badge.failed { background: var(--red-bg); color: var(--red); }
+        .status-badge.pending { background: var(--orange-bg); color: var(--orange); }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.15s;
+            line-height: 1;
+        }
+
+        .remove-btn:hover { background: var(--red-bg); color: var(--red); }
+
+        /* ===== CHANNEL PICKER (segmented) ===== */
+        .channel-picker {
+            display: inline-flex;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2px;
+            gap: 2px;
+        }
+        .channel-picker input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .channel-picker label {
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+        }
+        .channel-picker label:hover { color: var(--text); }
+        .channel-picker input[type="radio"]:checked + span,
+        .channel-picker label:has(input[type="radio"]:checked) {
+            background: var(--surface);
+            color: var(--accent);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+
+        .cost-estimate {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--accent-light);
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .cost-estimate .cost-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .cost-estimate .cost-value {
+            color: var(--accent);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ===== PROGRESS ===== */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--bg);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 14px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+
+        .progress-fill.shimmer {
+            background: linear-gradient(
+                90deg,
+                var(--accent) 0%,
+                #ff8f5a 40%,
+                #ffb08f 55%,
+                #ff8f5a 70%,
+                var(--accent) 100%
+            );
+            background-size: 220% 100%;
+            animation: shimmerSlide 1.4s linear infinite;
+        }
+
+        @keyframes shimmerSlide {
+            0% { background-position: 120% 0; }
+            100% { background-position: -120% 0; }
+        }
+
+        .gen-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+        }
+
+        .gen-card .gen-bar-wrap { flex: 1; }
+        .gen-card .gen-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .gen-card .gen-counter {
+            font-variant-numeric: tabular-nums;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .gen-card .gen-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulseDot 1.2s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 0.35; transform: scale(0.85); }
+            50%      { opacity: 1;    transform: scale(1.15); }
+        }
+
+        tr.recipient-appear { animation: rowAppear 0.28s cubic-bezier(0.22, 0.61, 0.36, 1); }
+        @keyframes rowAppear {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== LOADER ===== */
+        .loader {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.25);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        .loader-dark {
+            border-color: var(--border);
+            border-top-color: var(--accent);
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 1000;
+            animation: toastIn 0.25s ease;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .toast.success { background: var(--green); color: white; }
+        .toast.error { background: var(--red); color: white; }
+
+        @keyframes toastIn {
+            from { transform: translateY(16px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* ===== HISTORY ===== */
+        .history-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .history-row:last-child { border-bottom: none; }
+
+        .history-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .history-body { flex: 1; }
+
+        .history-title {
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .history-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .history-meta span { display: inline-flex; align-items: center; gap: 4px; }
+
+        .hidden { display: none !important; }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-muted);
+        }
+
+        .empty-state .empty-icon { display: none; }
+        .empty-state p { font-size: 13px; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .content { padding: 16px; }
+            .topbar { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="logo">F2M</div>
+            <div>
+                <div class="brand-text">Food2Mood</div>
+                <div class="brand-sub">Broadcast Panel</div>
+            </div>
+        </div>
+
+        <div class="sidebar-section">Menu</div>
+        <ul class="sidebar-nav">
+            <li><a class="active" onclick="showTab('compose')" id="nav-compose">
+                Рассылка
+            </a></li>
+            <li><a onclick="showTab('history')" id="nav-history">
+                История
+                <span class="badge" id="historyBadge"></span>
+            </a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main">
+        <div class="topbar">
+            <h1 id="pageTitle">Рассылка</h1>
+            <div class="topbar-actions" style="display:flex;gap:10px">
+                <select id="modelSelect" style="font-size:13px">
+                    <option value="deepseek">Модель 1</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <!-- ====== COMPOSE TAB ====== -->
+            <div id="tab-compose">
+
+                <!-- Compose card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Новая рассылка</div>
+                            <div class="card-subtitle">Выберите сегмент и опишите тему сообщения</div>
+                        </div>
+                        <button class="btn btn-primary" id="previewBtn" onclick="doPreview()">
+                            Превью
+                        </button>
+                    </div>
+
+                    <div class="segment-row">
+                        <div class="form-group">
+                            <label for="filterSex">Пол</label>
+                            <select id="filterSex">
+                                <option value="">Любой</option>
+                                <option value="Мужчина">Мужчины</option>
+                                <option value="Женщина">Женщины</option>
+                            </select>
+                        </div>
+                        <div class="form-group age-slider-wrap">
+                            <div class="age-slider-head">
+                                <label>Возраст</label>
+                                <span class="age-value"><span id="ageMinLabel">0</span>–<span id="ageMaxLabel">100</span></span>
+                            </div>
+                            <div class="age-slider">
+                                <div class="track"></div>
+                                <div class="fill" id="ageFill"></div>
+                                <input type="range" id="filterAgeMin" min="0" max="100" value="0" step="1">
+                                <input type="range" id="filterAgeMax" min="0" max="100" value="100" step="1">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="filterLastVisit">Последнее посещение</label>
+                            <select id="filterLastVisit">
+                                <option value="">Любое</option>
+                                <option value="week">Неделю назад</option>
+                                <option value="month">Месяц назад</option>
+                                <option value="3months">Три месяца назад</option>
+                                <option value="earlier">Раньше</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:14px">
+                        <label for="templateSelect">Тип рассылки (промпт)</label>
+                        <select id="templateSelect"></select>
+                    </div>
+
+                    <textarea id="adminRequest" placeholder="Например: Новый суп Том Ям уже в меню"></textarea>
+                </div>
+
+                <!-- Preview results -->
+                <div id="previewSection" class="hidden">
+
+                    <!-- Streaming generation card -->
+                    <div id="genCard" class="gen-card hidden">
+                        <div class="gen-dot"></div>
+                        <div class="gen-bar-wrap">
+                            <div class="gen-title">
+                                <span id="genTitle">Ищем подходящих…</span>
+                                <span class="gen-counter" id="genCounter"></span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill shimmer" id="genFill" style="width:0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Всего профилей</div>
+                            <div class="stat-value" id="statMatched">0</div>
+                            <div class="stat-change neutral">в базе</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">После фильтров</div>
+                            <div class="stat-value" id="statAfterLLM" style="color:var(--accent)">0</div>
+                            <div class="stat-change up" id="statFilterPct">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Не попали в рассылку</div>
+                            <div class="stat-value" id="statSkipped" style="color:var(--text-muted)">0</div>
+                            <div class="stat-change neutral">из базы</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Готово к отправке</div>
+                            <div class="stat-value" id="statReady" style="color:var(--green)">0</div>
+                            <div class="stat-change up">итого</div>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Применённые фильтры</div>
+                        </div>
+                        <div class="filters-bar" id="filtersBar"></div>
+                    </div>
+
+                    <!-- Recipients table -->
+                    <div class="card" style="padding:0; overflow:hidden">
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:20px 24px; flex-wrap:wrap; gap:16px">
+                            <div>
+                                <div class="card-title">Получатели</div>
+                                <div class="card-subtitle" id="recipientCount">0 сообщений сгенерировано</div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+                                <div class="channel-picker" id="channelPicker">
+                                    <label><input type="radio" name="channel" value="sms" checked> SMS</label>
+                                    <label><input type="radio" name="channel" value="email"> Email</label>
+                                </div>
+                                <div class="cost-estimate">
+                                    <span class="cost-label">Стоимость:</span>
+                                    <span class="cost-value" id="costValue">0 ₽</span>
+                                </div>
+                                <button class="btn btn-send" id="sendBtn" onclick="doSend()">
+                                    Отправить всем
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px"></th>
+                                        <th>ID</th>
+                                        <th>Имя</th>
+                                        <th>Возраст</th>
+                                        <th>Пол</th>
+                                        <th>Почему он</th>
+                                        <th>Сообщение</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recipientsTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Send progress -->
+                    <div id="sendProgress" class="card hidden">
+                        <div class="card-title">Отправка...</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+                        </div>
+                        <div id="sendStatus" style="font-size:12px; color:var(--text-muted)"></div>
+                    </div>
+
+                    <!-- Send results -->
+                    <div id="sendResults" class="hidden">
+                        <div class="stats-grid" style="grid-template-columns: repeat(2,1fr)">
+                            <div class="stat-card">
+                                <div class="stat-label">Отправлено</div>
+                                <div class="stat-value" id="resSent" style="color:var(--green)">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Ошибки</div>
+                                <div class="stat-value" id="resFailed" style="color:var(--red)">0</div>
+                            </div>
+                        </div>
+                        <div id="sendErrors" class="card hidden" style="font-size:12px; color:var(--red)"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== HISTORY TAB ====== -->
+            <div id="tab-history" class="hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">История рассылок</div>
+                    </div>
+                    <div id="historyList">
+                        <div class="empty-state">
+                            <div class="empty-icon">&#128236;</div>
+                            <p>Рассылок пока не было</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = `${window.location.protocol}//${window.location.host}/api/v1/broadcast`;
+        const AGE_MIN_BOUND = 0;
+        const AGE_MAX_BOUND = 100;
+
+        let currentRecipients = [];
+        let currentFilters = {};
+        let currentTotalInDb = 0;
+        let currentTotalMatched = 0;
+
+        // ---- Age dual-slider ----
+        (function initAgeSlider() {
+            const minEl = document.getElementById('filterAgeMin');
+            const maxEl = document.getElementById('filterAgeMax');
+            const fill = document.getElementById('ageFill');
+            const minLabel = document.getElementById('ageMinLabel');
+            const maxLabel = document.getElementById('ageMaxLabel');
+
+            function paint() {
+                let lo = parseInt(minEl.value, 10);
+                let hi = parseInt(maxEl.value, 10);
+                if (lo > hi) { [lo, hi] = [hi, lo]; }
+                const span = AGE_MAX_BOUND - AGE_MIN_BOUND;
+                const pLo = ((lo - AGE_MIN_BOUND) / span) * 100;
+                const pHi = ((hi - AGE_MIN_BOUND) / span) * 100;
+                fill.style.left = pLo + '%';
+                fill.style.right = (100 - pHi) + '%';
+                minLabel.textContent = lo;
+                maxLabel.textContent = hi;
+            }
+
+            function clamp(which) {
+                const lo = parseInt(minEl.value, 10);
+                const hi = parseInt(maxEl.value, 10);
+                if (lo > hi) {
+                    if (which === 'min') minEl.value = hi;
+                    else maxEl.value = lo;
+                }
+                paint();
+            }
+
+            minEl.addEventListener('input', () => clamp('min'));
+            maxEl.addEventListener('input', () => clamp('max'));
+            paint();
+        })();
+
+        function getAgeFilters() {
+            const lo = parseInt(document.getElementById('filterAgeMin').value, 10);
+            const hi = parseInt(document.getElementById('filterAgeMax').value, 10);
+            // Если слайдер в крайних положениях — трактуем как «без фильтра»
+            const atDefault = (lo === AGE_MIN_BOUND && hi === AGE_MAX_BOUND);
+            return {
+                age_min: atDefault ? null : Math.min(lo, hi),
+                age_max: atDefault ? null : Math.max(lo, hi),
+            };
+        }
+
+        // Load templates on start
+        (async function loadTemplates() {
+            const sel = document.getElementById('templateSelect');
+            const fallback = [{ key: 'standard', label: 'Стандартный' }];
+            try {
+                const resp = await fetch(`${API_BASE}/templates`);
+                const data = await resp.json();
+                sel.innerHTML = '';
+                const list = Array.isArray(data) && data.length ? data : fallback;
+                list.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.key;
+                    opt.textContent = t.label;
+                    sel.appendChild(opt);
+                });
+            } catch(e) {
+                console.warn('Failed to load templates', e);
+                sel.innerHTML = '';
+                fallback.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.key;
+                    opt.textContent = t.label;
+                    sel.appendChild(opt);
+                });
+            }
+        })();
+
+        // ---- Tabs ----
+        function showTab(name) {
+            document.getElementById('tab-compose').classList.toggle('hidden', name !== 'compose');
+            document.getElementById('tab-history').classList.toggle('hidden', name !== 'history');
+            document.getElementById('nav-compose').classList.toggle('active', name === 'compose');
+            document.getElementById('nav-history').classList.toggle('active', name === 'history');
+            document.getElementById('pageTitle').textContent = name === 'compose' ? 'Рассылка' : 'История';
+            if (name === 'history') loadHistory();
+        }
+
+        // ---- Toast ----
+        function toast(msg, type = 'success') {
+            const el = document.createElement('div');
+            el.className = `toast ${type}`;
+            el.textContent = msg;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 3500);
+        }
+
+        // FastAPI возвращает detail либо строкой (HTTPException), либо массивом
+        // {loc, msg, type} (422 Pydantic). Сводим к читаемой строке.
+        function formatApiError(err, fallbackStatus) {
+            const detail = err && err.detail;
+            if (typeof detail === 'string') return detail;
+            if (Array.isArray(detail) && detail.length) {
+                return detail.map(d => d && d.msg ? d.msg : JSON.stringify(d)).join('; ');
+            }
+            if (detail && typeof detail === 'object') return JSON.stringify(detail);
+            return `HTTP ${fallbackStatus}`;
+        }
+
+        // ---- Channel cost calculator ----
+        // Цены в рублях за одно сообщение. Средние по РФ на апрель 2026.
+        const CHANNEL_COSTS = { sms: 6, email: 0.18 };
+
+        function getSelectedChannel() {
+            const el = document.querySelector('input[name="channel"]:checked');
+            return el ? el.value : 'sms';
+        }
+
+        function formatRub(value) {
+            if (Number.isInteger(value)) return value.toString();
+            // до 2 знаков, без хвостовых нулей
+            return value.toFixed(2).replace(/\.?0+$/, '');
+        }
+
+        function updateCostEstimate() {
+            const channel = getSelectedChannel();
+            const perMessage = CHANNEL_COSTS[channel] || 0;
+            const total = currentRecipients.length * perMessage;
+            const el = document.getElementById('costValue');
+            if (el) el.textContent = `${formatRub(total)} ₽`;
+        }
+
+        document.addEventListener('change', (e) => {
+            if (e.target && e.target.matches && e.target.matches('input[name="channel"]')) {
+                updateCostEstimate();
+            }
+        });
+
+        // ---- Filter labels / helpers ----
+        const FILTER_LABELS = {
+            sex: 'Пол',
+            age_min: 'Возраст от',
+            age_max: 'Возраст до',
+            last_visit: 'Последнее посещение',
+            style: 'Стиль питания',
+            temp_category: 'Категория',
+            temp_state: 'Настроение',
+            blacklist_ingredients: 'Ключевой ингредиент',
+        };
+        const LAST_VISIT_LABELS = {
+            week: 'неделю назад',
+            month: 'месяц назад',
+            '3months': 'три месяца назад',
+            earlier: 'раньше',
+        };
+
+        function formatFilterValue(key, value) {
+            if (key === 'last_visit') return LAST_VISIT_LABELS[value] || value;
+            if (Array.isArray(value)) return value.join(', ');
+            return value;
+        }
+
+        // Один чип "Почему он". Приоритет:
+        //   1) реальный reason, совпадающий с активным фильтром
+        //   2) любой осмысленный реальный reason (первый из списка)
+        //   3) синтетический чип из самого актуального фильтра
+        function pickSingleReason(reasons, filters) {
+            filters = filters || {};
+            const cleaned = (reasons || [])
+                .filter(r => typeof r === 'string' && r.trim())
+                .filter(r => !/^\s*настрой\s*:/i.test(r)); // скрываем теги настроений
+
+            const includesCI = (hay, needle) =>
+                hay.toLowerCase().includes(String(needle).toLowerCase());
+
+            // 1. Приоритет активных фильтров для матча по reasons
+            const matchRules = [
+                { active: filters.temp_category, match: r => /^\s*категор/i.test(r) || includesCI(r, filters.temp_category) },
+                { active: filters.style,         match: r => /^\s*стил/i.test(r)     || includesCI(r, filters.style) },
+            ];
+            for (const rule of matchRules) {
+                if (!rule.active) continue;
+                const hit = cleaned.find(rule.match);
+                if (hit) return { text: hit, synthetic: false };
+            }
+
+            // 2. Любой осмысленный реальный reason
+            if (cleaned.length) return { text: cleaned[0], synthetic: false };
+
+            // 3. Синтетика — fallback по приоритету фильтров
+            if (filters.temp_category) return { text: `Категория: ${filters.temp_category}`, synthetic: true };
+            if (filters.style)         return { text: `Стиль: ${filters.style}`, synthetic: true };
+            if (Array.isArray(filters.blacklist_ingredients) && filters.blacklist_ingredients.length) {
+                return { text: `Ключевой ингредиент: ${filters.blacklist_ingredients.join(', ')}`, synthetic: true };
+            }
+            if (filters.sex) return { text: `Пол: ${filters.sex}`, synthetic: true };
+            if (filters.age_min != null || filters.age_max != null) {
+                const lo = filters.age_min != null ? filters.age_min : 0;
+                const hi = filters.age_max != null ? filters.age_max : 100;
+                return { text: `Возраст: ${lo}–${hi}`, synthetic: true };
+            }
+            if (filters.last_visit) {
+                return { text: `Визит: ${LAST_VISIT_LABELS[filters.last_visit] || filters.last_visit}`, synthetic: true };
+            }
+            return null;
+        }
+
+        // ---- Helpers: render filters / stats / rows ----
+        function renderFilterBadges(filters) {
+            const bar = document.getElementById('filtersBar');
+            bar.innerHTML = '';
+            for (const [k, v] of Object.entries(filters || {})) {
+                if (v === null || v === undefined || v === '' || (Array.isArray(v) && v.length === 0)) continue;
+                const badge = document.createElement('span');
+                badge.className = 'filter-badge';
+                const label = FILTER_LABELS[k] || k;
+                const displayVal = formatFilterValue(k, v);
+                badge.innerHTML = `<strong>${label}:</strong> ${escapeHtml(String(displayVal))}`;
+                bar.appendChild(badge);
+            }
+        }
+
+        function appendRecipientRow(r, animate = true) {
+            const i = currentRecipients.length;
+            currentRecipients.push(r);
+            const tbody = document.getElementById('recipientsTable');
+            const tr = document.createElement('tr');
+            if (animate) tr.className = 'recipient-appear';
+            const picked = pickSingleReason(r.reasons, currentFilters);
+            const chipsHtml = picked
+                ? `<div class="reason-chips"><span class="reason-chip${picked.synthetic ? ' muted' : ''}">${escapeHtml(picked.text)}</span></div>`
+                : '<span class="reason-chip muted">—</span>';
+            tr.innerHTML = `
+                <td><button class="remove-btn" onclick="removeRecipient(${i})" title="Убрать">&times;</button></td>
+                <td style="font-family:monospace;font-size:12px;color:var(--text-muted)">${r.user_id}</td>
+                <td>${escapeHtml(r.user_name) || '<span style="color:var(--text-muted)">-</span>'}</td>
+                <td>${r.age || '-'}</td>
+                <td><span class="status-badge pending">${r.sex || '-'}</span></td>
+                <td>${chipsHtml}</td>
+                <td class="msg-cell">
+                    <textarea onchange="updateMessage(${i}, this.value)">${escapeHtml(r.message)}</textarea>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            document.getElementById('recipientCount').textContent = `${currentRecipients.length} сообщений сгенерировано`;
+            updateCostEstimate();
+        }
+
+        function rerenderAllRows() {
+            const tbody = document.getElementById('recipientsTable');
+            tbody.innerHTML = '';
+            const snapshot = currentRecipients.slice();
+            currentRecipients = [];
+            for (const r of snapshot) appendRecipientRow(r, false);
+        }
+
+        function updateStats({total_in_db, total_matched, total_after_llm, recipients_count}) {
+            if (total_in_db != null) document.getElementById('statMatched').textContent = total_in_db;
+            if (total_after_llm != null) document.getElementById('statAfterLLM').textContent = total_after_llm;
+            if (total_in_db != null && total_after_llm != null) {
+                document.getElementById('statSkipped').textContent = Math.max(0, total_in_db - total_after_llm);
+            }
+            if (recipients_count != null) document.getElementById('statReady').textContent = recipients_count;
+            if (total_in_db != null && total_matched != null) {
+                const pct = total_in_db > 0 ? Math.round((total_matched / total_in_db) * 100) : 0;
+                document.getElementById('statFilterPct').textContent = pct + '% от базы';
+            }
+        }
+
+        function setProgress(done, total, title) {
+            const card = document.getElementById('genCard');
+            card.classList.remove('hidden');
+            document.getElementById('genTitle').textContent = title;
+            document.getElementById('genCounter').textContent = total > 0 ? `${done} / ${total}` : '';
+            const pct = total > 0 ? (done / total) * 100 : 0;
+            const fill = document.getElementById('genFill');
+            fill.style.width = pct + '%';
+            // Пока идёт работа — бар с shimmer. Когда done=total — убираем shimmer, оставляем сплошной.
+            if (done >= total && total > 0) fill.classList.remove('shimmer');
+            else fill.classList.add('shimmer');
+        }
+
+        function hideProgress() {
+            document.getElementById('genCard').classList.add('hidden');
+        }
+
+        // ---- Preview (streaming) ----
+        async function doPreview() {
+            const adminRequest = document.getElementById('adminRequest').value.trim();
+            if (!adminRequest) { toast('Введите текст запроса', 'error'); return; }
+
+            const model = document.getElementById('modelSelect').value;
+            const template = document.getElementById('templateSelect').value || 'standard';
+            const btn = document.getElementById('previewBtn');
+
+            const sex = document.getElementById('filterSex').value;
+            const lastVisit = document.getElementById('filterLastVisit').value;
+            const { age_min, age_max } = getAgeFilters();
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loader"></span> Генерация…';
+
+            // Reset state
+            currentRecipients = [];
+            document.getElementById('recipientsTable').innerHTML = '';
+            document.getElementById('filtersBar').innerHTML = '';
+            ['statMatched','statAfterLLM','statSkipped','statReady'].forEach(id => {
+                document.getElementById(id).textContent = '–';
+            });
+            document.getElementById('statFilterPct').textContent = '';
+            document.getElementById('recipientCount').textContent = '0 сообщений сгенерировано';
+            updateCostEstimate();
+            document.getElementById('previewSection').classList.remove('hidden');
+            document.getElementById('sendResults').classList.add('hidden');
+            document.getElementById('sendProgress').classList.add('hidden');
+            setProgress(0, 0, 'Извлекаем фильтры из запроса…');
+
+            try {
+                const resp = await fetch(`${API_BASE}/preview/stream`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        admin_request: adminRequest, model, template,
+                        sex: sex || null, age_min, age_max,
+                        last_visit: lastVisit || null,
+                    }),
+                });
+                if (!resp.ok) {
+                    const err = await resp.json().catch(() => ({}));
+                    throw new Error(formatApiError(err, resp.status));
+                }
+
+                const reader = resp.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let buffer = '';
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+                        let evt;
+                        try { evt = JSON.parse(line); } catch(e) { continue; }
+                        handleStreamEvent(evt);
+                    }
+                }
+                // flush tail
+                if (buffer.trim()) {
+                    try { handleStreamEvent(JSON.parse(buffer)); } catch(e) {}
+                }
+            } catch (e) {
+                toast(e.message, 'error');
+                hideProgress();
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Превью';
+            }
+        }
+
+        function handleStreamEvent(evt) {
+            switch (evt.event) {
+                case 'filters': {
+                    currentFilters = evt.filters;
+                    renderFilterBadges(evt.filters);
+                    setProgress(0, 0, 'Ищем подходящих профилей…');
+                    break;
+                }
+                case 'matched': {
+                    currentTotalInDb = evt.total_in_db;
+                    currentTotalMatched = evt.total_matched;
+                    updateStats({
+                        total_in_db: evt.total_in_db,
+                        total_matched: evt.total_matched,
+                        total_after_llm: 0,
+                        recipients_count: 0,
+                    });
+                    if (evt.total_matched === 0) {
+                        setProgress(0, 0, 'Под ваш сегмент никто не подошёл');
+                        setTimeout(hideProgress, 1200);
+                    } else {
+                        setProgress(0, evt.total_matched, `Генерируем сообщения (${evt.total_matched})…`);
+                    }
+                    break;
+                }
+                case 'recipient': {
+                    appendRecipientRow(evt.recipient, true);
+                    updateStats({
+                        total_in_db: currentTotalInDb,
+                        total_matched: currentTotalMatched,
+                        total_after_llm: evt.generated,
+                        recipients_count: currentRecipients.length,
+                    });
+                    setProgress(evt.generated, evt.total, `Генерируем сообщения (${evt.generated}/${evt.total})…`);
+                    break;
+                }
+                case 'skip': {
+                    const done = currentRecipients.length;
+                    setProgress(done, evt.total, `Генерируем сообщения (${done}/${evt.total})…`);
+                    break;
+                }
+                case 'done': {
+                    updateStats({
+                        total_in_db: evt.total_in_db,
+                        total_matched: evt.total_matched,
+                        total_after_llm: evt.total_after_llm,
+                        recipients_count: currentRecipients.length,
+                    });
+                    setProgress(evt.total_matched, evt.total_matched, 'Готово');
+                    setTimeout(hideProgress, 600);
+                    break;
+                }
+                case 'error': {
+                    toast(evt.detail || 'Ошибка', 'error');
+                    hideProgress();
+                    break;
+                }
+            }
+        }
+
+        function removeRecipient(index) {
+            currentRecipients.splice(index, 1);
+            rerenderAllRows();
+            updateStats({
+                total_in_db: currentTotalInDb,
+                total_matched: currentTotalMatched,
+                total_after_llm: currentRecipients.length,
+                recipients_count: currentRecipients.length,
+            });
+            updateCostEstimate();
+        }
+
+        function updateMessage(index, newMsg) {
+            if (currentRecipients[index]) currentRecipients[index].message = newMsg;
+        }
+
+        // ---- Send ----
+        async function doSend() {
+            if (!currentRecipients.length) { toast('Нет получателей', 'error'); return; }
+            if (!confirm(`Отправить ${currentRecipients.length} сообщений?`)) return;
+
+            const adminRequest = document.getElementById('adminRequest').value.trim();
+            const model = document.getElementById('modelSelect').value;
+            const sendBtn = document.getElementById('sendBtn');
+
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="loader"></span> Отправка...';
+
+            document.getElementById('sendProgress').classList.remove('hidden');
+            document.getElementById('sendResults').classList.add('hidden');
+            document.getElementById('progressFill').style.width = '10%';
+            document.getElementById('sendStatus').textContent = 'Отправляем сообщения...';
+
+            try {
+                const resp = await fetch(`${API_BASE}/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        admin_request: adminRequest,
+                        model,
+                        filters: currentFilters,
+                        recipients: currentRecipients.map(r => ({ user_id: r.user_id, message: r.message })),
+                    }),
+                });
+
+                document.getElementById('progressFill').style.width = '100%';
+
+                if (!resp.ok) {
+                    const err = await resp.json().catch(() => ({}));
+                    throw new Error(formatApiError(err, resp.status));
+                }
+
+                const data = await resp.json();
+
+                document.getElementById('sendProgress').classList.add('hidden');
+                document.getElementById('sendResults').classList.remove('hidden');
+                document.getElementById('resSent').textContent = data.sent;
+                document.getElementById('resFailed').textContent = data.failed;
+
+                const errDiv = document.getElementById('sendErrors');
+                const errors = data.results.filter(r => !r.ok);
+                if (errors.length) {
+                    errDiv.classList.remove('hidden');
+                    errDiv.innerHTML = errors.map(r => `<div>user_id=${r.user_id}: ${escapeHtml(r.error)}</div>`).join('');
+                } else {
+                    errDiv.classList.add('hidden');
+                }
+
+                toast(`Отправлено: ${data.sent}, Ошибки: ${data.failed}`);
+
+            } catch (e) {
+                toast(e.message, 'error');
+                document.getElementById('sendProgress').classList.add('hidden');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = 'Отправить всем';
+            }
+        }
+
+        // ---- History ----
+        async function loadHistory() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted)"><span class="loader loader-dark"></span></div>';
+            try {
+                const resp = await fetch(`${API_BASE}/history`);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+
+                document.getElementById('historyBadge').textContent = data.length || '';
+
+                if (!data.length) {
+                    list.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128236;</div><p>Рассылок пока не было</p></div>';
+                    return;
+                }
+
+                list.innerHTML = data.map(item => `
+                    <div class="history-row">
+                        <div class="history-dot"></div>
+                        <div class="history-body">
+                            <div class="history-title">${escapeHtml(item.admin_request)}</div>
+                            <div class="history-meta">
+                                <span>${escapeHtml(String(item.created_at))}</span>
+                                <span>Модель: <strong>${escapeHtml(String(item.model))}</strong></span>
+                                <span style="color:var(--green)">Отправлено: ${escapeHtml(String(item.sent_count))}</span>
+                                <span>Получателей: ${escapeHtml(String(item.recipients_count))}</span>
+                                ${item.skipped_count > 0 ? `<span style="color:var(--red)">Пропущено: ${escapeHtml(String(item.skipped_count))}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                list.innerHTML = `<div class="empty-state" style="color:var(--red)">Ошибка: ${escapeHtml(e.message || '')}</div>`;
+            }
+        }
+
+        // ---- Utils ----
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

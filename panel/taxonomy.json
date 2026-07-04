@@ -1,0 +1,103 @@
+{
+  "version": "runtime_v1",
+  "authoritative_note": "Use this resolved runtime taxonomy for storage axes and canonical feature keys in MVP. If earlier prose differs, use aliases below and store under the resolved axis.",
+  "storage_axes": {
+    "taste": ["sweet", "salty", "sour", "spicy", "bitter", "umami"],
+    "ingredient": "Canonical ingredient ids from ingredient_dictionary / ingredient_alias",
+    "cuisine": [
+      "russian_home",
+      "asian",
+      "japanese",
+      "korean",
+      "thai",
+      "italian",
+      "georgian_caucasian",
+      "indian",
+      "fast_food",
+      "healthy",
+      "comfort_food",
+      "street_food",
+      "home_style",
+      "author_style"
+    ],
+    "format_texture": [
+      "soup",
+      "salad",
+      "bowl",
+      "roll",
+      "pizza",
+      "pasta",
+      "burger",
+      "shawarma",
+      "dessert",
+      "breakfast",
+      "bakery",
+      "grilled",
+      "fried",
+      "baked",
+      "steamed",
+      "crispy",
+      "creamy"
+    ],
+    "context": [
+      "morning",
+      "lunch",
+      "evening",
+      "night",
+      "quick",
+      "romantic",
+      "work_lunch",
+      "delivery_home",
+      "delivery_office",
+      "dine_in",
+      "company",
+      "healthy_choice",
+      "recovery",
+      "indulgence"
+    ],
+    "restriction": [
+      "gluten",
+      "lactose",
+      "nuts",
+      "peanut",
+      "fish_seafood",
+      "egg",
+      "soy",
+      "pork",
+      "offal",
+      "mushroom",
+      "onion",
+      "spicy_avoid",
+      "vegetarian",
+      "vegan",
+      "halal",
+      "no_sugar"
+    ],
+    "nutrition": {
+      "boolean_tags": ["low_calorie", "high_protein", "low_fat", "high_carb"],
+      "satiety_class_values": ["snack", "light", "hearty"]
+    }
+  },
+  "aliases": {
+    "georgian": "georgian_caucasian",
+    "caucasian": "georgian_caucasian",
+    "asian_style": "asian",
+    "italian_style": "italian",
+    "author": "author_style",
+    "home": "home_style",
+    "breakfast_context": "morning",
+    "dinner": "evening",
+    "healthy_context": "healthy_choice",
+    "full_meal": "hearty"
+  },
+  "storage_rules": {
+    "questionnaire_source_of_truth": "questionnaire_submissions.raw_answers_json and questionnaire_submissions.extracted_json",
+    "questionnaire_answers_role": "normalized projection for filtering and analytics; not authoritative",
+    "hard_constraints_storage": "Store hard constraints only in user_constraints. Do not duplicate hard constraints into user_feature_values.",
+    "explicit_profile_layer": "Use profile_layer='explicit' only for non-hard questionnaire-derived user features and dislikes/preferences.",
+    "event_layers": "Use profile_layer='long_term' and 'short_term' only for event-derived profile updates and optional carry-over from explicit soft preferences.",
+    "modifier_policy": "Modifiers patch consumed item features first. Infer soft preference only from repeated patterns across 3+ distinct events. Never infer hard status from a modifier alone.",
+    "dish_feature_priority": "Deterministic rules > computed nutrition > manual > offline LLM candidates.",
+    "mvp_scope": "Stage A deterministic dish features must be sufficient for an end-to-end MVP. Offline LLM menu tagging is optional behind a flag and must not block MVP delivery."
+  }
+}

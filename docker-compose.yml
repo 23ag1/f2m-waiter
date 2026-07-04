@@ -1,0 +1,250 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: f2m_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: f2m_platform
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - food2mood_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: f2m_redis
+    restart: unless-stopped
+    networks:
+      - food2mood_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  f2m-engine:
+    build:
+      context: ./f2m-engine
+      dockerfile: Dockerfile
+    container_name: f2m_engine
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=f2m_platform
+      - ENGINE_DATA_DIR=/app/engine_data
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - engine_data:/app/engine_data
+    networks:
+      - food2mood_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:1488/docs')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  waiter-api:
+    build:
+      context: ./waiter
+      dockerfile: Dockerfile.backend
+    container_name: f2m_waiter_api
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=f2m_platform
+      - F2M_ENGINE_URL=http://f2m-engine:1488
+      - RESTAURANT_PASSWORDS_JSON
+    networks:
+      - food2mood_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      f2m-engine:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  waiter-web:
+    build:
+      context: ./waiter
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://195.225.110.250:8200/api/v1
+    container_name: f2m_waiter_web
+    restart: unless-stopped
+    networks:
+      - food2mood_net
+    depends_on:
+      - waiter-api
+
+  ai-menu:
+    build:
+      context: ./ai-menu
+      dockerfile: Dockerfile
+      args:
+        VITE_F2M_ENGINE_URL: http://195.225.110.250:8200/api/engine
+    container_name: f2m_ai_menu
+    restart: unless-stopped
+    networks:
+      - food2mood_net
+
+  broadcast-api:
+    build:
+      context: ./broadcast/backend
+      dockerfile: Dockerfile
+    container_name: f2m_broadcast_api
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=f2m_platform
+      - MOCK_LLM=${MOCK_LLM:-false}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - DEEPSEEK_API_URL=${DEEPSEEK_API_URL:-https://api.deepseek.com/v1/chat/completions}
+      - DEEPSEEK_MODEL=${DEEPSEEK_MODEL:-deepseek-chat}
+      - BOT_TOKEN=${BOT_TOKEN:-}
+    networks:
+      - food2mood_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  broadcast-web:
+    build:
+      context: ./broadcast/frontend
+      dockerfile: Dockerfile
+    container_name: f2m_broadcast_web
+    restart: unless-stopped
+    networks:
+      - food2mood_net
+    depends_on:
+      - broadcast-api
+
+
+  panel:
+    build:
+      context: ./panel
+      dockerfile: Dockerfile
+    container_name: f2m_panel
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=f2m_platform
+      - ADMIN_API_KEY=${ADMIN_API_KEY:-f2m_admin_secret}
+      - F2M_ENGINE_URL=http://f2m-engine:1488
+      - RESTAURANT_PASSWORDS_JSON
+    networks:
+      - food2mood_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: f2m_api
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=f2m_platform
+      - PREMIUM_BONUS_API_KEY=${PREMIUM_BONUS_API_KEY}
+      - PREMIUMBONUS_API_TOKEN=${PREMIUMBONUS_API_TOKEN}
+    networks:
+      - food2mood_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  admin-load-menu:
+    build:
+      context: ./admin_load_menu
+      dockerfile: Dockerfile
+    container_name: f2m_admin_load_menu
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - load_menu_uploads:/data/uploads
+    networks:
+      - food2mood_net
+    depends_on:
+      - f2m-engine
+      - postgres
+
+  nginx:
+    image: nginx:alpine
+    container_name: f2m_nginx
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:8200:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./admin_iiko/dist:/srv/admin_iiko/dist:ro
+    networks:
+      - food2mood_net
+    depends_on:
+      - f2m-engine
+      - waiter-api
+      - waiter-web
+      - ai-menu
+      - broadcast-web
+      - panel
+      - api
+      - admin-load-menu
+
+networks:
+  food2mood_net:
+    name: food2mood_net
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: f2m_platform_postgres_data
+  engine_data:
+    name: f2m_platform_engine_data
+  load_menu_uploads:
+    name: f2m_load_menu_uploads

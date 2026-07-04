@@ -1,0 +1,1522 @@
+{
+  "358": {
+    "dish_id": 358,
+    "choice": "top1",
+    "plu": "78035120",
+    "okolo_id": 1613959,
+    "note": null,
+    "ts": "2026-04-27T19:32:58+00:00"
+  },
+  "11": {
+    "dish_id": 11,
+    "choice": "top1",
+    "plu": "4420372",
+    "okolo_id": 2035717,
+    "note": null,
+    "ts": "2026-04-27T19:33:16+00:00"
+  },
+  "307": {
+    "dish_id": 307,
+    "choice": "top1",
+    "plu": "4356595",
+    "okolo_id": 1610514,
+    "note": null,
+    "ts": "2026-04-27T19:33:24+00:00"
+  },
+  "128": {
+    "dish_id": 128,
+    "choice": "top1",
+    "plu": "4362089",
+    "okolo_id": 1619594,
+    "note": null,
+    "ts": "2026-04-27T19:37:03+00:00"
+  },
+  "337": {
+    "dish_id": 337,
+    "choice": "top1",
+    "plu": "78036516",
+    "okolo_id": 2009492,
+    "note": null,
+    "ts": "2026-04-27T19:37:30+00:00"
+  },
+  "65": {
+    "dish_id": 65,
+    "choice": "top1",
+    "plu": "4429357",
+    "okolo_id": 2063167,
+    "note": null,
+    "ts": "2026-04-27T19:38:11+00:00"
+  },
+  "163": {
+    "dish_id": 163,
+    "choice": "top1",
+    "plu": "4433900",
+    "okolo_id": 2109300,
+    "note": null,
+    "ts": "2026-04-27T19:39:49+00:00"
+  },
+  "169": {
+    "dish_id": 169,
+    "choice": "top1",
+    "plu": "4438651",
+    "okolo_id": 2118254,
+    "note": null,
+    "ts": "2026-04-27T19:39:56+00:00"
+  },
+  "59": {
+    "dish_id": 59,
+    "choice": "top1",
+    "plu": "4344256",
+    "okolo_id": 1615181,
+    "note": null,
+    "ts": "2026-04-27T19:40:27+00:00"
+  },
+  "306": {
+    "dish_id": 306,
+    "choice": "top1",
+    "plu": "4356408",
+    "okolo_id": 1617645,
+    "note": null,
+    "ts": "2026-04-27T19:40:33+00:00"
+  },
+  "4": {
+    "dish_id": 4,
+    "choice": "top1",
+    "plu": "4383605",
+    "okolo_id": 1832504,
+    "note": null,
+    "ts": "2026-04-27T19:40:41+00:00"
+  },
+  "320": {
+    "dish_id": 320,
+    "choice": "top1",
+    "plu": "4415728",
+    "okolo_id": 2046243,
+    "note": null,
+    "ts": "2026-04-27T19:40:45+00:00"
+  },
+  "322": {
+    "dish_id": 322,
+    "choice": "top1",
+    "plu": "4415730",
+    "okolo_id": 2046245,
+    "note": null,
+    "ts": "2026-04-27T19:40:47+00:00"
+  },
+  "10": {
+    "dish_id": 10,
+    "choice": "top1",
+    "plu": "4410445",
+    "okolo_id": 2026770,
+    "note": null,
+    "ts": "2026-04-27T19:40:51+00:00"
+  },
+  "261": {
+    "dish_id": 261,
+    "choice": "top1",
+    "plu": "4195447",
+    "okolo_id": 1431018,
+    "note": null,
+    "ts": "2026-04-27T19:40:54+00:00"
+  },
+  "7": {
+    "dish_id": 7,
+    "choice": "top1",
+    "plu": "4399430",
+    "okolo_id": 1855527,
+    "note": null,
+    "ts": "2026-04-27T19:43:35+00:00"
+  },
+  "125": {
+    "dish_id": 125,
+    "choice": "top1",
+    "plu": "4192791",
+    "okolo_id": 1433383,
+    "note": null,
+    "ts": "2026-04-27T19:43:38+00:00"
+  },
+  "250": {
+    "dish_id": 250,
+    "choice": "top1",
+    "plu": "4372004",
+    "okolo_id": 1803408,
+    "note": null,
+    "ts": "2026-04-27T19:43:41+00:00"
+  },
+  "356": {
+    "dish_id": 356,
+    "choice": "top1",
+    "plu": "78035601",
+    "okolo_id": 1836424,
+    "note": null,
+    "ts": "2026-04-27T19:43:44+00:00"
+  },
+  "160": {
+    "dish_id": 160,
+    "choice": "top1",
+    "plu": "4424682",
+    "okolo_id": 2042810,
+    "note": null,
+    "ts": "2026-04-27T19:43:46+00:00"
+  },
+  "134": {
+    "dish_id": 134,
+    "choice": "top1",
+    "plu": "4373614",
+    "okolo_id": 1800371,
+    "note": null,
+    "ts": "2026-04-27T19:43:51+00:00"
+  },
+  "6": {
+    "dish_id": 6,
+    "choice": "top1",
+    "plu": "4392893",
+    "okolo_id": 1855651,
+    "note": null,
+    "ts": "2026-04-27T19:43:57+00:00"
+  },
+  "287": {
+    "dish_id": 287,
+    "choice": "top1",
+    "plu": "4441668",
+    "okolo_id": 2123416,
+    "note": null,
+    "ts": "2026-04-27T19:44:00+00:00"
+  },
+  "208": {
+    "dish_id": 208,
+    "choice": "top1",
+    "plu": "4419957",
+    "okolo_id": 2039519,
+    "note": null,
+    "ts": "2026-04-27T19:44:03+00:00"
+  },
+  "218": {
+    "dish_id": 218,
+    "choice": "top1",
+    "plu": "4398544",
+    "okolo_id": 1853658,
+    "note": null,
+    "ts": "2026-04-27T19:44:06+00:00"
+  },
+  "202": {
+    "dish_id": 202,
+    "choice": "top1",
+    "plu": "4409329",
+    "okolo_id": 2028914,
+    "note": null,
+    "ts": "2026-04-27T19:44:12+00:00"
+  },
+  "20": {
+    "dish_id": 20,
+    "choice": "top1",
+    "plu": "4428799",
+    "okolo_id": 2048521,
+    "note": null,
+    "ts": "2026-04-27T19:44:40+00:00"
+  },
+  "194": {
+    "dish_id": 194,
+    "choice": "top1",
+    "plu": "4403477",
+    "okolo_id": 2016804,
+    "note": null,
+    "ts": "2026-04-27T19:44:43+00:00"
+  },
+  "278": {
+    "dish_id": 278,
+    "choice": "top1",
+    "plu": "4296127",
+    "okolo_id": 1509635,
+    "note": null,
+    "ts": "2026-04-27T19:44:46+00:00"
+  },
+  "559": {
+    "dish_id": 559,
+    "choice": "top2",
+    "plu": "78034441",
+    "okolo_id": 1589323,
+    "note": null,
+    "ts": "2026-04-27T19:45:18+00:00"
+  },
+  "167": {
+    "dish_id": 167,
+    "choice": "top1",
+    "plu": "4437060",
+    "okolo_id": 2115684,
+    "note": null,
+    "ts": "2026-04-27T19:45:22+00:00"
+  },
+  "336": {
+    "dish_id": 336,
+    "choice": "top1",
+    "plu": "78036515",
+    "okolo_id": 2009491,
+    "note": null,
+    "ts": "2026-04-27T19:45:28+00:00"
+  },
+  "110": {
+    "dish_id": 110,
+    "choice": "top1",
+    "plu": "4353152",
+    "okolo_id": 1610771,
+    "note": null,
+    "ts": "2026-04-27T19:45:38+00:00"
+  },
+  "35": {
+    "dish_id": 35,
+    "choice": "top1",
+    "plu": "4376483",
+    "okolo_id": 1802373,
+    "note": null,
+    "ts": "2026-04-27T19:45:41+00:00"
+  },
+  "386": {
+    "dish_id": 386,
+    "choice": "top1",
+    "plu": "78036649",
+    "okolo_id": 2022015,
+    "note": null,
+    "ts": "2026-04-27T19:45:44+00:00"
+  },
+  "153": {
+    "dish_id": 153,
+    "choice": "top1",
+    "plu": "4420968",
+    "okolo_id": 2043016,
+    "note": null,
+    "ts": "2026-04-27T19:45:50+00:00"
+  },
+  "545": {
+    "dish_id": 545,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:46:07+00:00"
+  },
+  "546": {
+    "dish_id": 546,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:46:22+00:00"
+  },
+  "544": {
+    "dish_id": 544,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:46:28+00:00"
+  },
+  "19": {
+    "dish_id": 19,
+    "choice": "top1",
+    "plu": "4427504",
+    "okolo_id": 2047947,
+    "note": null,
+    "ts": "2026-04-27T19:46:33+00:00"
+  },
+  "22": {
+    "dish_id": 22,
+    "choice": "top1",
+    "plu": "4428967",
+    "okolo_id": 2067972,
+    "note": null,
+    "ts": "2026-04-27T19:46:35+00:00"
+  },
+  "161": {
+    "dish_id": 161,
+    "choice": "top1",
+    "plu": "4424684",
+    "okolo_id": 2043402,
+    "note": null,
+    "ts": "2026-04-27T19:46:37+00:00"
+  },
+  "168": {
+    "dish_id": 168,
+    "choice": "top1",
+    "plu": "4437462",
+    "okolo_id": 2117413,
+    "note": null,
+    "ts": "2026-04-27T19:46:40+00:00"
+  },
+  "18": {
+    "dish_id": 18,
+    "choice": "top1",
+    "plu": "4426653",
+    "okolo_id": 2047946,
+    "note": null,
+    "ts": "2026-04-27T19:46:43+00:00"
+  },
+  "139": {
+    "dish_id": 139,
+    "choice": "top1",
+    "plu": "4381902",
+    "okolo_id": 1832995,
+    "note": null,
+    "ts": "2026-04-27T19:46:44+00:00"
+  },
+  "268": {
+    "dish_id": 268,
+    "choice": "top1",
+    "plu": "4425860",
+    "okolo_id": 2045008,
+    "note": null,
+    "ts": "2026-04-27T19:46:47+00:00"
+  },
+  "74": {
+    "dish_id": 74,
+    "choice": "top1",
+    "plu": "3681003",
+    "okolo_id": 1306990,
+    "note": null,
+    "ts": "2026-04-27T19:46:58+00:00"
+  },
+  "259": {
+    "dish_id": 259,
+    "choice": "top1",
+    "plu": "4188081",
+    "okolo_id": 1430878,
+    "note": null,
+    "ts": "2026-04-27T19:47:02+00:00"
+  },
+  "162": {
+    "dish_id": 162,
+    "choice": "top1",
+    "plu": "4433429",
+    "okolo_id": 2067841,
+    "note": null,
+    "ts": "2026-04-27T19:47:58+00:00"
+  },
+  "185": {
+    "dish_id": 185,
+    "choice": "top1",
+    "plu": "4364437",
+    "okolo_id": 1619668,
+    "note": null,
+    "ts": "2026-04-27T19:47:59+00:00"
+  },
+  "30": {
+    "dish_id": 30,
+    "choice": "top1",
+    "plu": "4274164",
+    "okolo_id": 1503936,
+    "note": null,
+    "ts": "2026-04-27T19:48:01+00:00"
+  },
+  "150": {
+    "dish_id": 150,
+    "choice": "top1",
+    "plu": "4389855",
+    "okolo_id": 1846918,
+    "note": null,
+    "ts": "2026-04-27T19:48:03+00:00"
+  },
+  "387": {
+    "dish_id": 387,
+    "choice": "top1",
+    "plu": "78036650",
+    "okolo_id": 2028466,
+    "note": null,
+    "ts": "2026-04-27T19:48:06+00:00"
+  },
+  "127": {
+    "dish_id": 127,
+    "choice": "top1",
+    "plu": "4340929",
+    "okolo_id": 1598015,
+    "note": null,
+    "ts": "2026-04-27T19:48:08+00:00"
+  },
+  "236": {
+    "dish_id": 236,
+    "choice": "top1",
+    "plu": "4406504",
+    "okolo_id": 2017480,
+    "note": null,
+    "ts": "2026-04-27T19:48:10+00:00"
+  },
+  "385": {
+    "dish_id": 385,
+    "choice": "top1",
+    "plu": "78036648",
+    "okolo_id": 2022011,
+    "note": null,
+    "ts": "2026-04-27T19:48:12+00:00"
+  },
+  "475": {
+    "dish_id": 475,
+    "choice": "top1",
+    "plu": "78036409",
+    "okolo_id": 2036169,
+    "note": null,
+    "ts": "2026-04-27T19:48:18+00:00"
+  },
+  "476": {
+    "dish_id": 476,
+    "choice": "top1",
+    "plu": "78036409",
+    "okolo_id": 2036169,
+    "note": null,
+    "ts": "2026-04-27T19:48:20+00:00"
+  },
+  "538": {
+    "dish_id": 538,
+    "choice": "top3",
+    "plu": "78036403",
+    "okolo_id": 2013817,
+    "note": null,
+    "ts": "2026-04-27T19:48:29+00:00"
+  },
+  "539": {
+    "dish_id": 539,
+    "choice": "top3",
+    "plu": "78036403",
+    "okolo_id": 2013817,
+    "note": null,
+    "ts": "2026-04-27T19:48:33+00:00"
+  },
+  "91": {
+    "dish_id": 91,
+    "choice": "top1",
+    "plu": "4183545",
+    "okolo_id": 1430625,
+    "note": null,
+    "ts": "2026-04-27T19:48:37+00:00"
+  },
+  "512": {
+    "dish_id": 512,
+    "choice": "top1",
+    "plu": "78035834",
+    "okolo_id": 1840509,
+    "note": null,
+    "ts": "2026-04-27T19:48:47+00:00"
+  },
+  "513": {
+    "dish_id": 513,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:48:54+00:00"
+  },
+  "149": {
+    "dish_id": 149,
+    "choice": "top1",
+    "plu": "4383603",
+    "okolo_id": 1832505,
+    "note": null,
+    "ts": "2026-04-27T19:49:53+00:00"
+  },
+  "124": {
+    "dish_id": 124,
+    "choice": "top1",
+    "plu": "4192787",
+    "okolo_id": 1435906,
+    "note": null,
+    "ts": "2026-04-27T19:49:55+00:00"
+  },
+  "142": {
+    "dish_id": 142,
+    "choice": "top1",
+    "plu": "4381906",
+    "okolo_id": 1832994,
+    "note": null,
+    "ts": "2026-04-27T19:49:56+00:00"
+  },
+  "510": {
+    "dish_id": 510,
+    "choice": "top2",
+    "plu": "78035836",
+    "okolo_id": 2024569,
+    "note": null,
+    "ts": "2026-04-27T19:50:02+00:00"
+  },
+  "511": {
+    "dish_id": 511,
+    "choice": "top1",
+    "plu": "78035833",
+    "okolo_id": 1840727,
+    "note": null,
+    "ts": "2026-04-27T19:50:05+00:00"
+  },
+  "152": {
+    "dish_id": 152,
+    "choice": "top1",
+    "plu": "4420760",
+    "okolo_id": 2039689,
+    "note": null,
+    "ts": "2026-04-27T19:50:11+00:00"
+  },
+  "215": {
+    "dish_id": 215,
+    "choice": "top1",
+    "plu": "4377397",
+    "okolo_id": 1840705,
+    "note": null,
+    "ts": "2026-04-27T19:50:12+00:00"
+  },
+  "196": {
+    "dish_id": 196,
+    "choice": "top1",
+    "plu": "4409320",
+    "okolo_id": 2027271,
+    "note": null,
+    "ts": "2026-04-27T19:50:14+00:00"
+  },
+  "536": {
+    "dish_id": 536,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:50:25+00:00"
+  },
+  "537": {
+    "dish_id": 537,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:50:30+00:00"
+  },
+  "540": {
+    "dish_id": 540,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:50:31+00:00"
+  },
+  "541": {
+    "dish_id": 541,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:50:31+00:00"
+  },
+  "516": {
+    "dish_id": 516,
+    "choice": "top3",
+    "plu": "78035830",
+    "okolo_id": 1838834,
+    "note": null,
+    "ts": "2026-04-27T19:50:35+00:00"
+  },
+  "517": {
+    "dish_id": 517,
+    "choice": "top1",
+    "plu": "78035839",
+    "okolo_id": 1852652,
+    "note": null,
+    "ts": "2026-04-27T19:50:37+00:00"
+  },
+  "13": {
+    "dish_id": 13,
+    "choice": "top2",
+    "plu": "4422352",
+    "okolo_id": 2038308,
+    "note": null,
+    "ts": "2026-04-27T19:50:41+00:00"
+  },
+  "247": {
+    "dish_id": 247,
+    "choice": "top1",
+    "plu": "4438509",
+    "okolo_id": 2127713,
+    "note": null,
+    "ts": "2026-04-27T19:50:44+00:00"
+  },
+  "126": {
+    "dish_id": 126,
+    "choice": "top1",
+    "plu": "4221854",
+    "okolo_id": 1448054,
+    "note": null,
+    "ts": "2026-04-27T19:50:47+00:00"
+  },
+  "129": {
+    "dish_id": 129,
+    "choice": "top1",
+    "plu": "4366792",
+    "okolo_id": 1623103,
+    "note": null,
+    "ts": "2026-04-27T19:50:49+00:00"
+  },
+  "175": {
+    "dish_id": 175,
+    "choice": "top1",
+    "plu": "4289866",
+    "okolo_id": 1561820,
+    "note": null,
+    "ts": "2026-04-27T19:51:02+00:00"
+  },
+  "213": {
+    "dish_id": 213,
+    "choice": "top1",
+    "plu": "4223586",
+    "okolo_id": 1448056,
+    "note": null,
+    "ts": "2026-04-27T19:51:07+00:00"
+  },
+  "214": {
+    "dish_id": 214,
+    "choice": "top1",
+    "plu": "4331972",
+    "okolo_id": 1588479,
+    "note": null,
+    "ts": "2026-04-27T19:51:09+00:00"
+  },
+  "14": {
+    "dish_id": 14,
+    "choice": "top1",
+    "plu": "4423500",
+    "okolo_id": 2039690,
+    "note": null,
+    "ts": "2026-04-27T19:51:12+00:00"
+  },
+  "34": {
+    "dish_id": 34,
+    "choice": "top1",
+    "plu": "4371198",
+    "okolo_id": 1802370,
+    "note": null,
+    "ts": "2026-04-27T19:51:34+00:00"
+  },
+  "181": {
+    "dish_id": 181,
+    "choice": "top1",
+    "plu": "4312153",
+    "okolo_id": 1574329,
+    "note": null,
+    "ts": "2026-04-27T19:51:35+00:00"
+  },
+  "496": {
+    "dish_id": 496,
+    "choice": "top1",
+    "plu": "78035150",
+    "okolo_id": 1624323,
+    "note": null,
+    "ts": "2026-04-27T19:51:38+00:00"
+  },
+  "335": {
+    "dish_id": 335,
+    "choice": "top1",
+    "plu": "78036514",
+    "okolo_id": 2009493,
+    "note": null,
+    "ts": "2026-04-27T19:51:40+00:00"
+  },
+  "368": {
+    "dish_id": 368,
+    "choice": "top1",
+    "plu": "78036476",
+    "okolo_id": 2009127,
+    "note": null,
+    "ts": "2026-04-27T19:51:42+00:00"
+  },
+  "501": {
+    "dish_id": 501,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:51:47+00:00"
+  },
+  "502": {
+    "dish_id": 502,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:51:49+00:00"
+  },
+  "503": {
+    "dish_id": 503,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:51:50+00:00"
+  },
+  "515": {
+    "dish_id": 515,
+    "choice": "top1",
+    "plu": "78035836",
+    "okolo_id": 2024569,
+    "note": null,
+    "ts": "2026-04-27T19:51:59+00:00"
+  },
+  "16": {
+    "dish_id": 16,
+    "choice": "top1",
+    "plu": "4425837",
+    "okolo_id": 2042777,
+    "note": null,
+    "ts": "2026-04-27T19:52:05+00:00"
+  },
+  "133": {
+    "dish_id": 133,
+    "choice": "top1",
+    "plu": "4373585",
+    "okolo_id": 1800379,
+    "note": null,
+    "ts": "2026-04-27T19:52:07+00:00"
+  },
+  "195": {
+    "dish_id": 195,
+    "choice": "top1",
+    "plu": "4409319",
+    "okolo_id": 2026451,
+    "note": null,
+    "ts": "2026-04-27T19:52:10+00:00"
+  },
+  "498": {
+    "dish_id": 498,
+    "choice": "top1",
+    "plu": "78035152",
+    "okolo_id": 1624324,
+    "note": null,
+    "ts": "2026-04-27T19:52:13+00:00"
+  },
+  "514": {
+    "dish_id": 514,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:52:44+00:00"
+  },
+  "369": {
+    "dish_id": 369,
+    "choice": "top1",
+    "plu": "78036485",
+    "okolo_id": 2008924,
+    "note": null,
+    "ts": "2026-04-27T19:52:46+00:00"
+  },
+  "57": {
+    "dish_id": 57,
+    "choice": "top1",
+    "plu": "4335249",
+    "okolo_id": 1592163,
+    "note": null,
+    "ts": "2026-04-27T19:52:49+00:00"
+  },
+  "461": {
+    "dish_id": 461,
+    "choice": "top2",
+    "plu": "78034947",
+    "okolo_id": 1800464,
+    "note": null,
+    "ts": "2026-04-27T19:52:59+00:00"
+  },
+  "106": {
+    "dish_id": 106,
+    "choice": "top1",
+    "plu": "4302221",
+    "okolo_id": 1514307,
+    "note": null,
+    "ts": "2026-04-27T19:53:02+00:00"
+  },
+  "147": {
+    "dish_id": 147,
+    "choice": "top1",
+    "plu": "4382077",
+    "okolo_id": 1828742,
+    "note": null,
+    "ts": "2026-04-27T19:53:07+00:00"
+  },
+  "333": {
+    "dish_id": 333,
+    "choice": "top1",
+    "plu": "78036007",
+    "okolo_id": 1847289,
+    "note": null,
+    "ts": "2026-04-27T19:53:09+00:00"
+  },
+  "88": {
+    "dish_id": 88,
+    "choice": "top1",
+    "plu": "4407906",
+    "okolo_id": 2021100,
+    "note": null,
+    "ts": "2026-04-27T19:53:13+00:00"
+  },
+  "32": {
+    "dish_id": 32,
+    "choice": "top1",
+    "plu": "4358604",
+    "okolo_id": 1613899,
+    "note": null,
+    "ts": "2026-04-27T19:53:16+00:00"
+  },
+  "216": {
+    "dish_id": 216,
+    "choice": "top1",
+    "plu": "4379037",
+    "okolo_id": 1839638,
+    "note": null,
+    "ts": "2026-04-27T19:53:18+00:00"
+  },
+  "388": {
+    "dish_id": 388,
+    "choice": "top1",
+    "plu": "78036651",
+    "okolo_id": 2023201,
+    "note": null,
+    "ts": "2026-04-27T19:53:21+00:00"
+  },
+  "578": {
+    "dish_id": 578,
+    "choice": "top1",
+    "plu": "78037439",
+    "okolo_id": 2116477,
+    "note": null,
+    "ts": "2026-04-27T19:53:23+00:00"
+  },
+  "504": {
+    "dish_id": 504,
+    "choice": "top1",
+    "plu": "78035799",
+    "okolo_id": 2033483,
+    "note": null,
+    "ts": "2026-04-27T19:54:58+00:00"
+  },
+  "17": {
+    "dish_id": 17,
+    "choice": "top1",
+    "plu": "4425838",
+    "okolo_id": 2044092,
+    "note": null,
+    "ts": "2026-04-27T19:55:03+00:00"
+  },
+  "384": {
+    "dish_id": 384,
+    "choice": "top1",
+    "plu": "78036647",
+    "okolo_id": 2023151,
+    "note": null,
+    "ts": "2026-04-27T19:55:06+00:00"
+  },
+  "497": {
+    "dish_id": 497,
+    "choice": "top1",
+    "plu": "78035151",
+    "okolo_id": 1624446,
+    "note": null,
+    "ts": "2026-04-27T19:55:14+00:00"
+  },
+  "231": {
+    "dish_id": 231,
+    "choice": "top1",
+    "plu": "4276196",
+    "okolo_id": 1494094,
+    "note": null,
+    "ts": "2026-04-27T19:55:17+00:00"
+  },
+  "113": {
+    "dish_id": 113,
+    "choice": "top1",
+    "plu": "4360073",
+    "okolo_id": 1622241,
+    "note": null,
+    "ts": "2026-04-27T19:55:21+00:00"
+  },
+  "155": {
+    "dish_id": 155,
+    "choice": "top1",
+    "plu": "4421474",
+    "okolo_id": 2037972,
+    "note": null,
+    "ts": "2026-04-27T19:55:25+00:00"
+  },
+  "232": {
+    "dish_id": 232,
+    "choice": "top1",
+    "plu": "4364440",
+    "okolo_id": 1619510,
+    "note": null,
+    "ts": "2026-04-27T19:55:33+00:00"
+  },
+  "38": {
+    "dish_id": 38,
+    "choice": "top1",
+    "plu": "4410399",
+    "okolo_id": 2031112,
+    "note": null,
+    "ts": "2026-04-27T19:55:36+00:00"
+  },
+  "527": {
+    "dish_id": 527,
+    "choice": "top2",
+    "plu": "78036197",
+    "okolo_id": 1847440,
+    "note": null,
+    "ts": "2026-04-27T19:55:43+00:00"
+  },
+  "528": {
+    "dish_id": 528,
+    "choice": "top1",
+    "plu": "78036198",
+    "okolo_id": 2012573,
+    "note": null,
+    "ts": "2026-04-27T19:55:46+00:00"
+  },
+  "159": {
+    "dish_id": 159,
+    "choice": "top1",
+    "plu": "4423449",
+    "okolo_id": 2039688,
+    "note": null,
+    "ts": "2026-04-27T19:55:50+00:00"
+  },
+  "362": {
+    "dish_id": 362,
+    "choice": "top1",
+    "plu": "78036091",
+    "okolo_id": 1840734,
+    "note": null,
+    "ts": "2026-04-27T19:55:54+00:00"
+  },
+  "331": {
+    "dish_id": 331,
+    "choice": "top1",
+    "plu": "78034825",
+    "okolo_id": 1617090,
+    "note": null,
+    "ts": "2026-04-27T19:55:58+00:00"
+  },
+  "157": {
+    "dish_id": 157,
+    "choice": "top1",
+    "plu": "4422949",
+    "okolo_id": 2038055,
+    "note": null,
+    "ts": "2026-04-27T19:56:18+00:00"
+  },
+  "179": {
+    "dish_id": 179,
+    "choice": "top1",
+    "plu": "4312150",
+    "okolo_id": 1574331,
+    "note": null,
+    "ts": "2026-04-27T19:56:21+00:00"
+  },
+  "296": {
+    "dish_id": 296,
+    "choice": "top1",
+    "plu": "4385808",
+    "okolo_id": 1840200,
+    "note": null,
+    "ts": "2026-04-27T19:57:07+00:00"
+  },
+  "297": {
+    "dish_id": 297,
+    "choice": "top1",
+    "plu": "4385809",
+    "okolo_id": 1840196,
+    "note": null,
+    "ts": "2026-04-27T19:57:09+00:00"
+  },
+  "323": {
+    "dish_id": 323,
+    "choice": "top1",
+    "plu": "78037531",
+    "okolo_id": 2120925,
+    "note": null,
+    "ts": "2026-04-27T19:57:11+00:00"
+  },
+  "344": {
+    "dish_id": 344,
+    "choice": "top1",
+    "plu": "78037531",
+    "okolo_id": 2120925,
+    "note": null,
+    "ts": "2026-04-27T19:57:14+00:00"
+  },
+  "466": {
+    "dish_id": 466,
+    "choice": "top2",
+    "plu": "78034952",
+    "okolo_id": 1800458,
+    "note": null,
+    "ts": "2026-04-27T19:57:20+00:00"
+  },
+  "474": {
+    "dish_id": 474,
+    "choice": "top1",
+    "plu": "78035067",
+    "okolo_id": 1800467,
+    "note": null,
+    "ts": "2026-04-27T19:57:25+00:00"
+  },
+  "429": {
+    "dish_id": 429,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:57:34+00:00"
+  },
+  "597": {
+    "dish_id": 597,
+    "choice": "top1",
+    "plu": "78034881",
+    "okolo_id": 1620040,
+    "note": null,
+    "ts": "2026-04-27T19:57:40+00:00"
+  },
+  "219": {
+    "dish_id": 219,
+    "choice": "top1",
+    "plu": "4405770",
+    "okolo_id": 2013410,
+    "note": null,
+    "ts": "2026-04-27T19:57:43+00:00"
+  },
+  "100": {
+    "dish_id": 100,
+    "choice": "top1",
+    "plu": "4187804",
+    "okolo_id": 1429769,
+    "note": null,
+    "ts": "2026-04-27T19:57:50+00:00"
+  },
+  "72": {
+    "dish_id": 72,
+    "choice": "top2",
+    "plu": "4438328",
+    "okolo_id": 2116378,
+    "note": null,
+    "ts": "2026-04-27T19:58:03+00:00"
+  },
+  "550": {
+    "dish_id": 550,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:58:09+00:00"
+  },
+  "548": {
+    "dish_id": 548,
+    "choice": "top1",
+    "plu": "78036420",
+    "okolo_id": 2067029,
+    "note": null,
+    "ts": "2026-04-27T19:58:15+00:00"
+  },
+  "85": {
+    "dish_id": 85,
+    "choice": "top2",
+    "plu": "4407902",
+    "okolo_id": 2020862,
+    "note": null,
+    "ts": "2026-04-27T19:58:21+00:00"
+  },
+  "588": {
+    "dish_id": 588,
+    "choice": "top1",
+    "plu": "78037600",
+    "okolo_id": 2125274,
+    "note": null,
+    "ts": "2026-04-27T19:58:31+00:00"
+  },
+  "490": {
+    "dish_id": 490,
+    "choice": "top3",
+    "plu": "78035079",
+    "okolo_id": 1625199,
+    "note": null,
+    "ts": "2026-04-27T19:58:43+00:00"
+  },
+  "36": {
+    "dish_id": 36,
+    "choice": "top2",
+    "plu": "4403479",
+    "okolo_id": 2031834,
+    "note": null,
+    "ts": "2026-04-27T19:58:48+00:00"
+  },
+  "532": {
+    "dish_id": 532,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T19:59:09+00:00"
+  },
+  "283": {
+    "dish_id": 283,
+    "choice": "top2",
+    "plu": "4441573",
+    "okolo_id": 2123375,
+    "note": null,
+    "ts": "2026-04-27T19:59:13+00:00"
+  },
+  "43": {
+    "dish_id": 43,
+    "choice": "top2",
+    "plu": "4298576",
+    "okolo_id": 1572201,
+    "note": null,
+    "ts": "2026-04-27T19:59:20+00:00"
+  },
+  "82": {
+    "dish_id": 82,
+    "choice": "top2",
+    "plu": "4228141",
+    "okolo_id": 1452995,
+    "note": null,
+    "ts": "2026-04-27T19:59:27+00:00"
+  },
+  "282": {
+    "dish_id": 282,
+    "choice": "top2",
+    "plu": "4441572",
+    "okolo_id": 2123190,
+    "note": null,
+    "ts": "2026-04-27T20:00:02+00:00"
+  },
+  "279": {
+    "dish_id": 279,
+    "choice": "top2",
+    "plu": "4441204",
+    "okolo_id": 2123406,
+    "note": null,
+    "ts": "2026-04-27T20:00:06+00:00"
+  },
+  "281": {
+    "dish_id": 281,
+    "choice": "top2",
+    "plu": "4441206",
+    "okolo_id": 2123192,
+    "note": null,
+    "ts": "2026-04-27T20:00:10+00:00"
+  },
+  "434": {
+    "dish_id": 434,
+    "choice": "top2",
+    "plu": "78034900",
+    "okolo_id": 1622160,
+    "note": null,
+    "ts": "2026-04-27T20:00:16+00:00"
+  },
+  "408": {
+    "dish_id": 408,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:00:26+00:00"
+  },
+  "410": {
+    "dish_id": 410,
+    "choice": "top2",
+    "plu": "78031243",
+    "okolo_id": 1443270,
+    "note": null,
+    "ts": "2026-04-27T20:01:49+00:00"
+  },
+  "411": {
+    "dish_id": 411,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:01:54+00:00"
+  },
+  "414": {
+    "dish_id": 414,
+    "choice": "top2",
+    "plu": "78031247",
+    "okolo_id": 1440977,
+    "note": null,
+    "ts": "2026-04-27T20:01:58+00:00"
+  },
+  "417": {
+    "dish_id": 417,
+    "choice": "top1",
+    "plu": "78031250",
+    "okolo_id": 1407299,
+    "note": null,
+    "ts": "2026-04-27T20:02:02+00:00"
+  },
+  "418": {
+    "dish_id": 418,
+    "choice": "top2",
+    "plu": "78031251",
+    "okolo_id": 1443274,
+    "note": null,
+    "ts": "2026-04-27T20:02:38+00:00"
+  },
+  "419": {
+    "dish_id": 419,
+    "choice": "top2",
+    "plu": "78031252",
+    "okolo_id": 1443275,
+    "note": null,
+    "ts": "2026-04-27T20:02:42+00:00"
+  },
+  "422": {
+    "dish_id": 422,
+    "choice": "top2",
+    "plu": "78031255",
+    "okolo_id": 1443277,
+    "note": null,
+    "ts": "2026-04-27T20:02:45+00:00"
+  },
+  "449": {
+    "dish_id": 449,
+    "choice": "top2",
+    "plu": "78034939",
+    "okolo_id": 1625445,
+    "note": null,
+    "ts": "2026-04-27T20:02:50+00:00"
+  },
+  "453": {
+    "dish_id": 453,
+    "choice": "top1",
+    "plu": "78034935",
+    "okolo_id": 1619787,
+    "note": null,
+    "ts": "2026-04-27T20:03:09+00:00"
+  },
+  "454": {
+    "dish_id": 454,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:03:15+00:00"
+  },
+  "455": {
+    "dish_id": 455,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:03:19+00:00"
+  },
+  "456": {
+    "dish_id": 456,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:03:19+00:00"
+  },
+  "457": {
+    "dish_id": 457,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:03:20+00:00"
+  },
+  "458": {
+    "dish_id": 458,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:03:20+00:00"
+  },
+  "464": {
+    "dish_id": 464,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:03:21+00:00"
+  },
+  "465": {
+    "dish_id": 465,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:03:21+00:00"
+  },
+  "480": {
+    "dish_id": 480,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:03:22+00:00"
+  },
+  "481": {
+    "dish_id": 481,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:03:22+00:00"
+  },
+  "482": {
+    "dish_id": 482,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:03:23+00:00"
+  },
+  "483": {
+    "dish_id": 483,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:03:23+00:00"
+  },
+  "487": {
+    "dish_id": 487,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:03:23+00:00"
+  },
+  "488": {
+    "dish_id": 488,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:03:24+00:00"
+  },
+  "489": {
+    "dish_id": 489,
+    "choice": "top3",
+    "plu": "78035079",
+    "okolo_id": 1625199,
+    "note": null,
+    "ts": "2026-04-27T20:03:29+00:00"
+  },
+  "500": {
+    "dish_id": 500,
+    "choice": "top2",
+    "plu": "78035799",
+    "okolo_id": 2033483,
+    "note": null,
+    "ts": "2026-04-27T20:04:14+00:00"
+  },
+  "505": {
+    "dish_id": 505,
+    "choice": "top2",
+    "plu": "78035801",
+    "okolo_id": 1838833,
+    "note": null,
+    "ts": "2026-04-27T20:04:17+00:00"
+  },
+  "506": {
+    "dish_id": 506,
+    "choice": "top2",
+    "plu": "78035811",
+    "okolo_id": 1839203,
+    "note": null,
+    "ts": "2026-04-27T20:04:20+00:00"
+  },
+  "507": {
+    "dish_id": 507,
+    "choice": "top2",
+    "plu": "78035821",
+    "okolo_id": 1838832,
+    "note": null,
+    "ts": "2026-04-27T20:04:22+00:00"
+  },
+  "519": {
+    "dish_id": 519,
+    "choice": "top2",
+    "plu": "78036189",
+    "okolo_id": 2065350,
+    "note": null,
+    "ts": "2026-04-27T20:04:25+00:00"
+  },
+  "524": {
+    "dish_id": 524,
+    "choice": "top2",
+    "plu": "78036194",
+    "okolo_id": 1846274,
+    "note": null,
+    "ts": "2026-04-27T20:04:28+00:00"
+  },
+  "525": {
+    "dish_id": 525,
+    "choice": "top2",
+    "plu": "78036195",
+    "okolo_id": 1852472,
+    "note": null,
+    "ts": "2026-04-27T20:04:52+00:00"
+  },
+  "530": {
+    "dish_id": 530,
+    "choice": "top2",
+    "plu": "78036200",
+    "okolo_id": 1848317,
+    "note": null,
+    "ts": "2026-04-27T20:04:54+00:00"
+  },
+  "534": {
+    "dish_id": 534,
+    "choice": "top2",
+    "plu": "78036403",
+    "okolo_id": 2013817,
+    "note": null,
+    "ts": "2026-04-27T20:04:59+00:00"
+  },
+  "535": {
+    "dish_id": 535,
+    "choice": "top1",
+    "plu": "78036404",
+    "okolo_id": 2013818,
+    "note": null,
+    "ts": "2026-04-27T20:05:05+00:00"
+  },
+  "561": {
+    "dish_id": 561,
+    "choice": "skip",
+    "plu": null,
+    "okolo_id": null,
+    "note": null,
+    "ts": "2026-04-27T20:05:53+00:00"
+  },
+  "575": {
+    "dish_id": 575,
+    "choice": "top2",
+    "plu": "78037430",
+    "okolo_id": 2115658,
+    "note": null,
+    "ts": "2026-04-27T20:05:58+00:00"
+  },
+  "591": {
+    "dish_id": 591,
+    "choice": "top1",
+    "plu": "78034434",
+    "okolo_id": 1590851,
+    "note": null,
+    "ts": "2026-04-27T20:06:01+00:00"
+  },
+  "593": {
+    "dish_id": 593,
+    "choice": "top1",
+    "plu": "78034438",
+    "okolo_id": 1589321,
+    "note": null,
+    "ts": "2026-04-27T20:06:03+00:00"
+  },
+  "594": {
+    "dish_id": 594,
+    "choice": "top1",
+    "plu": "78034440",
+    "okolo_id": 1589271,
+    "note": null,
+    "ts": "2026-04-27T20:06:15+00:00"
+  }
+}

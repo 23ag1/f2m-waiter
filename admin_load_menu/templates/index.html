@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Загрузка меню — f2m engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #EDE8DA;
+  --card:     #F7F3E9;
+  --sidebar:  #0C0904;
+  --ink:      #1A130A;
+  --gold:     #B87D0A;
+  --gold-lt:  #E8C96A;
+  --muted:    #7A6E56;
+  --line:     #CEC3A6;
+  --ok:       #2A5A2A;
+  --err:      #7A1A1A;
+  --warn:     #7B5200;
+}
+
+body {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ── Paper grain ────────────────────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  opacity: 0.038;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* ── Grid overlay ────────────────────────────────────────────────────────── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(26,19,10,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26,19,10,0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.layout {
+  display: grid;
+  grid-template-columns: 216px 1fr;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.sidebar {
+  background: var(--sidebar);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sb-header {
+  padding: 28px 22px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.sb-brand {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.14em;
+  color: #EDE4D2;
+  line-height: 1;
+}
+
+.sb-sub {
+  font-family: 'Courier Prime', monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-top: 5px;
+}
+
+.sb-section { padding: 18px 0 6px; }
+
+.sb-label {
+  padding: 0 22px 9px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.18);
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 22px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.75);
+  cursor: default;
+  position: relative;
+  transition: color 0.2s;
+  border-left: 2px solid transparent;
+}
+
+.step-item.active {
+  color: #FFFFFF;
+  border-left-color: var(--gold);
+}
+.step-item.done { color: rgba(255,255,255,0.85); }
+.step-item.locked { opacity: 0.6; }
+
+.step-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  width: 28px;
+  flex-shrink: 0;
+  color: rgba(255,255,255,0.5);
+  transition: color 0.2s;
+}
+.step-item.active .step-num { color: var(--gold); }
+.step-item.done .step-num   { color: rgba(255,255,255,0.7); }
+
+.sb-divider {
+  margin: 6px 22px 0;
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 22px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.28);
+  cursor: pointer;
+  transition: color 0.15s;
+  border-left: 2px solid transparent;
+}
+.action-item:hover { color: var(--gold-lt); border-left-color: rgba(184,125,10,0.4); }
+.action-icon { font-size: 13px; width: 18px; text-align: center; }
+
+/* ── Sidebar status ───────────────────────────────────────────────────────── */
+.sb-status {
+  margin-top: auto;
+  padding: 18px 22px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.18);
+}
+
+.sb-rest-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 7px;
+}
+#status-restaurant {
+  font-family: 'Courier Prime', monospace;
+  font-size: 13px;
+  letter-spacing: .05em;
+  color: #EDE4D2;
+  font-weight: 700;
+}
+
+.pulse-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+@keyframes blink {
+  0%,100% { opacity:1; }
+  50%      { opacity:0.2; }
+}
+.pulse-dot { animation: blink 2.4s ease-in-out infinite; }
+
+.sb-count {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  letter-spacing: 0.04em;
+  color: #EDE4D2;
+  line-height: 1;
+}
+
+.sb-count-sub {
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,0.22);
+  margin-top: 4px;
+  letter-spacing: 0.03em;
+}
+
+/* ── Main ────────────────────────────────────────────────────────────────── */
+.main { padding: 44px 52px; max-width: 980px; }
+
+.page-over {
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.page-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.page-rule {
+  width: 56px; height: 2px;
+  background: var(--ink);
+  margin: 12px 0 6px;
+}
+
+.page-sub {
+  font-family: 'Courier Prime', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin-bottom: 40px;
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1.5px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  padding: 28px 32px;
+  margin-bottom: 22px;
+}
+
+.card-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ── Upload zone ─────────────────────────────────────────────────────────── */
+.upload-zone {
+  border: 2px dashed var(--line);
+  padding: 52px 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  background: rgba(237,232,218,.35);
+  user-select: none;
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--ink);
+  border-style: solid;
+  background: rgba(184,125,10,.04);
+}
+
+.up-label {
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.up-rule {
+  width: 44px; height: 1.5px;
+  background: var(--line);
+  margin: 0 auto 16px;
+}
+
+.up-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 19px;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.up-types {
+  font-family: 'Courier Prime', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  margin-bottom: 22px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.btn {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  padding: 10px 26px;
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+  transition: transform .1s, box-shadow .1s, background .1s, color .1s;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.btn-ink {
+  background: var(--ink);
+  color: var(--bg);
+}
+.btn-ink:hover:not(:disabled) {
+  box-shadow: 4px 4px 0 var(--gold);
+}
+
+.btn-ok {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+.btn-ok:hover:not(:disabled) {
+  background: var(--ok);
+  color: var(--bg);
+  box-shadow: 4px 4px 0 var(--ok);
+}
+
+.btn-ghost {
+  color: var(--muted);
+  border-color: var(--line);
+}
+.btn-ghost:hover:not(:disabled) {
+  border-color: var(--ink);
+  color: var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.btn:disabled { opacity: .3; cursor: not-allowed; }
+
+.btn-upload {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  padding: 10px 28px;
+  border: 2px solid var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+  cursor: pointer;
+  display: inline-block;
+  transition: transform .1s, box-shadow .1s, background .1s;
+}
+.btn-upload:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ink);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.btn-row { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+
+/* ── File info strip ─────────────────────────────────────────────────────── */
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 14px;
+  border: 1.5px solid var(--ok);
+  background: rgba(42,90,42,.04);
+  margin-bottom: 18px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 12px;
+}
+.file-name { font-weight: 700; color: var(--ok); letter-spacing: .02em; }
+.file-meta { color: var(--muted); }
+
+/* ── Mapping table ───────────────────────────────────────────────────────── */
+.mapping-table { width: 100%; border-collapse: collapse; }
+
+.mapping-table th {
+  font-family: 'Courier Prime', monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  padding: 0 0 12px;
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.mapping-table td {
+  padding: 14px 0 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.mapping-table td:first-child { padding-right: 28px; width: 250px; }
+.mapping-table tr:last-child td { border-bottom: none; }
+
+.field-name {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.field-req  { color: var(--gold); margin-left: 3px; }
+.field-hint {
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 3px;
+  letter-spacing: 0.02em;
+}
+
+select.col-select {
+  width: 100%;
+  background: var(--bg);
+  border: 1.5px solid var(--line);
+  color: var(--ink);
+  border-radius: 0;
+  padding: 9px 32px 9px 12px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%231A130A'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color .15s;
+}
+select.col-select:focus  { border-color: var(--ink); }
+select.col-select.mapped { border-color: var(--ok); color: var(--ok); }
+
+/* ── Preview table ───────────────────────────────────────────────────────── */
+.preview-wrap { overflow-x: auto; }
+
+.preview-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+
+.preview-table th {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 2px solid var(--ink);
+  white-space: nowrap;
+  background: rgba(237,232,218,.5);
+  color: var(--ink);
+}
+
+.preview-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--line);
+  font-family: 'Courier Prime', monospace;
+  font-size: 12px;
+  color: var(--ink);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.preview-table tr:hover td { background: rgba(184,125,10,.04); }
+.cell-empty { color: var(--line); font-style: italic; }
+.cell-ok    { color: var(--ok); font-weight: 700; }
+
+/* ── Alerts ──────────────────────────────────────────────────────────────── */
+.alert {
+  display: flex;
+  gap: 10px;
+  padding: 9px 14px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 12px;
+  margin-bottom: 10px;
+  border-left: 3px solid;
+  letter-spacing: .02em;
+}
+.alert-error   { border-color: var(--err);  background: rgba(122,26,26,.06);  color: var(--err);  }
+.alert-warning { border-color: var(--warn); background: rgba(123,82,0,.06);   color: var(--warn); }
+.alert-info    { border-color: var(--gold); background: rgba(184,125,10,.06); color: var(--gold); }
+
+/* ── Log ─────────────────────────────────────────────────────────────────── */
+.log-box {
+  background: var(--ink);
+  color: #AFA08A;
+  padding: 20px 24px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 12px;
+  line-height: 2;
+  min-height: 180px;
+  max-height: 320px;
+  overflow-y: auto;
+  letter-spacing: .03em;
+}
+.log-line.ok  { color: #6EAA6E; }
+.log-line.err { color: #BB6060; }
+
+/* ── Spinner ─────────────────────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 13px; height: 13px;
+  border: 2px solid rgba(26,19,10,.12);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .65s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+/* ── Badge ───────────────────────────────────────────────────────────────── */
+.badge {
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  padding: 2px 8px;
+  letter-spacing: .08em;
+  border: 1px solid;
+}
+.badge-blue  { border-color: var(--gold); color: var(--gold); }
+.badge-green { border-color: var(--ok);   color: var(--ok);   }
+
+/* ── Info block ──────────────────────────────────────────────────────────── */
+.info-block {
+  border-left: 3px solid var(--gold);
+  padding: 14px 18px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.9;
+  background: rgba(184,125,10,.03);
+  letter-spacing: .03em;
+}
+.info-block strong { color: var(--ink); }
+
+.info-row { display: flex; gap: 12px; }
+.info-n {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  color: var(--gold);
+  width: 18px;
+  flex-shrink: 0;
+  line-height: 1.7;
+}
+
+/* ── Success ─────────────────────────────────────────────────────────────── */
+.success-wrap { text-align: center; padding: 36px 28px 40px; }
+
+.success-word {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 80px;
+  letter-spacing: .08em;
+  color: var(--ok);
+  line-height: 1;
+  margin-bottom: 14px;
+}
+
+.success-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  letter-spacing: .1em;
+  margin-bottom: 8px;
+}
+
+.success-sub {
+  font-family: 'Courier Prime', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 28px;
+  line-height: 1.8;
+  letter-spacing: .03em;
+}
+
+/* ── Restaurant field ────────────────────────────────────────────────────── */
+.form-block { margin-bottom: 22px; }
+
+.form-label {
+  font-family: 'Courier Prime', monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.form-input {
+  font-family: 'Courier Prime', monospace;
+  font-size: 14px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--ink);
+  background: var(--bg);
+  color: var(--ink);
+  outline: none;
+  border-radius: 0;
+  width: 100%;
+  max-width: 340px;
+  transition: box-shadow .1s;
+  letter-spacing: .04em;
+}
+.form-input:focus { box-shadow: 3px 3px 0 var(--ink); }
+.form-input.has-value { border-color: var(--ok); }
+
+.form-hint {
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 5px;
+  letter-spacing: .02em;
+}
+
+/* ── Restaurant grid ─────────────────────────────────────────────────────── */
+.rest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.rest-card {
+  background: var(--card);
+  border: 1.5px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  padding: 22px 24px 18px;
+  cursor: pointer;
+  transition: transform .1s, box-shadow .1s;
+  user-select: none;
+}
+.rest-card:hover {
+  transform: translate(-2px,-2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.rest-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 30px;
+  letter-spacing: .07em;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 6px;
+  word-break: break-all;
+}
+.rest-count {
+  font-family: 'Courier Prime', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .04em;
+}
+.rest-card-new {
+  border-style: dashed;
+  border-color: var(--line);
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+  gap: 4px;
+}
+.rest-card-new:hover {
+  border-color: var(--ink);
+  border-style: solid;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.rest-new-plus {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  line-height: 1;
+  color: var(--muted);
+  transition: color .15s;
+}
+.rest-card-new:hover .rest-new-plus { color: var(--ink); }
+.rest-new-label {
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color .15s;
+}
+.rest-card-new:hover .rest-new-label { color: var(--ink); }
+.rest-empty {
+  font-family: 'Courier Prime', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .06em;
+  grid-column: 1 / -1;
+  padding: 8px 0;
+}
+
+/* ── Restaurant context bar ──────────────────────────────────────────────── */
+.rest-ctx {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 0 14px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.rest-ctx-lbl {
+  font-family: 'Courier Prime', monospace;
+  font-size: 9px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.rest-ctx-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: .08em;
+  color: var(--gold);
+  line-height: 1;
+}
+
+/* ── Visibility ──────────────────────────────────────────────────────────── */
+[data-section]         { display: none; }
+[data-section].visible { display: block; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sb-header">
+      <div class="sb-brand">Загрузка меню</div>
+      <div class="sb-sub">f2m engine</div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-label">Процесс</div>
+      <div class="step-item active" id="nav-restaurant">
+        <div class="step-num">00</div><div>Ресторан</div>
+      </div>
+      <div class="step-item locked" id="nav-upload">
+        <div class="step-num">01</div><div>Загрузка файла</div>
+      </div>
+      <div class="step-item locked" id="nav-mapping">
+        <div class="step-num">02</div><div>Маппинг колонок</div>
+      </div>
+      <div class="step-item locked" id="nav-preview">
+        <div class="step-num">03</div><div>Предпросмотр</div>
+      </div>
+      <div class="step-item locked" id="nav-load">
+        <div class="step-num">04</div><div>Загрузка в движок</div>
+      </div>
+    </div>
+
+    <hr class="sb-divider">
+
+    <div class="sb-section" style="padding-top:14px">
+      <div class="sb-label">Действия</div>
+      <div class="action-item" onclick="reannotate()">
+        <span class="action-icon">↻</span> Переаннотировать
+      </div>
+      <div class="action-item" onclick="window.location='/api/template'">
+        <span class="action-icon">↓</span> Шаблон Excel
+      </div>
+    </div>
+
+    <div class="sb-status">
+      <div class="sb-rest-name">
+        <span id="status-restaurant">—</span>
+      </div>
+      <div class="sb-count" id="status-count">—</div>
+      <div class="sb-count-sub" id="status-sub">загрузка...</div>
+    </div>
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────────────────────────── -->
+  <main class="main">
+    <div class="page-title" id="page-title">Рестораны</div>
+    <div class="page-rule"></div>
+    <div class="page-sub" id="page-sub">Выберите ресторан для обновления меню</div>
+
+    <!-- Step 0 · Restaurant picker ───────────────────────────────────────── -->
+    <div data-section="restaurant" class="visible">
+      <div class="rest-grid" id="restaurant-grid">
+        <div class="rest-empty">Загрузка списка ресторанов...</div>
+      </div>
+    </div>
+
+    <!-- Step 1 · Upload ──────────────────────────────────────────────────── -->
+    <div data-section="upload">
+      <div class="rest-ctx" id="rest-ctx" style="display:none">
+        <div class="rest-ctx-lbl">Ресторан</div>
+        <div class="rest-ctx-name" id="rest-ctx-name"></div>
+        <button class="btn btn-ghost" style="font-size:12px;padding:5px 14px;margin-left:auto" onclick="backToRestaurants()">← Сменить</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Загрузите файл меню</div>
+        <div class="form-block">
+          <label class="form-label" for="restaurant-input">Ресторан *</label>
+          <input type="text" id="restaurant-input" class="form-input"
+                 placeholder="например: main, rest_001, peredelkino"
+                 autocomplete="off" spellcheck="false"
+                 oninput="this.classList.toggle('has-value', !!this.value.trim())">
+          <div class="form-hint">Идентификатор ресторана — латиница, цифры, _ и -</div>
+        </div>
+        <input type="file" id="file-input" accept=".xlsx,.xls,.csv" style="display:none">
+        <div class="upload-zone" id="drop-zone">
+          <div class="up-label">Перетащите или выберите</div>
+          <div class="up-rule"></div>
+          <div class="up-title">Excel или CSV файл с меню</div>
+          <div class="up-types">.xlsx &nbsp;·&nbsp; .xls &nbsp;·&nbsp; .csv</div>
+          <button class="btn-upload" onclick="event.stopPropagation(); document.getElementById('file-input').click()">Выбрать файл</button>
+        </div>
+        <div id="upload-error"></div>
+      </div>
+
+      <div class="card" style="padding:18px 28px">
+        <div class="info-block">
+          <strong>Что происходит после загрузки:</strong><br>
+          <div class="info-row"><span class="info-n">1</span><span>Парсим файл, определяем колонки</span></div>
+          <div class="info-row"><span class="info-n">2</span><span>Сопоставляете колонки с полями движка</span></div>
+          <div class="info-row"><span class="info-n">3</span><span>Просматриваете результат</span></div>
+          <div class="info-row"><span class="info-n">4</span><span>Нажимаете «Загрузить» — файл уходит на сервер, движок аннотирует (~30с), кэш сбрасывается</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 · Mapping ─────────────────────────────────────────────────── -->
+    <div data-section="mapping">
+      <div id="file-info-bar"></div>
+      <div class="card">
+        <div class="card-title">Сопоставление колонок</div>
+        <p style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--muted);margin-bottom:20px;line-height:1.9;letter-spacing:.04em">
+          Укажите какой колонке из вашего файла соответствует каждое поле движка.
+          Система попыталась подобрать автоматически — проверьте.
+        </p>
+        <table class="mapping-table">
+          <thead>
+            <tr>
+              <th>Поле движка</th>
+              <th>Колонка в файле</th>
+            </tr>
+          </thead>
+          <tbody id="mapping-rows"></tbody>
+        </table>
+        <div class="btn-row">
+          <button class="btn btn-ink" onclick="goPreview()">Предпросмотр →</button>
+          <button class="btn btn-ghost" onclick="goStep('upload')">← Назад</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 · Preview ────────────────────────────────────────────────── -->
+    <div data-section="preview">
+      <div id="file-info-bar2"></div>
+      <div id="preview-alerts"></div>
+      <div class="card">
+        <div class="card-title">
+          Предпросмотр данных
+          <span id="preview-count" class="badge badge-blue"></span>
+        </div>
+        <div class="preview-wrap">
+          <table class="preview-table" id="preview-table">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ok" id="btn-load" onclick="doLoad()">Загрузить в движок ✓</button>
+          <button class="btn btn-ghost" onclick="goStep('mapping')">← Маппинг</button>
+          <button class="btn btn-ghost" onclick="goStep('upload')">Другой файл</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 · Loading ────────────────────────────────────────────────── -->
+    <div data-section="load">
+      <div class="card">
+        <div class="card-title" id="load-title">
+          <span class="spinner"></span> Загрузка...
+        </div>
+        <div class="log-box" id="log-box"></div>
+        <div class="btn-row" id="load-actions" style="display:none">
+          <button class="btn btn-ghost" onclick="goStep('upload')">Загрузить другой файл</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 · Done ───────────────────────────────────────────────────── -->
+    <div data-section="done">
+      <div class="card">
+        <div class="success-wrap">
+          <div class="success-word">ГОТОВО</div>
+          <div class="success-title" id="done-title">Меню загружено!</div>
+          <div class="success-sub" id="done-sub"></div>
+          <button class="btn btn-ghost" onclick="resetAll()">Загрузить другое меню</button>
+        </div>
+      </div>
+      <div class="card" id="done-log-card" style="display:none">
+        <div class="card-title">Лог операции</div>
+        <div class="log-box" id="done-log-box"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Reannotate restaurant picker overlay -->
+<div id="reannotate-overlay" style="display:none; position:fixed; inset:0; background:rgba(12,9,4,0.72); z-index:900; align-items:center; justify-content:center;">
+  <div style="background:var(--card); border:1.5px solid var(--ink); box-shadow:8px 8px 0 var(--ink); padding:28px 32px; max-width:420px; width:90%;">
+    <div style="font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:.08em; color:var(--ink); margin-bottom:6px;">Выберите ресторан</div>
+    <div style="font-size:11px; color:var(--muted); margin-bottom:18px; font-family:'Courier Prime',monospace;">AI заново проанализирует все блюда выбранного ресторана</div>
+    <div id="reannotate-rest-list" style="margin-bottom:20px;"></div>
+    <button class="btn btn-ghost" onclick="document.getElementById('reannotate-overlay').style.display='none'">Отмена</button>
+  </div>
+</div>
+
+<script>
+const state = {
+  fileId: null, filename: null, columns: [], totalRows: 0,
+  mapping: {}, taskId: null, pollTimer: null, restaurant: '',
+};
+
+const FIELDS = {{ fields | tojson }};
+
+document.addEventListener('DOMContentLoaded', () => {
+  setupDropzone();
+  loadEngineStatus();
+  loadRestaurants();
+});
+
+// ── Restaurant picker ──────────────────────────────────────────────────────
+function loadRestaurants() {
+  fetch('/api/restaurants')
+    .then(r => r.json())
+    .then(data => renderRestaurantGrid(Array.isArray(data) ? data : []))
+    .catch(() => renderRestaurantGrid([]));
+}
+
+function renderRestaurantGrid(rows) {
+  const grid = document.getElementById('restaurant-grid');
+  let html = '';
+  if (rows.length === 0) {
+    html += '<div class="rest-empty">Рестораны не найдены — добавьте первый</div>';
+  } else {
+    html += rows.map(r => `
+      <div class="rest-card" onclick="selectRestaurant('${esc(r.restaurant)}')">
+        <div class="rest-name">${esc(r.restaurant)}</div>
+        <div class="rest-count">${r.dish_count} блюд</div>
+      </div>`).join('');
+  }
+  html += `<div class="rest-card rest-card-new" onclick="selectRestaurant('')">
+    <div class="rest-new-plus">+</div>
+    <div class="rest-new-label">Новый ресторан</div>
+  </div>`;
+  grid.innerHTML = html;
+}
+
+function selectRestaurant(name) {
+  state.restaurant = name;
+  const input = document.getElementById('restaurant-input');
+  input.value = name;
+  input.classList.toggle('has-value', !!name);
+  const ctx = document.getElementById('rest-ctx');
+  if (name) {
+    document.getElementById('rest-ctx-name').textContent = name;
+    ctx.style.display = 'flex';
+  } else {
+    ctx.style.display = 'none';
+  }
+  document.getElementById('status-restaurant').textContent = name || '—';
+  goStep('upload');
+  if (name) loadEngineStatus();
+}
+
+function backToRestaurants() {
+  state.restaurant = '';
+  document.getElementById('restaurant-input').value = '';
+  document.getElementById('restaurant-input').classList.remove('has-value');
+  document.getElementById('rest-ctx').style.display = 'none';
+  document.getElementById('status-restaurant').textContent = '—';
+  goStep('restaurant');
+}
+
+// ── Engine status ──────────────────────────────────────────────────────────
+function loadEngineStatus() {
+  const param = state.restaurant ? `?restaurant=${encodeURIComponent(state.restaurant)}` : '';
+  fetch(`/api/status${param}`)
+    .then(r => r.json())
+    .then(d => {
+      document.getElementById('status-count').textContent = d.count ? `${d.count} блюд` : '—';
+      document.getElementById('status-sub').textContent   = d.last_updated
+        ? `Обновлено ${d.last_updated}`
+        : (d.error || 'нет данных');
+    })
+    .catch(() => { document.getElementById('status-sub').textContent = 'недоступен'; });
+}
+
+// ── Dropzone ───────────────────────────────────────────────────────────────
+function setupDropzone() {
+  const zone  = document.getElementById('drop-zone');
+  const input = document.getElementById('file-input');
+  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0]);
+  });
+  zone.addEventListener('click', () => input.click());
+  input.addEventListener('change', () => { if (input.files[0]) uploadFile(input.files[0]); });
+}
+
+function uploadFile(file) {
+  document.getElementById('upload-error').innerHTML = '';
+  const restaurant = document.getElementById('restaurant-input').value.trim();
+  if (!restaurant) {
+    document.getElementById('upload-error').innerHTML =
+      `<div class="alert alert-error" style="margin-top:12px">⚠ Укажите идентификатор ресторана</div>`;
+    document.getElementById('restaurant-input').focus();
+    return;
+  }
+  state.restaurant = restaurant;
+  const zone = document.getElementById('drop-zone');
+  zone.innerHTML = '<div class="up-label" style="padding:32px 0">⏳&nbsp; Читаю файл...</div>';
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fetch('/api/upload', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(d => {
+      if (d.error) {
+        resetDropzone();
+        document.getElementById('upload-error').innerHTML =
+          `<div class="alert alert-error" style="margin-top:12px">⚠ ${d.error}</div>`;
+        return;
+      }
+      state.fileId   = d.file_id;
+      state.filename = d.filename;
+      state.columns  = d.columns;
+      state.totalRows= d.total_rows;
+      state.mapping  = d.auto_mapping || {};
+      buildMapping(d.columns, state.mapping);
+      goStep('mapping');
+    })
+    .catch(() => {
+      resetDropzone();
+      document.getElementById('upload-error').innerHTML =
+        `<div class="alert alert-error" style="margin-top:12px">⚠ Ошибка соединения</div>`;
+    });
+}
+
+function resetDropzone() {
+  document.getElementById('drop-zone').innerHTML = `
+    <div class="up-label">Перетащите или выберите</div>
+    <div class="up-rule"></div>
+    <div class="up-title">Excel или CSV файл с меню</div>
+    <div class="up-types">.xlsx &nbsp;·&nbsp; .xls &nbsp;·&nbsp; .csv</div>
+    <button class="btn-upload" onclick="event.stopPropagation(); document.getElementById('file-input').click()">Выбрать файл</button>`;
+}
+
+// ── Mapping ────────────────────────────────────────────────────────────────
+function buildMapping(columns, auto) {
+  const tbody = document.getElementById('mapping-rows');
+  tbody.innerHTML = '';
+  FIELDS.forEach(f => {
+    const sel = document.createElement('select');
+    sel.className = 'col-select';
+    sel.id = `map-${f.key}`;
+
+    const blank = document.createElement('option');
+    blank.value = ''; blank.textContent = '— не используется —';
+    sel.appendChild(blank);
+
+    columns.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c.length > 52 ? c.slice(0,49) + '…' : c;
+      sel.appendChild(opt);
+    });
+
+    if (auto[f.key]) sel.value = auto[f.key];
+    if (sel.value) sel.classList.add('mapped');
+
+    sel.addEventListener('change', () => {
+      sel.classList.toggle('mapped', !!sel.value);
+      state.mapping[f.key] = sel.value;
+    });
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <div class="field-name">${f.label}${f.required ? '<span class="field-req"> *</span>' : ''}</div>
+        <div class="field-hint">${f.hint}</div>
+      </td>
+      <td></td>`;
+    tr.querySelector('td:last-child').appendChild(sel);
+    tbody.appendChild(tr);
+  });
+  setFileInfoBar('#file-info-bar');
+}
+
+// ── Preview ────────────────────────────────────────────────────────────────
+function goPreview() {
+  FIELDS.forEach(f => {
+    const sel = document.getElementById(`map-${f.key}`);
+    if (sel) state.mapping[f.key] = sel.value;
+  });
+  for (const f of FIELDS.filter(f => f.required)) {
+    if (!state.mapping[f.key]) { alert(`Нужно выбрать колонку для поля "${f.label}"`); return; }
+  }
+  fetch('/api/preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file_id: state.fileId, mapping: state.mapping }),
+  })
+    .then(r => r.json())
+    .then(d => { if (d.error) { alert(d.error); return; } buildPreviewTable(d); goStep('preview'); });
+}
+
+function buildPreviewTable(data) {
+  const alertsEl = document.getElementById('preview-alerts');
+  alertsEl.innerHTML = '';
+  data.errors.forEach(e => { alertsEl.innerHTML += `<div class="alert alert-error">⚠ ${e}</div>`; });
+  data.warnings.forEach(w => { alertsEl.innerHTML += `<div class="alert alert-warning">⚡ ${w}</div>`; });
+
+  const shown = Math.min(data.rows.length, 20);
+  document.getElementById('preview-count').textContent = `${shown} из ${data.total}`;
+
+  const table        = document.getElementById('preview-table');
+  const activeFields = FIELDS.filter(f => state.mapping[f.key]);
+
+  table.querySelector('thead').innerHTML =
+    '<tr>' + activeFields.map(f => `<th>${f.label}</th>`).join('') + '</tr>';
+
+  table.querySelector('tbody').innerHTML = data.rows.slice(0, shown).map(row =>
+    '<tr>' + activeFields.map(f => {
+      const v = row[f.key];
+      if (!v) return `<td><span class="cell-empty">—</span></td>`;
+      if (f.key === 'dish_id') return `<td><span class="cell-ok">${esc(v)}</span></td>`;
+      return `<td title="${esc(v)}">${esc(v.length > 60 ? v.slice(0,57) + '…' : v)}</td>`;
+    }).join('') + '</tr>'
+  ).join('');
+
+  const hasErrors = data.errors.length > 0;
+  const btn = document.getElementById('btn-load');
+  btn.disabled = hasErrors;
+  if (hasErrors) btn.textContent = 'Исправьте ошибки';
+  setFileInfoBar('#file-info-bar2');
+}
+
+// ── Load ───────────────────────────────────────────────────────────────────
+function doLoad() {
+  goStep('load');
+  document.getElementById('load-title').innerHTML = '<span class="spinner"></span> Загрузка в движок...';
+  fetch('/api/load', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file_id: state.fileId, mapping: state.mapping, restaurant: state.restaurant }),
+  })
+    .then(r => r.json())
+    .then(d => { if (d.error) { showLoadError(d.error); return; } state.taskId = d.task_id; pollTask(); })
+    .catch(e => showLoadError(String(e)));
+}
+
+function pollTask() {
+  if (!state.taskId) return;
+  fetch(`/api/task/${state.taskId}`)
+    .then(r => r.json())
+    .then(d => {
+      const box = document.getElementById('log-box');
+      box.innerHTML = d.log.map(line => {
+        const cls = line.startsWith('❌') ? 'err' : (line.startsWith('✅') || line.startsWith('🎉')) ? 'ok' : '';
+        return `<div class="log-line ${cls}">${esc(line)}</div>`;
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+      if (d.status === 'done')  { showDone(d); loadEngineStatus(); }
+      else if (d.status === 'error') { showLoadError(d.error, d.log); }
+      else { state.pollTimer = setTimeout(pollTask, 1000); }
+    })
+    .catch(() => { state.pollTimer = setTimeout(pollTask, 2000); });
+}
+
+function showDone(task) {
+  document.getElementById('done-title').textContent = `Меню загружено! ${task.dishes} блюд.`;
+  document.getElementById('done-sub').textContent   = 'Аннотация выполнена, данные в базе, кэш сброшен. Рекомендации доступны.';
+  if (task.log && task.log.length) {
+    document.getElementById('done-log-box').innerHTML = task.log.map(l => `<div class="log-line">${esc(l)}</div>`).join('');
+    document.getElementById('done-log-card').style.display = '';
+  }
+  goStep('done');
+}
+
+function showLoadError(msg, log) {
+  document.getElementById('load-title').innerHTML = '❌ Ошибка';
+  const box = document.getElementById('log-box');
+  if (log) box.innerHTML = log.map(l => `<div class="log-line ${l.startsWith('❌') ? 'err' : ''}">${esc(l)}</div>`).join('');
+  box.innerHTML += `<div class="log-line err" style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08)">${esc(msg)}</div>`;
+  box.scrollTop = box.scrollHeight;
+  document.getElementById('load-actions').style.display = '';
+}
+
+// ── Reannotate ─────────────────────────────────────────────────────────────
+function reannotate() {
+  const listEl = document.getElementById('reannotate-rest-list');
+  listEl.innerHTML = '<div style="font-size:11px;color:var(--muted);font-family:\'Courier Prime\',monospace;">Загружаю список...</div>';
+  document.getElementById('reannotate-overlay').style.display = 'flex';
+
+  fetch('/api/restaurants')
+    .then(r => r.json())
+    .then(rows => {
+      if (!rows.length) {
+        listEl.innerHTML = '<div style="font-size:12px;color:var(--muted);font-family:\'Courier Prime\',monospace;">Нет ресторанов с меню в базе</div>';
+        return;
+      }
+      listEl.innerHTML = rows.map(r => `
+        <div class="rest-card" style="margin-bottom:10px;cursor:pointer;"
+             onclick="doReannotate('${r.restaurant.replace(/'/g, "\\'")}')">
+          <div class="rest-name">${r.restaurant}</div>
+          <div class="rest-count">${r.dish_count} блюд</div>
+        </div>`).join('');
+    })
+    .catch(() => {
+      listEl.innerHTML = '<div style="font-size:12px;color:var(--muted);font-family:\'Courier Prime\',monospace;">Не удалось загрузить список ресторанов</div>';
+    });
+}
+
+function doReannotate(restaurant) {
+  document.getElementById('reannotate-overlay').style.display = 'none';
+  goStep('load');
+  document.getElementById('load-title').innerHTML = `<span class="spinner"></span> Переаннотация ${restaurant}...`;
+  fetch('/api/reannotate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ restaurant }),
+  })
+    .then(r => r.json())
+    .then(d => { if (d.error) { showLoadError(d.error); return; } state.taskId = d.task_id; pollTask(); })
+    .catch(e => showLoadError(String(e)));
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+function goStep(step) {
+  document.querySelectorAll('[data-section]').forEach(el => el.classList.remove('visible'));
+  document.querySelector(`[data-section="${step}"]`).classList.add('visible');
+
+  const pageTitles = {
+    restaurant: 'Рестораны',
+    upload:  state.restaurant ? `Меню · ${state.restaurant}` : 'Загрузка меню',
+    mapping: 'Маппинг колонок',
+    preview: 'Предпросмотр',
+    load:    'Загрузка...',
+    done:    'Готово',
+  };
+  const pageSubs = {
+    restaurant: 'Выберите ресторан для обновления меню',
+    upload:  'f2m engine admin',
+    mapping: 'f2m engine admin',
+    preview: 'f2m engine admin',
+    load:    '',
+    done:    '',
+  };
+  document.getElementById('page-title').textContent = pageTitles[step] || 'Загрузка меню';
+  document.getElementById('page-sub').textContent   = pageSubs[step] ?? '';
+
+  const navSteps = ['restaurant', 'upload', 'mapping', 'preview', 'load'];
+  const idx      = navSteps.indexOf(step);
+  navSteps.forEach((s, i) => {
+    const nav = document.getElementById(`nav-${s}`);
+    if (!nav) return;
+    nav.className = 'step-item';
+    if (i < idx)        nav.classList.add('done');
+    else if (i === idx) nav.classList.add('active');
+    else                nav.classList.add('locked');
+  });
+}
+
+function resetAll() {
+  if (state.pollTimer) clearTimeout(state.pollTimer);
+  state.fileId = null; state.taskId = null; state.mapping = {}; state.restaurant = '';
+  document.getElementById('restaurant-input').value = '';
+  document.getElementById('restaurant-input').classList.remove('has-value');
+  document.getElementById('rest-ctx').style.display = 'none';
+  document.getElementById('status-restaurant').textContent = '—';
+  resetDropzone();
+  loadRestaurants();
+  goStep('restaurant');
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function setFileInfoBar(sel) {
+  const el = document.querySelector(sel);
+  if (!el) return;
+  el.innerHTML = `
+    <div class="file-info">
+      <span>▸</span>
+      <span class="file-name">${esc(state.filename)}</span>
+      <span class="file-meta">${state.totalRows} строк · ${state.columns.length} колонок</span>
+    </div>`;
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

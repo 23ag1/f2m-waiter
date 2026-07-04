@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  rec-engine:
+    build: .
+    restart: unless-stopped
+    command:
+      - python
+      - -m
+      - f2m_engine.cli
+      - serve-api
+      - --dsn
+      - postgresql://${X5_DB_USER}:${X5_DB_PASSWORD}@${X5_DB_HOST}:${X5_DB_PORT}/${X5_DB_NAME}
+      - --derived
+      - /app/data/derived
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - engine_data:/app/data/derived
+    ports:
+      - "127.0.0.1:${ENGINE_PORT:-1488}:8000"
+
+volumes:
+  engine_data:

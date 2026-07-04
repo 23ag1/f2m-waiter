@@ -1,0 +1,14 @@
+# Local deployment overrides.
+# The committed compose bakes the production host (195.225.110.250:8200) into the
+# frontend builds. For a local stack the browser must reach the LOCAL nginx, so we
+# rebuild the web apps against http://localhost:8200 instead.
+services:
+  waiter-web:
+    build:
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8200/api/v1
+
+  ai-menu:
+    build:
+      args:
+        VITE_F2M_ENGINE_URL: http://localhost:8200/api/engine

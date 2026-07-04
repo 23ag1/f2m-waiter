@@ -1,0 +1,18 @@
+dish_id,bucket,bucket_reason,b_name_raw,b_kcal,b_prot,b_fat,b_carb,b_weight_g
+635,NOT_DISH,packaging,Стакан двухслойный,,,,,200
+636,NOT_DISH,packaging,Крышка пол.пит.д/стак.д/гор/хол.нап.,,,,,80
+637,NOT_DISH,packaging,Стакан матовый,,,,,375
+638,NOT_DISH,packaging,Крышка пол.пит.д/стак.д/гор/хол.нап.,,,,,90
+639,NOT_DISH,packaging,"ПЕРЕКР.SEL.Упаковка картонн.16х10х5,5см",,,,,
+640,NOT_DISH,packaging,Стакан двухслойный,,,,,400
+641,NOT_DISH,packaging,Стакан бумажный одноразовый односл.,,,,,110
+642,NOT_DISH,packaging,Крышка полимерная одноразов.пит.окр.,,,,,63
+643,NOT_DISH,packaging,ПЕРЕК.SELECT.Стак.двух.бум.диз.зел.,,,,,550
+644,NOT_DISH,packaging,ПЕРЕК.SELECT.Стакан дв.бум.диз.роз.,,,,,450
+645,NOT_DISH,packaging,ПЕРЕК.SELECT Стак.двух.бум.диз.гол.,,,,,250
+599,NOT_DISH,packaging,"COOKING.Молоко питьевое безл.у/п 1,8%",,,,,1
+600,NOT_DISH,packaging,"COOKING.Молоко питьевое безл.у/п 1,8%",,,,,1
+601,NOT_DISH,packaging,Сахар белый кристаллический 332221,,,,,5
+602,NOT_DISH,packaging,POETTI Кофе ESPRESSO IMP.нат.жар.зер.,,,,,1
+612,NOT_DISH,packaging,PREM.Микс-соус СОЛ.КАР. х АР.ав.сух.,,,,,500
+617,NOT_DISH,packaging,PREMIX.Соус АВТОР.ЯБЛ.х ЦВ.БУЗ.сух.,,,,,500

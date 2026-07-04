@@ -1,0 +1,22 @@
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env*
+frontend/*.local
+
+# Engine
+engine/__pycache__/
+engine/**/__pycache__/
+engine/*.pyc
+engine/**/*.pyc
+engine/.env
+engine/.env.*
+engine/.venv/
+engine/data/derived/
+engine/*.egg-info/
+
+# Common
+.DS_Store
+*.bak
+*.bak.*
+*.log

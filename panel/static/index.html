@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food2Mood — Ресторан</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: #f4f5f4; color: #111; display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    :root {
+      --sb-bg: #ffffff;
+      --sb-border: #e8eae8;
+      --sb-text-muted: #9ba69b;
+      --sb-text: #3d4a3d;
+      --sb-hover: #f2f5f2;
+      --sb-active-bg: #eaf4e9;
+      --sb-active-text: #2a6325;
+      --sb-active-icon: #3e7a36;
+      --sb-width: 240px;
+    }
+
+    .sidebar {
+      width: var(--sb-width);
+      min-width: var(--sb-width);
+      background: var(--sb-bg);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      z-index: 100;
+      border-right: 1px solid var(--sb-border);
+    }
+
+    .sidebar-logo {
+      padding: 20px 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      border-bottom: 1px solid var(--sb-border);
+    }
+    .sidebar-logo-mark {
+      width: 32px; height: 32px;
+      background: #3e7a36;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 13px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -0.5px;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .sidebar-logo-text { min-width: 0; }
+    .sidebar-logo-text h1 { font-size: 15px; font-weight: 600; color: #111; letter-spacing: -0.01em; white-space: nowrap; }
+    .sidebar-logo-text p { font-size: 12px; color: #9ba69b; margin-top: 2px; white-space: nowrap; }
+
+    .sidebar-nav {
+      padding: 10px 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .sidebar-nav::-webkit-scrollbar { display: none; }
+
+    .nav-section { margin-top: 18px; }
+    .nav-section:first-child { margin-top: 6px; }
+
+    .nav-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #b0bab0;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      padding: 0 8px;
+      margin-bottom: 4px;
+    }
+
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      background: none;
+      color: var(--sb-text);
+      border: none;
+      padding: 9px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      text-align: left;
+      transition: background 0.12s, color 0.12s;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .tab-btn:hover { background: var(--sb-hover); color: #1a1a1a; }
+    .tab-btn:hover .nav-icon svg { color: #3e7a36; }
+    .tab-btn.active { background: var(--sb-active-bg); color: var(--sb-active-text); font-weight: 600; }
+    .tab-btn.active .nav-icon svg { color: var(--sb-active-icon); }
+
+    .nav-icon {
+      width: 18px; height: 18px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .nav-icon svg { width: 15px; height: 15px; color: #b0bab0; transition: color 0.12s; }
+    .tab-btn.active .nav-icon svg { color: var(--sb-active-icon); }
+
+    .sidebar-footer {
+      padding: 14px 16px;
+      border-top: 1px solid var(--sb-border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-footer-dot {
+      width: 6px; height: 6px;
+      background: #4a9340;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px rgba(74,147,64,0.2);
+      flex-shrink: 0;
+    }
+    .sidebar-footer span { font-size: 11px; color: var(--sb-text-muted); }
+
+    /* ── Main content ── */
+    .main { margin-left: var(--sb-width); flex: 1; min-height: 100vh; }
+    .container { max-width: 1060px; margin: 0 auto; padding: 32px 28px; }
+    .tab-content { display: none; }
+    .tab-content.visible { display: block; }
+
+    .section-title { font-size: 13px; font-weight: 700; color: #3e7a36; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .error-msg { background: #fff0f0; border: 1px solid #ffd0d0; border-radius: 9px; padding: 12px 16px; color: #c00; margin-bottom: 16px; font-size: 12px; }
+
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+    th { background: #f8faf8; text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; border-bottom: 1px solid #eee; }
+    td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+
+    .tag-badge { display: inline-flex; align-items: center; gap: 4px; background: #e8f3e6; color: #2d5c28; border: 1px solid #c6e0c0; border-radius: 12px; padding: 2px 10px; font-size: 11px; cursor: pointer; margin: 2px 3px 2px 0; transition: background 0.15s; }
+    .tag-badge:hover { background: #d4edcf; }
+    .tag-badge .tag-x { font-size: 13px; opacity: 0.55; line-height: 1; margin-left: 1px; }
+    .add-tag-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: #3e7a36; color: white; border: none; border-radius: 50%; font-size: 18px; line-height: 1; cursor: pointer; margin-left: 4px; }
+    .add-tag-btn:hover { background: #2d5c28; }
+    .no-tags { color: #bbb; font-size: 12px; font-style: italic; }
+
+    .sex-badge { display: inline-block; border-radius: 10px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
+    .sex-badge.female { background: #ffe9cc; color: #b85a00; }
+    .sex-badge.male { background: #d6e6fb; color: #1a4e9a; }
+    .taste-profile { color: #3e7a36; font-size: 12px; }
+
+    /* Popup */
+    .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.42); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .popup { background: white; border-radius: 16px; padding: 24px; max-width: 460px; width: 90%; box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
+    .popup h3 { font-size: 15px; font-weight: 700; color: #1a2e1a; margin-bottom: 16px; }
+    .popup-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+    .btn-cancel { background: #f0f0f0; color: #555; border: none; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .btn-cancel:hover { background: #e0e0e0; }
+    .btn-danger { background: #d9534f; color: white; border: none; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .btn-danger:hover { background: #b52b27; }
+    .btn-primary { background: #3e7a36; color: white; border: none; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .btn-primary:hover { background: #2d5c28; }
+
+    .registry-list { max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .registry-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 8px; border: 1px solid #e8f3e6; cursor: pointer; font-size: 13px; color: #2d5c28; }
+    .registry-item:hover { background: #e8f3e6; }
+    .registry-item .axis-label { font-size: 10px; color: #999; }
+    .registry-empty { color: #bbb; font-size: 12px; text-align: center; padding: 20px; }
+    .loading-row td { text-align: center; color: #ccc; padding: 20px; font-size: 13px; }
+
+    /* Recommendations tab */
+    .rec-block { background: white; border-radius: 14px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+    .rec-block-title { font-size: 14px; font-weight: 700; color: #1a2e1a; margin-bottom: 4px; }
+    .rec-block-sub { font-size: 12px; color: #888; margin-bottom: 16px; }
+
+    .priority-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+    .priority-item:last-child { border-bottom: none; }
+    .priority-item .cat { font-size: 11px; color: #888; margin-right: 8px; }
+    .del-btn { background: none; border: none; color: #ccc; font-size: 16px; cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 6px; }
+    .del-btn:hover { color: #d9534f; background: #fff0f0; }
+
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-label { font-size: 13px; font-weight: 600; }
+    .toggle-hint { font-size: 11px; color: #888; margin-top: 2px; }
+    .toggle { position: relative; width: 44px; height: 24px; cursor: pointer; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: #ddd; border-radius: 24px; transition: 0.2s; }
+    .toggle-slider:before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
+    .toggle input:checked + .toggle-slider { background: #3e7a36; }
+    .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+    .set-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+    .set-item:last-child { border-bottom: none; }
+    .set-item .set-cats { font-size: 12px; color: #666; margin-top: 2px; }
+    .set-item .set-actions { display: flex; gap: 8px; align-items: center; }
+    .set-badge-active { background: #e8f3e6; color: #2d5c28; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+    .set-badge-off { background: #f0f0f0; color: #888; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+
+    .rule-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+    .rule-item:last-child { border-bottom: none; }
+    .rule-check { color: #3e7a36; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .rule-lock { color: #888; font-size: 13px; flex-shrink: 0; margin-top: 2px; }
+
+    .stoplist-hint { font-size: 12px; color: #888; font-style: italic; margin-top: 8px; }
+
+    .add-set-form { display: flex; flex-direction: column; gap: 10px; }
+    .add-set-form input, .add-set-form select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; width: 100%; }
+    .cat-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 32px; }
+    .cat-chip { display: inline-flex; align-items: center; gap: 4px; background: #e8f3e6; color: #2d5c28; border: none; border-radius: 10px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+    .cat-chip .chip-x { font-size: 12px; opacity: 0.6; }
+
+    .add-btn { display: inline-flex; align-items: center; gap: 6px; background: #3e7a36; color: white; border: none; padding: 7px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; margin-bottom: 12px; }
+    .add-btn:hover { background: #2d5c28; }
+
+    .popup-select-list { max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+    .popup-select-item { padding: 9px 12px; border-radius: 8px; border: 1px solid #eee; cursor: pointer; font-size: 13px; }
+    .popup-select-item:hover { background: #f0f7ef; border-color: #c6e0c0; }
+    .popup-select-item .item-cat { font-size: 11px; color: #888; margin-right: 6px; }
+    .popup-search { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; margin-bottom: 8px; }
+    .popup-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .popup-tab { background: #f0f0f0; color: #555; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+    .popup-tab.active { background: #3e7a36; color: white; }
+
+    /* ── Form popup ── */
+    .form-popup-header { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .form-popup-icon { width: 36px; height: 36px; background: #eaf4e9; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .form-popup-icon svg { width: 16px; height: 16px; color: #3e7a36; }
+    .form-popup-title { font-size: 15px; font-weight: 600; color: #111; letter-spacing: -0.01em; }
+    .form-popup-sub { font-size: 12px; color: #9ba69b; margin-top: 1px; }
+
+    .form-field { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 12px; font-weight: 500; color: #555; margin-bottom: 5px; }
+    .form-optional { color: #b0bab0; font-weight: 400; }
+    .form-divider { display:flex; align-items:center; gap:10px; margin:8px 0 4px; color:#9ba69b; font-size:12px; font-weight:500; text-transform:uppercase; letter-spacing:.05em; }
+    .form-divider::before, .form-divider::after { content:''; flex:1; height:1px; background:#e8eae8; }
+    .form-input {
+      width: 100%; padding: 9px 12px;
+      font-size: 13px; font-family: inherit;
+      border: 1.5px solid #e8eae8; border-radius: 8px;
+      outline: none; color: #111; background: #fafafa;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      box-sizing: border-box;
+    }
+    .form-input:focus { border-color: #3e7a36; box-shadow: 0 0 0 3px rgba(62,122,54,0.1); background: white; }
+    .form-input::placeholder { color: #c8d0c8; }
+    .form-input-mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; letter-spacing: 0.02em; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .form-toggle-group { display: flex; background: #f2f4f2; border-radius: 8px; padding: 3px; gap: 2px; }
+    .form-toggle {
+      flex: 1; padding: 7px 0; border: none; border-radius: 6px;
+      font-size: 13px; font-weight: 500; font-family: inherit;
+      color: #777; background: none; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .form-toggle.active { background: white; color: #2a6325; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+    .form-actions { display: flex; gap: 8px; margin-top: 20px; }
+    .form-actions .btn-primary { flex: 1; padding: 10px; font-size: 13px; font-weight: 600; }
+    .form-actions .btn-cancel { flex: 1; padding: 10px; font-size: 13px; }
+
+    /* ── Login screen ── */
+    #login-screen {
+      position: fixed; inset: 0;
+      background: #f4f5f4;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .login-card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 360px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.08);
+    }
+    .login-mark {
+      width: 40px; height: 40px;
+      background: #3e7a36;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700; color: white;
+      letter-spacing: -0.5px;
+      margin-bottom: 20px;
+    }
+    .login-card h2 {
+      font-size: 20px; font-weight: 600; color: #111;
+      letter-spacing: -0.02em; margin-bottom: 4px;
+    }
+    .login-card p {
+      font-size: 13px; color: #9ba69b; margin-bottom: 28px;
+    }
+    .login-label {
+      font-size: 12px; font-weight: 500; color: #555;
+      display: block; margin-bottom: 6px;
+    }
+    #login-input {
+      width: 100%;
+      padding: 11px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      border: 1.5px solid #e8eae8;
+      border-radius: 9px;
+      outline: none;
+      color: #111;
+      background: #fafafa;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.04em;
+    }
+    #login-input:focus {
+      border-color: #3e7a36;
+      box-shadow: 0 0 0 3px rgba(62,122,54,0.1);
+      background: white;
+    }
+    #login-error {
+      display: none;
+      font-size: 12px;
+      color: #c0392b;
+      margin-top: 6px;
+    }
+    #login-btn {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      background: #3e7a36;
+      color: white;
+      border: none;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s;
+      letter-spacing: -0.01em;
+    }
+    #login-btn:hover { background: #2d5c28; }
+    #login-btn:disabled { opacity: 0.6; cursor: default; }
+  </style>
+</head>
+<body>
+
+<!-- ── Login screen ── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-mark">F2</div>
+    <h2>Food2Mood</h2>
+    <p>Панель управления рестораном</p>
+    <label class="login-label" for="login-input">Ключ доступа</label>
+    <input id="login-input" type="password" placeholder="••••••••••••" autocomplete="current-password">
+    <div id="login-error">Неверный ключ — попробуйте ещё раз</div>
+    <button id="login-btn" onclick="submitLogin()">Войти</button>
+  </div>
+</div>
+
+<!-- ── App ── -->
+<div id="app-root" style="display:none;flex:1;min-height:100vh">
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-mark">F2</div>
+    <div class="sidebar-logo-text">
+      <h1>Food2Mood</h1>
+      <p>Панель управления</p>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-label">Меню</div>
+      <button class="tab-btn active" onclick="showTab('tags', this)">
+        <span class="nav-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.5 8.5L7.793 3.207A1 1 0 018.5 2.914h3.586A1 1 0 0113 3.914v3.586a1 1 0 01-.293.707L7.5 13.5a1 1 0 01-1.414 0l-3.586-3.586a1 1 0 010-1.414z" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="10.5" cy="5.5" r="0.75" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        Теги меню
+      </button>
+      <button class="tab-btn" onclick="showTab('cvp', this)">
+        <span class="nav-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8" cy="5.5" r="2.5" stroke-linecap="round"/>
+            <path d="M2.5 13.5c0-2.485 2.462-4.5 5.5-4.5s5.5 2.015 5.5 4.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        ЦВП гостей
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Рекомендации</div>
+      <button class="tab-btn" onclick="showTab('rec', this)">
+        <span class="nav-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 4.5h12M2 8h12M2 11.5h12" stroke-linecap="round"/>
+            <circle cx="5" cy="4.5" r="1.5" fill="var(--sb-bg)" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="10" cy="8" r="1.5" fill="var(--sb-bg)" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="6" cy="11.5" r="1.5" fill="var(--sb-bg)" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </span>
+        Настройки
+      </button>
+    </div>
+
+    <div class="nav-section" id="nav-label-iiko" style="display:none">
+      <div class="nav-label">Интеграции</div>
+      <button class="tab-btn" id="tab-btn-iiko" onclick="showTab('iiko', this)" style="display:none">
+        <span class="nav-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="5.5" cy="8" r="3"/>
+            <path d="M7.5 6l5 5M10.5 8.5l2-2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="13" cy="11" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        iiko ключи
+      </button>
+    </div>
+  </nav>
+
+</div>
+
+<div class="main">
+<div class="container">
+
+  <!-- ═══ ТЕГИ МЕНЮ ═══ -->
+  <div id="tab-tags" class="tab-content visible">
+    <div class="section-title">Теги меню</div>
+    <div id="tags-error" style="display:none"></div>
+    <table>
+      <thead><tr><th style="width:160px">Категория</th><th>Блюдо</th><th>Теги</th></tr></thead>
+      <tbody id="tags-body"><tr class="loading-row"><td colspan="3">Загрузка...</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- ═══ ЦВП ГОСТЕЙ ═══ -->
+  <div id="tab-cvp" class="tab-content">
+    <div class="section-title">ЦВП гостей</div>
+    <div id="cvp-error" style="display:none"></div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th style="width:80px">ID</th><th>Имя</th><th style="width:90px">Возраст</th><th style="width:100px">Пол</th><th>Вкусовой профиль</th></tr></thead>
+        <tbody id="cvp-body"><tr class="loading-row"><td colspan="5">Загрузка...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ НАСТРОЙКИ РЕКОМЕНДАЦИЙ ═══ -->
+  <div id="tab-rec" class="tab-content">
+
+    <!-- Блок 1: Приоритетные блюда -->
+    <div class="rec-block">
+      <div class="rec-block-title">Приоритетные блюда</div>
+      <div class="rec-block-sub">Блюда, которые получают преимущество в рекомендациях при прочих равных</div>
+      <button class="add-btn" onclick="openAddPriorityPopup()">+ Добавить блюдо</button>
+      <div id="priority-list"><div style="color:#ccc;font-size:13px">Загрузка...</div></div>
+    </div>
+
+    <!-- Блок 2: Стоп-лист -->
+    <div class="rec-block">
+      <div class="rec-block-title">Исключения (стоп-лист)</div>
+      <div class="rec-block-sub">Блюда, недоступные для рекомендаций</div>
+      <div id="stoplist-content"><div style="color:#ccc;font-size:13px">Загрузка...</div></div>
+      <div class="stoplist-hint">Список управляется автоматически из вашей POS-системы</div>
+    </div>
+
+    <!-- Блок 3: Бизнес-цели -->
+    <div class="rec-block">
+      <div class="rec-block-title">Бизнес-цели</div>
+      <div class="rec-block-sub">Коммерческие приоритеты, которые AI учитывает при формировании рекомендаций</div>
+
+      <div style="border-bottom: 1px solid #eee; margin-bottom: 14px; padding-bottom: 14px;">
+        <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:10px">Переключатели</div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Маржинальные позиции</div>
+            <div class="toggle-hint">Блюда с высокой маржой чаще появляются в рекомендациях при прочих равных</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-margin" onchange="toggleGoal('margin_mode', this.checked)"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Допродажи (модификаторы)</div>
+            <div class="toggle-hint">Предлагать соусы и дополнения к выбранным блюдам из POS</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-upsell" onchange="toggleGoal('upsell_mode', this.checked)"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+
+      <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:10px">Сеты</div>
+      <button class="add-btn" onclick="openAddSetPopup()">+ Создать сет</button>
+      <div id="sets-list"><div style="color:#ccc;font-size:13px">Загрузка...</div></div>
+    </div>
+
+
+  </div>
+
+  <!-- ═══ IIKO КЛЮЧИ ═══ -->
+  <div id="tab-iiko" class="tab-content">
+    <div class="section-title">iiko ключи</div>
+
+    <div class="rec-block">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div class="rec-block-title" style="margin:0">Подключённые рестораны</div>
+          <div class="rec-block-sub" style="margin:0">Ключи для синхронизации с iiko</div>
+        </div>
+        <button class="add-btn" onclick="openIikoKeyPopup()">+ Добавить</button>
+      </div>
+      <div id="iiko-keys-list"><div style="color:#ccc;font-size:13px">Загрузка...</div></div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /.main -->
+</div><!-- /#app-root -->
+
+<div id="popup-root"></div>
+
+<script>
+var ADMIN_KEY = localStorage.getItem('admin_key') || '';
+
+function adminHeaders(json) {
+  var h = {'X-Admin-Key': ADMIN_KEY};
+  if (json) h['Content-Type'] = 'application/json';
+  return h;
+}
+
+function showLoginScreen() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-root').style.display = 'none';
+  setTimeout(function() { document.getElementById('login-input').focus(); }, 50);
+}
+
+function hideLoginScreen() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-root').style.display = 'flex';
+}
+
+// Проверяем любой авторизованный эндпоинт
+function checkKey(k) {
+  return fetch('/api/v1/admin/menu-categories', { headers: { 'X-Admin-Key': k } })
+    .then(function(r) { return r.ok; })
+    .catch(function() { return false; });
+}
+
+function submitLogin() {
+  var k = document.getElementById('login-input').value.trim();
+  if (!k) return;
+  var btn = document.getElementById('login-btn');
+  btn.textContent = '...';
+  btn.disabled = true;
+  checkKey(k).then(function(ok) {
+    if (ok) {
+      ADMIN_KEY = k;
+      localStorage.setItem('admin_key', k);
+      hideLoginScreen();
+      initApp();
+    } else {
+      showLoginError();
+      btn.textContent = 'Войти';
+      btn.disabled = false;
+    }
+  });
+}
+
+function showLoginError() {
+  var err = document.getElementById('login-error');
+  err.style.display = 'block';
+  document.getElementById('login-input').style.borderColor = '#e05252';
+  document.getElementById('login-input').focus();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('login-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') submitLogin();
+    if (e.key !== 'Enter') {
+      document.getElementById('login-error').style.display = 'none';
+      this.style.borderColor = '';
+    }
+  });
+
+  if (ADMIN_KEY) {
+    checkKey(ADMIN_KEY).then(function(ok) {
+      if (ok) { hideLoginScreen(); initApp(); }
+      else { localStorage.removeItem('admin_key'); ADMIN_KEY = ''; showLoginScreen(); }
+    });
+  } else {
+    showLoginScreen();
+  }
+});
+
+// ── Popup ──────────────────────────────────────────────────────────────
+
+function showPopup(html) {
+  document.getElementById('popup-root').innerHTML =
+    '<div class="popup-overlay" id="overlay-bg"><div class="popup">' + html + '</div></div>';
+  document.getElementById('overlay-bg').addEventListener('click', function(e) {
+    if (e.target === this) closePopup();
+  });
+}
+function closePopup() { document.getElementById('popup-root').innerHTML = ''; }
+
+// ── Tabs ───────────────────────────────────────────────────────────────
+
+var cvpLoaded = false, recLoaded = false, iikoLoaded = false;
+
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('visible'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('tab-' + name).classList.add('visible');
+  btn.classList.add('active');
+  localStorage.setItem('active_tab', name);
+  if (name === 'cvp' && !cvpLoaded) { cvpLoaded = true; loadCvp(); }
+  if (name === 'rec' && !recLoaded) { recLoaded = true; loadRec(); }
+  if (name === 'iiko' && !iikoLoaded) { iikoLoaded = true; loadIikoKeys(); }
+}
+
+function initIikoTab() {
+  // Показываем таб iiko только если зашли с team-ключом
+  fetch('/api/v1/admin/iiko-keys', {headers: adminHeaders()})
+    .then(function(r) { return r.ok ? r.json() : {is_team: false}; })
+    .then(function(d) {
+      if (d.is_team) {
+        document.getElementById('tab-btn-iiko').style.display = '';
+        document.getElementById('nav-label-iiko').style.display = '';
+      }
+    });
+}
+
+// ── Utils ──────────────────────────────────────────────────────────────
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Tags ───────────────────────────────────────────────────────────────
+
+var REGISTRY = [];
+var dishTagsMap = {};
+
+function preloadRegistry() {
+  fetch('/api/v1/admin/tag-registry', {headers: adminHeaders()})
+    .then(function(r) { return r.ok ? r.json() : {}; })
+    .then(function(d) { REGISTRY = d.tags || []; })
+    .catch(function() {});
+}
+
+function loadTags() {
+  var tbody = document.getElementById('tags-body');
+  var errEl = document.getElementById('tags-error');
+  if (errEl) errEl.style.display = 'none';
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="3">Загрузка...</td></tr>';
+  fetch('/api/v1/admin/menu-tags', {headers: adminHeaders()})
+    .then(function(r) {
+      if (!r.ok) return r.text().then(function(b) { var d=''; try{d=JSON.parse(b).detail;}catch(e){} throw new Error(d||'HTTP '+r.status); });
+      return r.json();
+    })
+    .then(function(d) { renderTags(d.dishes || []); })
+    .catch(function(e) {
+      errEl.className = 'error-msg'; errEl.textContent = 'Ошибка: ' + e.message; errEl.style.display = 'block';
+      tbody.innerHTML = '<tr class="loading-row"><td colspan="3">Не удалось загрузить</td></tr>';
+    });
+}
+
+function renderTagsCell(did, tags) {
+  var tagsHtml = tags.length
+    ? tags.map(function(tag) {
+        var st = tag.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        return '<span class="tag-badge" onclick="confirmRemoveTag('+did+','+escHtml(JSON.stringify(st))+')">' + escHtml(tag) + '<span class="tag-x">&#x2715;</span></span>';
+      }).join('')
+    : '<span class="no-tags">Теги не назначены</span>';
+  var tagsJson = JSON.stringify(tags).replace(/"/g,'&quot;');
+  return tagsHtml + '<button class="add-tag-btn" title="Добавить тег" onclick="openAddTagPopup(\''+did+'\','+tagsJson+')">+</button>';
+}
+
+function updateDishTagsCell(dishId) {
+  var row = document.querySelector('#tags-body tr[data-dish-id="'+dishId+'"]');
+  if (row) row.cells[2].innerHTML = renderTagsCell(dishId, dishTagsMap[dishId] || []);
+}
+
+function renderTags(dishes) {
+  var tbody = document.getElementById('tags-body');
+  if (!dishes.length) { tbody.innerHTML = '<tr class="loading-row"><td colspan="3">Блюда не найдены</td></tr>'; return; }
+  tbody.innerHTML = dishes.map(function(dish) {
+    var did = dish.dish_id;
+    var tags = dish.tags || [];
+    dishTagsMap[did] = tags;
+    return '<tr data-dish-id="'+did+'"><td style="color:#888;font-size:12px">'+escHtml(dish.category||'')+'</td><td style="font-weight:600">'+escHtml(dish.name||'')+'</td><td>'+renderTagsCell(did, tags)+'</td></tr>';
+  }).join('');
+}
+
+function confirmRemoveTag(dishId, tag) {
+  showPopup('<h3>Удалить тег?</h3><p style="font-size:13px;color:#555">Удалить тег <strong>'+escHtml(tag)+'</strong>?</p><div class="popup-actions"><button class="btn-cancel" onclick="closePopup()">Отмена</button><button class="btn-danger" id="do-rm">Удалить</button></div>');
+  document.getElementById('do-rm').addEventListener('click', function() { doRemoveTag(dishId, tag); });
+}
+
+function doRemoveTag(dishId, tag) {
+  closePopup();
+  fetch('/api/v1/admin/menu-tags/'+encodeURIComponent(dishId)+'/remove-tag?tag='+encodeURIComponent(tag), {method:'DELETE', headers:adminHeaders()})
+    .then(function(r) {
+      if (!r.ok) throw new Error('Ошибка '+r.status);
+      dishTagsMap[dishId] = (dishTagsMap[dishId] || []).filter(function(t) { return t !== tag; });
+      updateDishTagsCell(dishId);
+    })
+    .catch(function(e) { var el=document.getElementById('tags-error'); el.className='error-msg'; el.textContent='Не удалось удалить: '+e.message; el.style.display='block'; });
+}
+
+function openAddTagPopup(dishId, currentTags) {
+  var available = REGISTRY.filter(function(i) { return currentTags.indexOf(i.tag) === -1; });
+  var listHtml = available.length
+    ? available.map(function(i) { return '<div class="registry-item" data-tag="'+escHtml(i.tag)+'" data-dish="'+escHtml(String(dishId))+'"><span>'+escHtml(i.tag)+'</span><span class="axis-label">'+escHtml(i.axis||'')+'</span></div>'; }).join('')
+    : '<div class="registry-empty">Все теги уже назначены</div>';
+  showPopup('<h3>Добавить тег</h3><div class="registry-list" id="reg-list">'+listHtml+'</div><div class="popup-actions"><button class="btn-cancel" onclick="closePopup()">Закрыть</button></div>');
+  var regList = document.getElementById('reg-list');
+  if (regList) regList.addEventListener('click', function(e) {
+    var item = e.target.closest('.registry-item');
+    if (item) doAddTag(item.getAttribute('data-dish'), item.getAttribute('data-tag'));
+  });
+}
+
+function doAddTag(dishId, tag) {
+  closePopup();
+  fetch('/api/v1/admin/menu-tags/'+encodeURIComponent(dishId)+'/add-tag', {method:'POST', headers:adminHeaders(true), body:JSON.stringify({tag:tag})})
+    .then(function(r) {
+      if (!r.ok) throw new Error('Ошибка '+r.status);
+      if ((dishTagsMap[dishId] || []).indexOf(tag) === -1) {
+        dishTagsMap[dishId] = (dishTagsMap[dishId] || []).concat([tag]);
+      }
+      updateDishTagsCell(dishId);
+    })
+    .catch(function(e) { var el=document.getElementById('tags-error'); el.className='error-msg'; el.textContent='Не удалось добавить: '+e.message; el.style.display='block'; });
+}
+
+// ── CVP ────────────────────────────────────────────────────────────────
+
+function loadCvp() {
+  var tbody = document.getElementById('cvp-body');
+  var errEl = document.getElementById('cvp-error');
+  errEl.style.display = 'none';
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="5">Загрузка...</td></tr>';
+  fetch('/api/v1/admin/cvp-profiles', {headers: adminHeaders()})
+    .then(function(r) { if (!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(d) { renderCvp(d.profiles || []); })
+    .catch(function(e) { errEl.className='error-msg'; errEl.textContent='Ошибка: '+e.message; errEl.style.display='block'; tbody.innerHTML='<tr class="loading-row"><td colspan="5">Ошибка</td></tr>'; });
+}
+
+function sexBadge(sex) {
+  var f = ['female','Женщина','ж','f','F'];
+  var m = ['male','Мужчина','м','m','M'];
+  if (f.indexOf(sex) !== -1) return '<span class="sex-badge female">Женщина</span>';
+  if (m.indexOf(sex) !== -1) return '<span class="sex-badge male">Мужчина</span>';
+  return '<span style="color:#ccc">—</span>';
+}
+
+function renderCvp(profiles) {
+  var tbody = document.getElementById('cvp-body');
+  if (!profiles.length) { tbody.innerHTML='<tr class="loading-row"><td colspan="5">Профили гостей не найдены</td></tr>'; return; }
+  tbody.innerHTML = profiles.map(function(p) {
+    return '<tr><td style="font-weight:700;color:#3e7a36;font-size:12px">'+escHtml(String(p.user_id||''))+'</td><td>'+escHtml(p.fio||'—')+'</td><td style="color:#555">'+escHtml(p.age||'—')+'</td><td>'+sexBadge(p.sex)+'</td><td><span class="taste-profile">'+escHtml(p.taste_profile||'—')+'</span></td></tr>';
+  }).join('');
+}
+
+// ── Recommendations ────────────────────────────────────────────────────
+
+var menuList = [], menuCategories = [];
+
+function loadRec() {
+  loadPriorityDishes();
+  loadStopList();
+  loadBusinessGoals();
+  loadSets();
+  loadRules();
+  // preload menu list and categories for popups
+  fetch('/api/v1/admin/menu-list', {headers: adminHeaders()})
+    .then(function(r) { return r.ok ? r.json() : {}; })
+    .then(function(d) { menuList = d.dishes || []; });
+  fetch('/api/v1/admin/menu-categories', {headers: adminHeaders()})
+    .then(function(r) { return r.ok ? r.json() : {}; })
+    .then(function(d) { menuCategories = d.categories || []; });
+}
+
+// Priority dishes
+
+function loadPriorityDishes() {
+  fetch('/api/v1/admin/priority-dishes', {headers: adminHeaders()})
+    .then(function(r) { return r.ok ? r.json() : {dishes:[], priority_ingredients:[]}; })
+    .then(function(d) { renderPriorityDishes(d.dishes || [], d.priority_ingredients || []); });
+}
+
+function renderPriorityDishes(dishes, ingredients) {
+  var el = document.getElementById('priority-list');
+  ingredients = ingredients || [];
+  var ingredientHtml = ingredients.map(function(ing) {
+    return '<div class="priority-item"><span><span class="cat">ingredient</span>'+escHtml(ing)+'</span><button class="del-btn" onclick="removePriorityIngredient('+escHtml(JSON.stringify(ing))+')">&#x2715;</button></div>';
+  }).join('');
+  if (!dishes.length && ingredients.length) { el.innerHTML = ingredientHtml; return; }
+  if (!dishes.length) { el.innerHTML = '<div style="color:#bbb;font-size:13px;font-style:italic">Приоритетные блюда не добавлены</div>'; return; }
+  el.innerHTML = dishes.map(function(d) {
+    return '<div class="priority-item"><span><span class="cat">'+escHtml(d.category||'')+'</span>'+escHtml(d.name||'ID '+d.dish_id)+'</span><button class="del-btn" onclick="removePriorityDish('+d.dish_id+')">&#x2715;</button></div>';
+  }).join('');
+  if (ingredientHtml) el.innerHTML += ingredientHtml;
+}
+
+function removePriorityDish(dishId) {
+  fetch('/api/v1/admin/priority-dishes/'+dishId, {method:'DELETE', headers:adminHeaders()})
+    .then(function() { loadPriorityDishes(); });
+}
+
+function removePriorityIngredient(ingredient) {
+  fetch('/api/v1/admin/priority-ingredients/'+encodeURIComponent(ingredient), {method:'DELETE', headers:adminHeaders()})
+    .then(function() { loadPriorityDishes(); });
+}
+
+function openAddPriorityPopup() {
+  var priorityIds = [];
+  // get current priority ids first
+  fetch('/api/v1/admin/priority-dishes', {headers: adminHeaders()})
+    .then(function(r) { return r.ok ? r.json() : {dishes:[]}; })
+    .then(function(d) {
+      priorityIds = (d.dishes || []).map(function(x) { return x.dish_id; });
+      showAddPriorityPopupInner(priorityIds);
+    });
+}
+
+function showAddPriorityPopupInner(priorityIds) {
+  _popupPriorityIds = priorityIds;
+  showPopup(
+    '<h3>Добавить приоритетное блюдо</h3>' +
+    '<div class="popup-tabs">' +
+      '<button class="popup-tab active" id="ptab-dish" onclick="switchPTab(\'dish\')">Выбрать блюдо</button>' +
+      '<button class="popup-tab" id="ptab-ing" onclick="switchPTab(\'ing\')">По ингредиенту</button>' +
+    '</div>' +
+    '<div id="ptab-dish-content">' +
+      '<input class="popup-search" id="dish-search" placeholder="Поиск блюда..." oninput="filterDishList()" />' +
+      '<div class="popup-select-list" id="dish-select-list"></div>' +
+    '</div>' +
+    '<div id="ptab-ing-content" style="display:none">' +
+      '<input class="popup-search" id="ing-input" placeholder="Введите ингредиент (например: курица)" />' +
+      '<div class="popup-actions" style="margin-top:0"><button class="btn-cancel" onclick="closePopup()">Отмена</button><button class="btn-primary" onclick="addByIngredient()">Добавить</button></div>' +
+    '</div>' +
+    '<div class="popup-actions" id="dish-popup-actions"><button class="btn-cancel" onclick="closePopup()">Закрыть</button></div>'
+  );
+  renderDishSelectList(priorityIds, '');
+}
+
+function switchPTab(tab) {
+  document.getElementById('ptab-dish').classList.toggle('active', tab === 'dish');
+  document.getElementById('ptab-ing').classList.toggle('active', tab === 'ing');
+  document.getElementById('ptab-dish-content').style.display = tab === 'dish' ? '' : 'none';
+  document.getElementById('ptab-ing-content').style.display = tab === 'ing' ? '' : 'none';
+  document.getElementById('dish-popup-actions').style.display = tab === 'dish' ? '' : 'none';
+}
+
+var _popupPriorityIds = [];
+
+function filterDishList() {
+  var q = (document.getElementById('dish-search').value || '').toLowerCase();
+  renderDishSelectList(_popupPriorityIds, q);
+}
+
+function renderDishSelectList(priorityIds, q) {
+  var list = document.getElementById('dish-select-list');
+  if (!list) return;
+  var filtered = menuList.filter(function(d) {
+    if (priorityIds.indexOf(d.dish_id) !== -1) return false;
+    if (!q) return true;
+    return (d.name || '').toLowerCase().indexOf(q) !== -1 || (d.category || '').toLowerCase().indexOf(q) !== -1;
+  });
+  if (!filtered.length) { list.innerHTML = '<div class="registry-empty">Нет блюд</div>'; return; }
+  list.innerHTML = filtered.slice(0, 50).map(function(d) {
+    return '<div class="popup-select-item" onclick="addPriorityDish('+d.dish_id+')">' +
+      '<span class="item-cat">'+escHtml(d.category||'')+'</span>'+escHtml(d.name||'')+'</div>';
+  }).join('');
+}
+
+function addPriorityDish(dishId) {
+  closePopup();
+  fetch('/api/v1/admin/priority-dishes', {method:'POST', headers:adminHeaders(true), body:JSON.stringify({dish_id:dishId})})
+    .then(function() { loadPriorityDishes(); });
+}
+
+function addByIngredient() {
+  var ing = (document.getElementById('ing-input').value || '').trim();
+  if (!ing) return;
+  closePopup();
+  fetch('/api/v1/admin/priority-dishes/by-ingredient', {method:'POST', headers:adminHeaders(true), body:JSON.stringify({ingredient:ing})})
+    .then(function(r) { return r.ok ? r.json() : {added:[],count:0}; })
+    .then(function(d) {
+      loadPriorityDishes();
+      if (d.count === 0) alert('Блюда с ингредиентом «'+ing+'» не найдены');
+    });
+}
+
+// Stop list
+
+function loadStopList() {
+  fetch('/api/v1/admin/stop-list', {headers: adminHeaders()})
+    .then(function(r) { return r.ok ? r.json() : {dishes:[], note:''}; })
+    .then(function(d) {
+      var el = document.getElementById('stoplist-content');
+      if (!d.dishes || !d.dishes.length) {
+        el.innerHTML = '<div style="color:#bbb;font-size:13px;font-style:italic">'+(d.note || 'Стоп-лист пуст')+'</div>';
+      } else {
+        el.innerHTML = d.dishes.map(function(x) {
+          return '<div class="priority-item"><span><span class="cat">'+escHtml(x.category||'')+'</span>'+escHtml(x.name||'ID '+x.dish_id)+'</span><span style="font-size:11px;color:#888">POS</span></div>';
+        }).join('');
+      }
+    });
+}
+
+// Business goals
+
+function loadBusinessGoals() {
+  fetch('/api/v1/admin/business-goals', {headers: adminHeaders()})
+    .then(function(r) { return r.ok ? r.json() : {}; })
+    .then(function(d) {
+      var tm = document.getElementById('toggle-margin');
+      var tu = document.getElementById('toggle-upsell');
+      if (tm) tm.checked = !!d.margin_mode;
+      if (tu) tu.checked = !!d.upsell_mode;
+    });
+}
+
+function toggleGoal(key, value) {
+  var elId = key === 'margin_mode' ? 'toggle-margin' : 'toggle-upsell';
+  fetch('/api/v1/admin/business-goals/toggle', {method:'POST', headers:adminHeaders(true), body:JSON.stringify({key:key, value:value?'true':'false'})})
+    .then(function(r) { if (!r.ok) throw new Error(); })
+    .catch(function() {
+      var el = document.getElementById(elId);
+      if (el) el.checked = !value;
+    });
+}
+
+// Sets
+
+function loadSets() {
+  fetch('/api/v1/admin/recommendation-sets', {headers: adminHeaders()})
+    .then(function(r) { return r.ok ? r.json() : {sets:[]}; })
+    .then(function(d) { renderSets(d.sets || []); });
+}
+
+function renderSets(sets) {
+  var el = document.getElementById('sets-list');
+  if (!sets.length) { el.innerHTML = '<div style="color:#bbb;font-size:13px;font-style:italic">Сеты не созданы</div>'; return; }
+  el.innerHTML = sets.map(function(s) {
+    var badge = s.active ? '<span class="set-badge-active">Активен</span>' : '<span class="set-badge-off">Выкл</span>';
+    return '<div class="set-item"><div><div style="font-weight:600">'+escHtml(s.name)+'</div><div class="set-cats">'+escHtml((s.categories||[]).join(' + '))+'</div></div><div class="set-actions">'+badge+'<button class="add-tag-btn" style="font-size:13px;background:#888;width:32px;height:32px" title="Вкл/выкл" onclick="toggleSet(\''+s.id+'\')">⇄</button><button class="del-btn" onclick="deleteSet(\''+s.id+'\')">&#x2715;</button></div></div>';
+  }).join('');
+}
+
+function toggleSet(setId) {
+  fetch('/api/v1/admin/recommendation-sets/'+setId+'/toggle', {method:'PATCH', headers:adminHeaders()})
+    .then(function(r) { if (!r.ok) throw new Error(); return loadSets(); })
+    .catch(function() { alert('Ошибка: не удалось изменить сет'); loadSets(); });
+}
+
+function deleteSet(setId) {
+  fetch('/api/v1/admin/recommendation-sets/'+setId, {method:'DELETE', headers:adminHeaders()})
+    .then(function(r) { if (!r.ok) throw new Error(); return loadSets(); })
+    .catch(function() { alert('Ошибка: не удалось удалить сет'); });
+}
+
+var pendingCategories = [];
+
+function openAddSetPopup() {
+  pendingCategories = [];
+  var catOptions = menuCategories.map(function(c) {
+    return '<option value="'+escHtml(c)+'">'+escHtml(c)+'</option>';
+  }).join('');
+  showPopup(
+    '<h3>Создать сет</h3>' +
+    '<div class="add-set-form">' +
+      '<input id="set-name-input" placeholder="Название сета (напр. Бизнес-ланч)" />' +
+      '<div style="font-size:12px;color:#888;margin-bottom:4px">Добавьте категории в нужном порядке:</div>' +
+      '<div style="display:flex;gap:8px">' +
+        '<select id="cat-select" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px">'+catOptions+'</select>' +
+        '<button class="btn-primary" onclick="addCatToSet()">+</button>' +
+      '</div>' +
+      '<div class="cat-chips" id="cat-chips-preview"></div>' +
+    '</div>' +
+    '<div class="popup-actions"><button class="btn-cancel" onclick="closePopup()">Отмена</button><button class="btn-primary" onclick="saveSet()">Создать</button></div>'
+  );
+}
+
+function addCatToSet() {
+  var sel = document.getElementById('cat-select');
+  if (!sel) return;
+  var val = sel.value;
+  if (val && pendingCategories.indexOf(val) === -1) {
+    pendingCategories.push(val);
+    renderCatChips();
+  }
+}
+
+function removeCatFromSet(idx) {
+  pendingCategories.splice(idx, 1);
+  renderCatChips();
+}
+
+function renderCatChips() {
+  var el = document.getElementById('cat-chips-preview');
+  if (!el) return;
+  el.innerHTML = pendingCategories.map(function(c, i) {
+    return '<span class="cat-chip">'+escHtml(c)+'<span class="chip-x" onclick="removeCatFromSet('+i+')">&#x2715;</span></span>';
+  }).join('');
+}
+
+function saveSet() {
+  var name = (document.getElementById('set-name-input').value || '').trim();
+  if (!name) { alert('Введите название сета'); return; }
+  if (!pendingCategories.length) { alert('Добавьте хотя бы одну категорию'); return; }
+  closePopup();
+  fetch('/api/v1/admin/recommendation-sets', {method:'POST', headers:adminHeaders(true), body:JSON.stringify({name:name, categories:pendingCategories})})
+    .then(function() { loadSets(); });
+}
+
+// Rules
+
+function loadRules() {
+  fetch('/api/v1/admin/rules', {headers: adminHeaders()})
+    .then(function(r) { return r.ok ? r.json() : {system_rules:[], custom_rules:[]}; })
+    .then(function(d) {
+      var sysEl = document.getElementById('system-rules-list');
+      sysEl.innerHTML = (d.system_rules || []).map(function(r) {
+        return '<div class="rule-item"><span class="rule-check">✓</span><div>'+escHtml(r.text)+'</div><span class="rule-lock" title="Нельзя отключить">🔒</span></div>';
+      }).join('');
+      var custEl = document.getElementById('custom-rules-list');
+      if (!d.custom_rules || !d.custom_rules.length) {
+        custEl.innerHTML = '<div style="color:#bbb;font-size:13px;font-style:italic">Правила ресторана не настроены</div>';
+      } else {
+        custEl.innerHTML = (d.custom_rules || []).map(function(r) {
+          return '<div class="rule-item"><span class="rule-check">✓</span><div><span style="font-size:11px;color:#888;text-transform:uppercase;margin-right:6px">'+escHtml(r.rule_type||'')+'</span>'+escHtml(r.text)+'</div></div>';
+        }).join('');
+      }
+    });
+}
+
+// ── iiko ключи ────────────────────────────────────────────────────────
+
+var _isTeam = false;
+
+function loadIikoKeys() {
+  fetch('/api/v1/admin/iiko-keys', {headers: adminHeaders()})
+    .then(function(r) { return r.ok ? r.json() : {keys: [], is_team: false}; })
+    .then(function(d) {
+      _isTeam = !!d.is_team;
+      var el = document.getElementById('iiko-keys-list');
+      if (!d.keys || !d.keys.length) {
+        el.innerHTML = '<div style="color:#bbb;font-size:13px;font-style:italic">Ключи не добавлены</div>';
+        return;
+      }
+      el.innerHTML = '<table><thead><tr><th>Ресторан</th><th>Тип</th><th>Org ID</th><th>Terminal ID</th><th></th></tr></thead><tbody>' +
+        d.keys.map(function(k) {
+          var badge = k.owner === 'team'
+            ? '<span style="background:#e8f3e6;color:#2d5c28;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">команда</span>'
+            : '<span style="background:#f0f0f0;color:#666;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">клиент</span>';
+          return '<tr>' +
+            '<td><b>' + escHtml(k.restaurant_name) + '</b></td>' +
+            '<td>' + badge + '</td>' +
+            '<td style="font-size:11px;color:#888">' + escHtml(k.organization_id || '—') + '</td>' +
+            '<td style="font-size:11px;color:#888">' + escHtml(k.terminal_group_id || '—') + '</td>' +
+            '<td><button onclick="deleteIikoKey(' + escHtml(JSON.stringify(k.restaurant_name)) + ')" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:13px">✕</button></td>' +
+            '</tr>';
+        }).join('') +
+        '</tbody></table>';
+    });
+}
+
+function openIikoKeyPopup() {
+  var ownerField = _isTeam
+    ? '<div class="form-field">' +
+      '<label class="form-label">Тип ключа</label>' +
+      '<div class="form-toggle-group">' +
+      '<button type="button" class="form-toggle active" id="ik-owner-client" onclick="setIikoOwner(\'client\')">Клиент</button>' +
+      '<button type="button" class="form-toggle" id="ik-owner-team" onclick="setIikoOwner(\'team\')">Команда</button>' +
+      '</div>' +
+      '<input type="hidden" id="ik-owner" value="client">' +
+      '</div>'
+    : '';
+  showPopup(
+    '<div class="form-popup-header">' +
+      '<div class="form-popup-icon">' +
+        '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="5.5" cy="8" r="3"/><path d="M7.5 6l5 5M10.5 8.5l2-2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+      '</div>' +
+      '<div><div class="form-popup-title">Подключить ресторан</div><div class="form-popup-sub">iiko Cloud API</div></div>' +
+    '</div>' +
+    '<div class="form-field">' +
+      '<label class="form-label">Название ресторана</label>' +
+      '<input class="form-input" id="ik-name" placeholder="Например: Моё Кафе">' +
+    '</div>' +
+    '<div class="form-field">' +
+      '<label class="form-label">API ключ iiko</label>' +
+      '<input class="form-input form-input-mono" id="ik-key" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">' +
+    '</div>' +
+    '<div class="form-row">' +
+      '<div class="form-field">' +
+        '<label class="form-label">Organization ID <span class="form-optional">необяз.</span></label>' +
+        '<input class="form-input form-input-mono" id="ik-org" placeholder="UUID">' +
+      '</div>' +
+      '<div class="form-field">' +
+        '<label class="form-label">Terminal Group ID <span class="form-optional">необяз.</span></label>' +
+        '<input class="form-input form-input-mono" id="ik-term" placeholder="UUID">' +
+      '</div>' +
+    '</div>' +
+    '<div class="form-divider"><span>API v2 <span class="form-optional">необяз.</span></span></div>' +
+    '<div class="form-row">' +
+      '<div class="form-field">' +
+        '<label class="form-label">App ID</label>' +
+        '<input class="form-input form-input-mono" id="ik-appid" placeholder="UUID">' +
+      '</div>' +
+      '<div class="form-field">' +
+        '<label class="form-label">Client Secret</label>' +
+        '<input class="form-input form-input-mono" id="ik-secret" placeholder="секрет">' +
+      '</div>' +
+    '</div>' +
+    ownerField +
+    '<div class="form-actions">' +
+      '<button class="btn-primary" onclick="saveIikoKey()">Сохранить</button>' +
+      '<button class="btn-cancel" onclick="closePopup()">Отмена</button>' +
+    '</div>'
+  );
+}
+
+function setIikoOwner(val) {
+  document.getElementById('ik-owner').value = val;
+  document.getElementById('ik-owner-client').classList.toggle('active', val === 'client');
+  document.getElementById('ik-owner-team').classList.toggle('active', val === 'team');
+}
+
+function saveIikoKey() {
+  var name = (document.getElementById('ik-name').value || '').trim();
+  var key  = (document.getElementById('ik-key').value || '').trim();
+  var org  = (document.getElementById('ik-org').value || '').trim() || null;
+  var term = (document.getElementById('ik-term').value || '').trim() || null;
+  var ownerEl = document.getElementById('ik-owner');
+  var owner = ownerEl ? ownerEl.value : 'client';
+  var secret = (document.getElementById('ik-secret').value || '').trim() || null;
+  var appid  = (document.getElementById('ik-appid').value || '').trim() || null;
+  if (!name || !key) { alert('Заполните название и API ключ'); return; }
+  fetch('/api/v1/admin/iiko-keys', {
+    method: 'POST', headers: adminHeaders(true),
+    body: JSON.stringify({restaurant_name: name, api_key: key, organization_id: org, terminal_group_id: term, owner: owner, client_secret: secret, app_id: appid})
+  }).then(function(r) {
+    if (!r.ok) { alert('Ошибка сохранения'); return; }
+    closePopup();
+    loadIikoKeys();
+  });
+}
+
+function deleteIikoKey(name) {
+  if (!confirm('Удалить ключ для "' + name + '"?')) return;
+  fetch('/api/v1/admin/iiko-keys/' + encodeURIComponent(name), {
+    method: 'DELETE', headers: adminHeaders()
+  }).then(function(r) {
+    if (!r.ok) { alert('Ошибка удаления'); return; }
+    loadIikoKeys();
+  });
+}
+
+// ── Init ───────────────────────────────────────────────────────────────
+
+function initApp() {
+  preloadRegistry();
+  loadTags();
+  initIikoTab();
+  var saved = localStorage.getItem('active_tab');
+  if (saved && saved !== 'tags') {
+    var btn = document.querySelector('.tab-btn[onclick*="\'' + saved + '\'"]');
+    if (btn) showTab(saved, btn);
+  }
+}
+</script>
+</body>
+</html>
