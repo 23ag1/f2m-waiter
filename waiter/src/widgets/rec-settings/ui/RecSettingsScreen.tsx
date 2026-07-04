@@ -85,7 +85,9 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
   return (
     <div className="fixed inset-0 z-[60] bg-inset overflow-y-auto">
       <div className="px-4 pt-12 pb-1">
-        <BackButton onClick={onClose} />
+        <span data-tour="rec-back" className="inline-flex rounded-full">
+          <BackButton onClick={onClose} />
+        </span>
       </div>
 
       <div className="px-5 pt-2 pb-5">
@@ -114,6 +116,7 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
                   {/* drag handle */}
                   <button
                     aria-label="Перетащить"
+                    data-tour={idx === 0 ? "rec-handle" : undefined}
                     className="shrink-0 -ml-1 p-1 text-ink-subtle touch-none cursor-grab active:cursor-grabbing"
                     onPointerDown={(e) => onDown(e, idx)}
                     onPointerMove={onMove}
@@ -129,7 +132,7 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
                   </button>
                   <span className="flex-1 min-w-0 truncate text-[15px] font-semibold text-ink">{cat}</span>
                   {/* current colour dot — also toggles the picker */}
-                  <span className={`shrink-0 w-7 h-7 rounded-full ${color.dot} transition ${isSel ? "ring-2 ring-offset-2 ring-offset-surface ring-ink/40" : ""}`} />
+                  <span data-tour={idx === 0 ? "rec-dot" : undefined} className={`shrink-0 w-7 h-7 rounded-full ${color.dot} transition ${isSel ? "ring-2 ring-offset-2 ring-offset-surface ring-ink/40" : ""}`} />
                 </div>
 
                 {/* Inline colour picker for this category */}

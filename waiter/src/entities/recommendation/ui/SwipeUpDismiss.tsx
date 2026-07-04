@@ -14,10 +14,12 @@ export function SwipeUpDismiss({
   children,
   onDismiss,
   className = "",
+  dataTour,
 }: {
   children: ReactNode;
   onDismiss: () => void;
   className?: string;
+  dataTour?: string;
 }) {
   const [dy, setDy] = useState(0);
   const [leaving, setLeaving] = useState(false);
@@ -83,6 +85,7 @@ export function SwipeUpDismiss({
   return (
     <div
       ref={el}
+      data-tour={dataTour}
       className={`touch-pan-x overflow-hidden ${className} ${dragging ? "" : "transition-all duration-[250ms] ease-out"}`}
       style={{
         transform: `translateY(${dy}px)`,

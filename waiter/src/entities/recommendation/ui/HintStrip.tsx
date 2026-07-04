@@ -40,9 +40,10 @@ export function HintStrip({
   );
 
   return (
-    <div className="bg-inset/60 border-t border-hair-soft">
+    <div data-tour="hint-strip" className="bg-inset/60 border-t border-hair-soft">
       {/* Header — tap to collapse/expand */}
       <button
+        data-tour="hint-collapse"
         onClick={toggle}
         className="w-full flex items-center gap-1.5 px-4 py-1.5 active:opacity-70 transition"
       >
@@ -59,9 +60,10 @@ export function HintStrip({
       {!collapsed && (
         <div className="overflow-x-auto px-4 pb-2 scrollbar-hide">
           <div className="flex gap-2 w-max">
-            {ordered.map((hint) => (
+            {ordered.map((hint, i) => (
               <SwipeUpDismiss
                 key={hint.id}
+                dataTour={i === 0 ? "hint-card" : undefined}
                 className="w-28 h-[92px] flex-shrink-0"
                 onDismiss={() => onDismiss?.(hint)}
               >

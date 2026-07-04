@@ -236,6 +236,12 @@
   animation: panel-expand 0.18s ease-out;
 }
 
+/* Onboarding demo affordance bounce */
+@keyframes tour-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
 /* Hide scrollbar for horizontal scroll areas */
 .scrollbar-hide {
   -ms-overflow-style: none;

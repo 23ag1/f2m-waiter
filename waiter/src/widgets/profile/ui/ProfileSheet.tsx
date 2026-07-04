@@ -7,6 +7,7 @@ import { Avatar } from "@/shared/ui/Avatar";
 import { SegmentedControl } from "@/shared/ui/SegmentedControl";
 import { useTheme, type ThemeMode } from "@/shared/lib/theme";
 import { RecSettingsScreen } from "@/widgets/rec-settings";
+import { useTourPhase } from "@/features/onboarding";
 
 // iiko-style waiter profile screen.
 // NOTE: the backend exposes no sales/stats endpoints yet, so "Личные продажи",
@@ -70,6 +71,8 @@ export function ProfileSheet({
   const [editPercent, setEditPercent] = useState(false);
   const [draft, setDraft] = useState("10,0");
   const [showRecSettings, setShowRecSettings] = useState(false);
+  const tourPhase = useTourPhase();
+  const recOpen = showRecSettings || tourPhase === "recset";
 
   useEffect(() => {
     const raw = typeof window !== "undefined" ? window.localStorage.getItem(PERCENT_KEY) : null;
@@ -139,6 +142,7 @@ export function ProfileSheet({
       {/* Настройки рекомендаций */}
       <div className="px-4 mb-3">
         <button
+          data-tour="profile-rec"
           onClick={() => setShowRecSettings(true)}
           className="w-full bg-surface rounded-2xl p-4 shadow-sm flex items-center gap-3 active:scale-[0.99] transition text-left"
         >
@@ -233,7 +237,7 @@ export function ProfileSheet({
       </Sheet>
 
       {/* Настройки рекомендаций — full-screen */}
-      <RecSettingsScreen open={showRecSettings} onClose={() => setShowRecSettings(false)} />
+      <RecSettingsScreen open={recOpen} onClose={() => setShowRecSettings(false)} />
     </div>
   );
 }

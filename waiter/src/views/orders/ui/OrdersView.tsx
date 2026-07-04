@@ -22,6 +22,7 @@ import {
   RenameOrderSheet,
   PrecheckSheet,
 } from "@/features/order-actions";
+import { useTourPhase, startTour, hasCompletedTour } from "@/features/onboarding";
 
 type TabType = "mine" | "all" | "external";
 type SortKey = "time_desc" | "time_asc" | "table" | "amount";
@@ -75,6 +76,13 @@ export function OrdersView() {
   const { toast, showToast } = useToast();
   const [tab, setTab] = useState<TabType>("mine");
   const [showProfile, setShowProfile] = useState(false);
+  const tourPhase = useTourPhase();
+  const profileOpen = showProfile || tourPhase === "profile" || tourPhase === "recset";
+
+  // Auto-run the onboarding tour on the very first visit.
+  useEffect(() => {
+    if (!hasCompletedTour()) startTour();
+  }, []);
   const [tick, setTick] = useState(0);
   // table_number → section_name mapping from iiko
   const [sectionMap, setSectionMap] = useState<Record<string, string>>({});
@@ -175,7 +183,9 @@ export function OrdersView() {
       <header className="bg-inset pt-2">
         {/* Top row: avatar | tabs pill | icons pill */}
         <div className="flex items-center gap-2 px-3 py-2">
-          <Avatar initial="W" size="md" onClick={() => setShowProfile(true)} />
+          <span data-tour="avatar" className="inline-flex rounded-full">
+            <Avatar initial="W" size="md" onClick={() => setShowProfile(true)} />
+          </span>
 
           {/* Segmented tabs — white pill, selected tab highlighted grey */}
           <SegmentedControl<TabType>
@@ -326,7 +336,7 @@ export function OrdersView() {
 
       {/* Profile — full-screen iiko-style */}
       <ProfileSheet
-        open={showProfile}
+        open={profileOpen}
         onClose={() => setShowProfile(false)}
         onLogout={() => { deleteCookie("waiter_token"); localStorage.removeItem("waiter_pin"); router.push("/"); }}
         name="Официант"
