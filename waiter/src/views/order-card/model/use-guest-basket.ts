@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getBasket, modifyBasket, removeBasketDish, getRecommendations } from "@/shared/api";
 import { fetchRealHints, type HintDish, type Recommendation } from "@/entities/recommendation";
+import { pickReplacement } from "@/entities/menu";
 import type { BasketItem } from "@/entities/dish";
 import type { HungerLevel } from "@/shared/lib/hunger";
 
@@ -89,7 +90,25 @@ export function useGuestBasket(clientId: number, showToast: (m: string, t?: "ok"
     });
   };
 
-  const dismissHint = (id: number) => setDismissedHintIds((prev) => new Set([...prev, id]));
+  // Swipe-dismiss → hide the hint and swap in another dish of the same category.
+  const dismissHint = async (hint: HintDish) => {
+    setDismissedHintIds((prev) => new Set([...prev, hint.id]));
+    const exclude = new Set<number>([
+      ...basket.map((i) => i.dish_id),
+      ...hints.map((h) => h.id),
+      ...dismissedHintIds,
+      hint.id,
+    ]);
+    const rep = await pickReplacement(hint.category, exclude);
+    if (!rep) return;
+    const newHint: HintDish = { id: rep.id, name: rep.name, price: Number(rep.price), tags: [], category: rep.category };
+    setHints((prev) => {
+      const idx = prev.findIndex((h) => h.id === hint.id);
+      const next = [...prev];
+      next.splice(idx === -1 ? next.length : idx + 1, 0, newHint);
+      return next;
+    });
+  };
 
   return {
     basket, totalCost, hunger, recommendations, hints, dismissedHintIds, loading,

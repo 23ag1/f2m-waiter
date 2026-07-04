@@ -33,8 +33,8 @@ export function TableOrderView() {
   // Table session (guests + baskets + per-guest recommendations) — view model
   const {
     guests, guestBaskets, guestHints, guestDismissed,
-    activeGuestIdx, setActiveGuestIdx, setGuestDismissed,
-    refreshGuest, setGuestHunger, addHintDishLocally, checkin, addGuest, removeGuest, renameGuest: applyRename,
+    activeGuestIdx, setActiveGuestIdx,
+    refreshGuest, setGuestHunger, addHintDishLocally, dismissHint, checkin, addGuest, removeGuest, renameGuest: applyRename,
   } = useTableSession(tableIdParam, { setLoading, showToast });
   const [showQRScanner, setShowQRScanner] = useState(false);
 
@@ -204,7 +204,7 @@ export function TableOrderView() {
                   <HintStrip
                     hints={(guestHints[guest.client_id] ?? []).filter(h => !(guestDismissed[guest.client_id] ?? new Set<number>()).has(h.id))}
                     onAdd={(hint) => addHintDishLocally(guest.client_id, hint, guest.hunger, guestRestrictions(guest), guest.checkedIn)}
-                    onDismiss={(id) => setGuestDismissed((prev) => ({ ...prev, [guest.client_id]: new Set([...(prev[guest.client_id] ?? []), id]) }))}
+                    onDismiss={(hint) => dismissHint(guest.client_id, hint)}
                   />
                 </div>
               );

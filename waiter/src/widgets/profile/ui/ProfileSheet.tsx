@@ -6,6 +6,7 @@ import { BackButton } from "@/shared/ui/BackButton";
 import { Avatar } from "@/shared/ui/Avatar";
 import { SegmentedControl } from "@/shared/ui/SegmentedControl";
 import { useTheme, type ThemeMode } from "@/shared/lib/theme";
+import { RecSettingsScreen } from "@/widgets/rec-settings";
 
 // iiko-style waiter profile screen.
 // NOTE: the backend exposes no sales/stats endpoints yet, so "Личные продажи",
@@ -68,6 +69,7 @@ export function ProfileSheet({
   const [percent, setPercent] = useState(10);
   const [editPercent, setEditPercent] = useState(false);
   const [draft, setDraft] = useState("10,0");
+  const [showRecSettings, setShowRecSettings] = useState(false);
 
   useEffect(() => {
     const raw = typeof window !== "undefined" ? window.localStorage.getItem(PERCENT_KEY) : null;
@@ -132,6 +134,23 @@ export function ProfileSheet({
             onChange={setTheme}
           />
         </div>
+      </div>
+
+      {/* Настройки рекомендаций */}
+      <div className="px-4 mb-3">
+        <button
+          onClick={() => setShowRecSettings(true)}
+          className="w-full bg-surface rounded-2xl p-4 shadow-sm flex items-center gap-3 active:scale-[0.99] transition text-left"
+        >
+          <span className="text-lg leading-none">💡</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-ink">Настройки рекомендаций</p>
+            <p className="text-xs text-ink-subtle mt-0.5">Порядок категорий и цвет шапок</p>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-ink-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
 
       {/* Допродажи за сегодня */}
@@ -212,6 +231,9 @@ export function ProfileSheet({
           Готово
         </button>
       </Sheet>
+
+      {/* Настройки рекомендаций — full-screen */}
+      <RecSettingsScreen open={showRecSettings} onClose={() => setShowRecSettings(false)} />
     </div>
   );
 }

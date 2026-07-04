@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getBasket, getTableGuests, addGuestToTable, removeGuestFromTable } from "@/shared/api";
 import { fetchRealHints, type HintDish } from "@/entities/recommendation";
+import { pickReplacement } from "@/entities/menu";
 import { nextLoyaltyProfile, type GuestData } from "@/entities/guest";
 import type { BasketItem } from "@/entities/dish";
 
@@ -91,6 +92,26 @@ export function useTableSession(
     setGuestDismissed((prev) => ({ ...prev, [cid]: new Set() }));
   };
 
+  // Swipe-dismiss a hint → hide it and swap in another dish of the SAME category
+  // (pulled from the menu catalog), so the strip keeps offering that category.
+  const dismissHint = async (cid: number, hint: HintDish) => {
+    setGuestDismissed((prev) => ({ ...prev, [cid]: new Set([...(prev[cid] ?? []), hint.id]) }));
+    const basketIds = (guestBaskets[cid] ?? []).map((i) => i.dish_id);
+    const currentIds = (guestHints[cid] ?? []).map((h) => h.id);
+    const dismissed = [...(guestDismissed[cid] ?? [])];
+    const exclude = new Set<number>([...basketIds, ...currentIds, ...dismissed, hint.id]);
+    const rep = await pickReplacement(hint.category, exclude);
+    if (!rep) return;
+    const newHint: HintDish = { id: rep.id, name: rep.name, price: Number(rep.price), tags: [], category: rep.category };
+    setGuestHints((ph) => {
+      const arr = ph[cid] ?? [];
+      const idx = arr.findIndex((h) => h.id === hint.id);
+      const next = [...arr];
+      next.splice(idx === -1 ? next.length : idx + 1, 0, newHint);
+      return { ...ph, [cid]: next };
+    });
+  };
+
   const checkin = () => {
     const profile = nextLoyaltyProfile();
     setGuests((prev) => {
@@ -132,6 +153,6 @@ export function useTableSession(
   return {
     guests, guestBaskets, basketsLoading, guestHints, guestDismissed,
     activeGuestIdx, setActiveGuestIdx, setGuestDismissed,
-    refreshGuest, setGuestHunger, addHintDishLocally, checkin, addGuest, removeGuest, renameGuest,
+    refreshGuest, setGuestHunger, addHintDishLocally, dismissHint, checkin, addGuest, removeGuest, renameGuest,
   };
 }
