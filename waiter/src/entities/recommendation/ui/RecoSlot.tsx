@@ -1,0 +1,123 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { RecommendationCard } from "./RecommendationCard";
+import { recColorFor } from "../model/rec-settings";
+import type { HintDish } from "../model/hints-mock";
+
+const THRESHOLD = 34; // px of vertical travel to trigger a replace
+
+// One recommendation "slot": a fixed box that shows a single card and lets the
+// waiter swipe it UP or DOWN to swap in another dish of the same category. The
+// swap is a vertical carousel contained inside the slot — the replacement slides
+// in from the opposite edge (swipe up → next enters from below; swipe down →
+// from above). Neighbouring slots never move.
+export function RecoSlot({
+  initial,
+  onAdd,
+  onReplace,
+  dataTour,
+}: {
+  initial: HintDish;
+  onAdd: (h: HintDish) => void;
+  onReplace: (current: HintDish, dir: "up" | "down") => Promise<HintDish | null>;
+  dataTour?: string;
+}) {
+  const [card, setCard] = useState(initial);
+  const [drag, setDrag] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [anim, setAnim] = useState<{ to: HintDish; dir: "up" | "down"; run: boolean } | null>(null);
+
+  const el = useRef<HTMLDivElement>(null);
+  const st = useRef<{ x: number; y: number; lock: 0 | 1 | 2 } | null>(null);
+  const dragRef = useRef(0);
+  const busy = useRef(false);
+
+  // Re-seed when the parent hands a fresh recommendation set.
+  useEffect(() => { setCard(initial); setAnim(null); setDrag(0); busy.current = false; }, [initial.id]);
+
+  useEffect(() => {
+    const node = el.current;
+    if (!node) return;
+
+    const onStart = (e: TouchEvent) => {
+      if (busy.current) return;
+      const t = e.touches[0];
+      st.current = { x: t.clientX, y: t.clientY, lock: 0 };
+    };
+    const onMove = (e: TouchEvent) => {
+      if (!st.current || busy.current) return;
+      const t = e.touches[0];
+      const dx = t.clientX - st.current.x;
+      const dy = t.clientY - st.current.y;
+      if (st.current.lock === 0) {
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+        st.current.lock = Math.abs(dy) > Math.abs(dx) ? 1 : 2;
+        if (st.current.lock === 1) setDragging(true);
+      }
+      if (st.current.lock !== 1) return; // horizontal → let the strip scroll
+      e.preventDefault();
+      dragRef.current = dy * 0.55; // rubber-band
+      setDrag(dragRef.current);
+    };
+    const onEnd = () => {
+      const wasV = st.current?.lock === 1;
+      st.current = null;
+      setDragging(false);
+      if (!wasV || busy.current) { setDrag(0); dragRef.current = 0; return; }
+      const d = dragRef.current;
+      setDrag(0);
+      dragRef.current = 0;
+      if (Math.abs(d) < THRESHOLD) return;
+      const dir: "up" | "down" = d < 0 ? "up" : "down";
+      busy.current = true;
+      onReplace(card, dir).then((next) => {
+        if (!next) { busy.current = false; return; }
+        setAnim({ to: next, dir, run: false });
+        requestAnimationFrame(() => requestAnimationFrame(() => setAnim((a) => (a ? { ...a, run: true } : a))));
+        window.setTimeout(() => { setCard(next); setAnim(null); busy.current = false; }, 300);
+      });
+    };
+
+    node.addEventListener("touchstart", onStart, { passive: true });
+    node.addEventListener("touchmove", onMove, { passive: false });
+    node.addEventListener("touchend", onEnd, { passive: true });
+    node.addEventListener("touchcancel", onEnd, { passive: true });
+    return () => {
+      node.removeEventListener("touchstart", onStart);
+      node.removeEventListener("touchmove", onMove);
+      node.removeEventListener("touchend", onEnd);
+      node.removeEventListener("touchcancel", onEnd);
+    };
+  }, [card, onReplace]);
+
+  return (
+    <div ref={el} data-tour={dataTour} className="relative w-28 h-[92px] flex-shrink-0 overflow-hidden rounded-xl touch-pan-x">
+      {anim ? (
+        <>
+          {/* outgoing card leaves in the swipe direction */}
+          <div
+            className="absolute inset-0 transition-transform duration-300 ease-out"
+            style={{ transform: anim.run ? `translateY(${anim.dir === "up" ? "-100%" : "100%"})` : "translateY(0)" }}
+          >
+            <RecommendationCard hint={card} color={recColorFor(card.category)} onAdd={() => onAdd(card)} />
+          </div>
+          {/* incoming card enters from the opposite edge */}
+          <div
+            className="absolute inset-0 transition-transform duration-300 ease-out"
+            style={{ transform: anim.run ? "translateY(0)" : `translateY(${anim.dir === "up" ? "100%" : "-100%"})` }}
+          >
+            <RecommendationCard hint={anim.to} color={recColorFor(anim.to.category)} onAdd={() => onAdd(anim.to)} />
+          </div>
+        </>
+      ) : (
+        <div
+          className={`absolute inset-0 ${dragging ? "" : "transition-transform duration-200 ease-out"}`}
+          style={{ transform: `translateY(${drag}px)` }}
+        >
+          <RecommendationCard hint={card} color={recColorFor(card.category)} onAdd={() => onAdd(card)} />
+        </div>
+      )}
+    </div>
+  );
+}

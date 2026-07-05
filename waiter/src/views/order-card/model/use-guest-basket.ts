@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getBasket, modifyBasket, removeBasketDish, getRecommendations } from "@/shared/api";
 import { fetchRealHints, type HintDish, type Recommendation } from "@/entities/recommendation";
 import { pickReplacement } from "@/entities/menu";
@@ -18,8 +18,8 @@ export function useGuestBasket(clientId: number, showToast: (m: string, t?: "ok"
   const [hunger, setHunger] = useState<HungerLevel | undefined>(undefined);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [hints, setHints] = useState<HintDish[]>([]);
-  const [dismissedHintIds, setDismissedHintIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
+  const usedHintIds = useRef<Set<number>>(new Set());
 
   const loadBasket = () => {
     getBasket(clientId)
@@ -84,34 +84,27 @@ export function useGuestBasket(clientId: number, showToast: (m: string, t?: "ok"
       const updated = existing
         ? prev.map((i) => (i.dish_id === hint.id ? { ...i, quantity: i.quantity + 1, subtotal: Number(i.subtotal) + Number(hint.price) } : i))
         : [...prev, { dish_id: hint.id, dish_name: hint.name, quantity: 1, price: Number(hint.price), subtotal: Number(hint.price) }];
-      setDismissedHintIds(new Set());
       fetchRealHints(clientId, { hunger }).then(setHints);
       return updated;
     });
   };
 
-  // Swipe-dismiss → hide the hint and swap in another dish of the same category.
-  const dismissHint = async (hint: HintDish) => {
-    setDismissedHintIds((prev) => new Set([...prev, hint.id]));
+  // Swipe → return another dish of the same category (slot owns the display).
+  const replaceHint = async (hint: HintDish): Promise<HintDish | null> => {
     const exclude = new Set<number>([
       ...basket.map((i) => i.dish_id),
       ...hints.map((h) => h.id),
-      ...dismissedHintIds,
+      ...usedHintIds.current,
       hint.id,
     ]);
     const rep = await pickReplacement(hint.category, exclude);
-    if (!rep) return;
-    const newHint: HintDish = { id: rep.id, name: rep.name, price: Number(rep.price), tags: [], category: rep.category };
-    setHints((prev) => {
-      const idx = prev.findIndex((h) => h.id === hint.id);
-      const next = [...prev];
-      next.splice(idx === -1 ? next.length : idx + 1, 0, newHint);
-      return next;
-    });
+    if (!rep) return null;
+    usedHintIds.current.add(rep.id);
+    return { id: rep.id, name: rep.name, price: Number(rep.price), tags: [], category: rep.category };
   };
 
   return {
-    basket, totalCost, hunger, recommendations, hints, dismissedHintIds, loading,
-    modify, remove, addRecommendation, addHintLocally, dismissHint,
+    basket, totalCost, hunger, recommendations, hints, loading,
+    modify, remove, addRecommendation, addHintLocally, replaceHint,
   };
 }

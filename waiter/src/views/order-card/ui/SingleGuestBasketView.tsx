@@ -35,7 +35,6 @@ export function SingleGuestBasketView() {
     return <div className="min-h-screen bg-app flex items-center justify-center text-ink-subtle">Загрузка...</div>;
   }
 
-  const visibleHints = gb.hints.filter((h) => !gb.dismissedHintIds.has(h.id));
 
   return (
     <div className="min-h-screen bg-app flex flex-col pb-56">
@@ -89,7 +88,7 @@ export function SingleGuestBasketView() {
 
             {/* Collapsible hint strip */}
             <div className="-mx-4">
-              <HintStrip hints={visibleHints} onAdd={gb.addHintLocally} onDismiss={gb.dismissHint} />
+              <HintStrip hints={gb.hints} onAdd={gb.addHintLocally} onReplace={gb.replaceHint} />
             </div>
 
             <button

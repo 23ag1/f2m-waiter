@@ -80,10 +80,23 @@ export function TourOverlay() {
   const below = !hole || step.placement === "bottom";
   const ttTop = hole ? (below ? hole.top + hole.height + 12 : hole.top - 12) : vh / 2;
 
+  // On the swipe step, leave the highlighted card interactive so the waiter can
+  // actually swipe it during the tour — the catcher becomes 4 rects around the hole.
+  const interactiveHole = hole && step.demo === "swipe";
+
   return (
-    <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true">
-      {/* Tap catcher (blocks the page; controls sit above it) */}
-      <div className="absolute inset-0" onClick={(e) => e.stopPropagation()} />
+    <div className="fixed inset-0 z-[100] pointer-events-none" role="dialog" aria-modal="true">
+      {/* Tap catcher — blocks the page, but opens a gap over an interactive hole */}
+      {interactiveHole ? (
+        <>
+          <div className="absolute left-0 right-0 top-0 pointer-events-auto" style={{ height: Math.max(0, hole.top) }} onClick={(e) => e.stopPropagation()} />
+          <div className="absolute left-0 right-0 pointer-events-auto" style={{ top: hole.top + hole.height, bottom: 0 }} onClick={(e) => e.stopPropagation()} />
+          <div className="absolute pointer-events-auto" style={{ top: hole.top, left: 0, width: Math.max(0, hole.left), height: hole.height }} onClick={(e) => e.stopPropagation()} />
+          <div className="absolute pointer-events-auto" style={{ top: hole.top, left: hole.left + hole.width, right: 0, height: hole.height }} onClick={(e) => e.stopPropagation()} />
+        </>
+      ) : (
+        <div className="absolute inset-0 pointer-events-auto" onClick={(e) => e.stopPropagation()} />
+      )}
 
       {/* Spotlight — one element that hugs the anchor's shape: crisp thin ring,
           a soft halo, and the surrounding dim, all via layered box-shadows. */}
@@ -120,7 +133,7 @@ export function TourOverlay() {
       {/* Tooltip */}
       <div
         key={`tip-${step.id}`}
-        className="absolute animate-tour-tip"
+        className="absolute animate-tour-tip pointer-events-auto"
         style={{ left: ttLeft, top: ttTop, width: TT_W, transform: below ? undefined : "translateY(-100%)" }}
       >
         <div

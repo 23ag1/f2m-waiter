@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getBasket, getTableGuests, addGuestToTable, removeGuestFromTable } from "@/shared/api";
 import { fetchRealHints, type HintDish } from "@/entities/recommendation";
 import { pickReplacement } from "@/entities/menu";
@@ -24,6 +24,8 @@ export function useTableSession(
   const [guestHints, setGuestHints] = useState<Record<number, HintDish[]>>({});
   const [guestDismissed, setGuestDismissed] = useState<Record<number, Set<number>>>({});
   const [activeGuestIdx, setActiveGuestIdx] = useState(0);
+  // Dishes already surfaced as replacements per guest — avoids repeats/duplicates.
+  const usedHintIds = useRef<Record<number, Set<number>>>({});
 
   const loadGuestBasket = useCallback(async (cid: number, hunger?: string, restr: string[] = [], checkedIn?: boolean) => {
     setBasketsLoading((prev) => ({ ...prev, [cid]: true }));
@@ -92,24 +94,22 @@ export function useTableSession(
     setGuestDismissed((prev) => ({ ...prev, [cid]: new Set() }));
   };
 
-  // Swipe-dismiss a hint → hide it and swap in another dish of the SAME category
-  // (pulled from the menu catalog), so the strip keeps offering that category.
-  const dismissHint = async (cid: number, hint: HintDish) => {
-    setGuestDismissed((prev) => ({ ...prev, [cid]: new Set([...(prev[cid] ?? []), hint.id]) }));
-    const basketIds = (guestBaskets[cid] ?? []).map((i) => i.dish_id);
-    const currentIds = (guestHints[cid] ?? []).map((h) => h.id);
-    const dismissed = [...(guestDismissed[cid] ?? [])];
-    const exclude = new Set<number>([...basketIds, ...currentIds, ...dismissed, hint.id]);
+  // Swipe → return another dish of the SAME category (from the menu catalog).
+  // Pure: the slot owns what it displays, so we don't mutate the hint list here;
+  // we just exclude everything already shown / in the basket / handed out.
+  const replaceHint = async (cid: number, hint: HintDish): Promise<HintDish | null> => {
+    const used = usedHintIds.current[cid] ?? new Set<number>();
+    const exclude = new Set<number>([
+      ...(guestHints[cid] ?? []).map((h) => h.id),
+      ...(guestBaskets[cid] ?? []).map((i) => i.dish_id),
+      ...used,
+      hint.id,
+    ]);
     const rep = await pickReplacement(hint.category, exclude);
-    if (!rep) return;
-    const newHint: HintDish = { id: rep.id, name: rep.name, price: Number(rep.price), tags: [], category: rep.category };
-    setGuestHints((ph) => {
-      const arr = ph[cid] ?? [];
-      const idx = arr.findIndex((h) => h.id === hint.id);
-      const next = [...arr];
-      next.splice(idx === -1 ? next.length : idx + 1, 0, newHint);
-      return { ...ph, [cid]: next };
-    });
+    if (!rep) return null;
+    used.add(rep.id);
+    usedHintIds.current[cid] = used;
+    return { id: rep.id, name: rep.name, price: Number(rep.price), tags: [], category: rep.category };
   };
 
   const checkin = () => {
@@ -129,6 +129,8 @@ export function useTableSession(
       const newGuest: GuestData = { client_id: res.guest.client_id, name: res.guest.name, mood: "", basket: [], total_cost: 0 };
       setGuests((prev) => [...prev, newGuest]);
       setGuestBaskets((prev) => ({ ...prev, [newGuest.client_id]: [] }));
+      // New guest needs recommendations too (was missing → empty strip).
+      fetchRealHints(newGuest.client_id, {}).then((hints) => setGuestHints((ph) => ({ ...ph, [newGuest.client_id]: hints })));
       setActiveGuestIdx(guests.length);
     } catch (e) {
       console.error(e);
@@ -153,6 +155,6 @@ export function useTableSession(
   return {
     guests, guestBaskets, basketsLoading, guestHints, guestDismissed,
     activeGuestIdx, setActiveGuestIdx, setGuestDismissed,
-    refreshGuest, setGuestHunger, addHintDishLocally, dismissHint, checkin, addGuest, removeGuest, renameGuest,
+    refreshGuest, setGuestHunger, addHintDishLocally, replaceHint, checkin, addGuest, removeGuest, renameGuest,
   };
 }

@@ -25,9 +25,11 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
   const [order, setLocalOrder] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
 
-  const [dragIdx, setDragIdx] = useState<number | null>(null);
-  const [dragY, setDragY] = useState(0);
-  const start = useRef<{ y: number; idx: number } | null>(null);
+  // Smooth reorder: the dragged row follows the finger; the others slide out of
+  // the way with a transition (FLIP-style). The array is only committed on drop,
+  // so nothing jumps mid-drag.
+  const [drag, setDrag] = useState<{ startIndex: number; dy: number } | null>(null);
+  const startY = useRef(0);
 
   useEffect(() => {
     if (!open) return;
@@ -49,37 +51,35 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
 
   if (!open) return null;
 
+  const targetIndex = drag
+    ? Math.max(0, Math.min(order.length - 1, Math.round(drag.startIndex + drag.dy / ROW_H)))
+    : null;
+
   const onDown = (e: React.PointerEvent, idx: number) => {
     e.preventDefault();
     (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-    start.current = { y: e.clientY, idx };
-    setDragIdx(idx);
-    setDragY(0);
+    startY.current = e.clientY;
+    setSelected(null); // collapse the colour picker so rows stay uniform height
+    setDrag({ startIndex: idx, dy: 0 });
   };
   const onMove = (e: React.PointerEvent) => {
-    if (dragIdx === null || !start.current) return;
-    const dy = e.clientY - start.current.y;
-    const steps = Math.round(dy / ROW_H);
-    const target = Math.max(0, Math.min(order.length - 1, start.current.idx + steps));
-    if (target !== dragIdx) {
-      setLocalOrder((prev) => {
-        const next = [...prev];
-        const [m] = next.splice(dragIdx, 1);
-        next.splice(target, 0, m);
-        return next;
-      });
-      setDragIdx(target);
-      start.current = { y: e.clientY, idx: target };
-      setDragY(0);
-    } else {
-      setDragY(dy);
-    }
+    setDrag((d) => {
+      if (!d) return d;
+      const maxUp = -d.startIndex * ROW_H;
+      const maxDown = (order.length - 1 - d.startIndex) * ROW_H;
+      const dy = Math.max(maxUp, Math.min(maxDown, e.clientY - startY.current));
+      return { ...d, dy };
+    });
   };
   const onUp = () => {
-    if (dragIdx !== null) setOrder(order);
-    setDragIdx(null);
-    setDragY(0);
-    start.current = null;
+    if (drag && targetIndex !== null && targetIndex !== drag.startIndex) {
+      const next = [...order];
+      const [m] = next.splice(drag.startIndex, 1);
+      next.splice(targetIndex, 0, m);
+      setLocalOrder(next);
+      setOrder(next);
+    }
+    setDrag(null);
   };
 
   return (
@@ -101,16 +101,28 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
       <div className="px-4 pb-10">
         <div className="bg-surface rounded-2xl overflow-hidden shadow-sm divide-y divide-hair-soft">
           {order.map((cat, idx) => {
-            const isDrag = dragIdx === idx;
+            const isDrag = drag?.startIndex === idx;
             const color = REC_COLORS[colorKeyFor(cat)];
             const isSel = selected === cat;
-            const showPicker = isSel && dragIdx === null;
+            const showPicker = isSel && drag === null;
+            // FLIP offset: non-dragged rows between the origin and the target slide
+            // one row-height to open a gap for the dragged row.
+            let shift = 0;
+            if (drag && !isDrag && targetIndex !== null) {
+              if (targetIndex > drag.startIndex && idx > drag.startIndex && idx <= targetIndex) shift = -ROW_H;
+              else if (targetIndex < drag.startIndex && idx >= targetIndex && idx < drag.startIndex) shift = ROW_H;
+            }
+            const translate = isDrag ? drag!.dy : shift;
             return (
-              <div key={cat} className={isDrag ? "relative z-10" : ""}>
+              <div
+                key={cat}
+                className={`relative ${isDrag ? "z-20" : "z-0 transition-transform duration-200 ease-out"}`}
+                style={{ transform: `translateY(${translate}px)` }}
+              >
                 {/* Row */}
                 <div
-                  className={`relative flex items-center gap-3 px-3 ${isDrag ? "shadow-lg scale-[1.02] bg-surface" : "transition-transform duration-150"} ${isSel && !isDrag ? "bg-inset/70" : "bg-surface"}`}
-                  style={{ height: ROW_H, transform: isDrag ? `translateY(${dragY}px)` : undefined }}
+                  className={`relative flex items-center gap-3 px-3 ${isDrag ? "shadow-xl scale-[1.03] rounded-xl bg-surface" : ""} ${isSel && !isDrag ? "bg-inset/70" : "bg-surface"}`}
+                  style={{ height: ROW_H }}
                   onClick={() => setSelected((s) => (s === cat ? null : cat))}
                 >
                   {/* drag handle */}

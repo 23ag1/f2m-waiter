@@ -81,7 +81,7 @@ function NewOrderPage() {
   };
 
   return (
-    <div className="min-h-screen bg-app flex flex-col">
+    <div className="min-h-[100dvh] bg-app flex flex-col">
       <header className="bg-surface border-b border-hair-soft sticky top-0 z-10">
         <div className="flex items-center px-4 py-3">
           <button

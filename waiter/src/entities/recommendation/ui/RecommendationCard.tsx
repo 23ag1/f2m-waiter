@@ -37,7 +37,7 @@ export function RecommendationCard({
 }) {
   const reason = reasonOf(hint);
   return (
-    <div className={`animate-rec-in relative w-full h-full rounded-xl p-2 ${color.bg} border ${color.border} flex flex-col`}>
+    <div className={`relative w-full h-full rounded-xl p-2 ${color.bg} border ${color.border} flex flex-col`}>
       {/* reason chip */}
       <span className="inline-flex items-center gap-0.5 self-start bg-white/80 rounded-full pl-1 pr-1.5 py-0.5 text-[10px] font-bold text-gray-700 max-w-full">
         <span className="leading-none">{reason.icon}</span>

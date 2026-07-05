@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { RecommendationCard } from "./RecommendationCard";
-import { SwipeUpDismiss } from "./SwipeUpDismiss";
-import { categoryOrderIndex, recColorFor, useRecSettings } from "../model/rec-settings";
+import { RecoSlot } from "./RecoSlot";
+import { categoryOrderIndex, useRecSettings } from "../model/rec-settings";
 import type { HintDish } from "../model/hints-mock";
 
 const COLLAPSE_KEY = "waiter_hints_collapsed";
@@ -16,11 +15,11 @@ const COLLAPSE_KEY = "waiter_hints_collapsed";
 export function HintStrip({
   hints,
   onAdd,
-  onDismiss,
+  onReplace,
 }: {
   hints: HintDish[];
   onAdd: (hint: HintDish) => void;
-  onDismiss?: (hint: HintDish) => void;
+  onReplace: (current: HintDish, dir: "up" | "down") => Promise<HintDish | null>;
 }) {
   useRecSettings(); // re-render on colour/order changes
   const [collapsed, setCollapsed] = useState<boolean>(
@@ -61,14 +60,13 @@ export function HintStrip({
         <div className="overflow-x-auto px-4 pb-2 scrollbar-hide">
           <div className="flex gap-2 w-max">
             {ordered.map((hint, i) => (
-              <SwipeUpDismiss
+              <RecoSlot
                 key={hint.id}
+                initial={hint}
                 dataTour={i === 0 ? "hint-card" : undefined}
-                className="w-28 h-[92px] flex-shrink-0"
-                onDismiss={() => onDismiss?.(hint)}
-              >
-                <RecommendationCard hint={hint} color={recColorFor(hint.category)} onAdd={() => onAdd(hint)} />
-              </SwipeUpDismiss>
+                onAdd={onAdd}
+                onReplace={onReplace}
+              />
             ))}
           </div>
         </div>
