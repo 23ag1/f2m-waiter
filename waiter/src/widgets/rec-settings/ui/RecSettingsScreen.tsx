@@ -29,6 +29,10 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
   // the way with a transition (FLIP-style). The array is only committed on drop,
   // so nothing jumps mid-drag.
   const [drag, setDrag] = useState<{ startIndex: number; dy: number; settling?: boolean } | null>(null);
+  // Suppress row transitions for the frame where the new order commits: layout
+  // positions change instantly there, and transitioning the transforms back to 0
+  // at the same time made rows visibly jump and re-slide.
+  const [frozen, setFrozen] = useState(false);
   const startY = useRef(0);
   // The tour anchors stick to ONE category (the initial top row). Anchoring by
   // index made the spotlight jump to whatever row landed on top after a drop.
@@ -91,7 +95,11 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
         setLocalOrder(next);
         setOrder(next);
       }
+      // Commit + transform reset land in the SAME render with transitions off,
+      // so every row snaps to the exact pixels it already occupies (no re-slide).
+      setFrozen(true);
       setDrag(null);
+      requestAnimationFrame(() => requestAnimationFrame(() => setFrozen(false)));
     }, 190);
   };
 
@@ -129,7 +137,7 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
             return (
               <div
                 key={cat}
-                className={`relative ${isDrag ? (drag?.settling ? "z-20 transition-transform duration-200 ease-out" : "z-20") : "z-0 transition-transform duration-200 ease-out"}`}
+                className={`relative ${isDrag ? (drag?.settling ? "z-20 transition-transform duration-200 ease-out" : "z-20") : frozen ? "z-0" : "z-0 transition-transform duration-200 ease-out"}`}
                 style={{ transform: `translateY(${translate}px)` }}
               >
                 {/* Row */}

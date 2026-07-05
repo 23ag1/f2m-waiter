@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getBasket, getTableGuests, addGuestToTable, removeGuestFromTable } from "@/shared/api";
 import { fetchRealHints, type HintDish } from "@/entities/recommendation";
-import { pickReplacement } from "@/entities/menu";
+import { pickNextInCategory } from "@/entities/menu";
 import { nextLoyaltyProfile, type GuestData } from "@/entities/guest";
 import type { BasketItem } from "@/entities/dish";
 
@@ -24,8 +24,6 @@ export function useTableSession(
   const [guestHints, setGuestHints] = useState<Record<number, HintDish[]>>({});
   const [guestDismissed, setGuestDismissed] = useState<Record<number, Set<number>>>({});
   const [activeGuestIdx, setActiveGuestIdx] = useState(0);
-  // Dishes already surfaced as replacements per guest — avoids repeats/duplicates.
-  const usedHintIds = useRef<Record<number, Set<number>>>({});
 
   const loadGuestBasket = useCallback(async (cid: number, hunger?: string, restr: string[] = [], checkedIn?: boolean) => {
     setBasketsLoading((prev) => ({ ...prev, [cid]: true }));
@@ -94,21 +92,12 @@ export function useTableSession(
     setGuestDismissed((prev) => ({ ...prev, [cid]: new Set() }));
   };
 
-  // Swipe → return another dish of the SAME category (from the menu catalog).
-  // Pure: the slot owns what it displays, so we don't mutate the hint list here;
-  // we just exclude everything already shown / in the basket / handed out.
-  const replaceHint = async (cid: number, hint: HintDish): Promise<HintDish | null> => {
-    const used = usedHintIds.current[cid] ?? new Set<number>();
-    const exclude = new Set<number>([
-      ...(guestHints[cid] ?? []).map((h) => h.id),
-      ...(guestBaskets[cid] ?? []).map((i) => i.dish_id),
-      ...used,
-      hint.id,
-    ]);
-    const rep = await pickReplacement(hint.category, exclude);
+  // Swipe → cycle to the next/previous dish of the SAME category (wraps around,
+  // never locks up). Only basket dishes are skipped; the slot owns the display.
+  const replaceHint = async (cid: number, hint: HintDish, dir: "up" | "down"): Promise<HintDish | null> => {
+    const exclude = new Set<number>((guestBaskets[cid] ?? []).map((i) => i.dish_id));
+    const rep = await pickNextInCategory(hint.category, hint.id, exclude, dir);
     if (!rep) return null;
-    used.add(rep.id);
-    usedHintIds.current[cid] = used;
     return { id: rep.id, name: rep.name, price: Number(rep.price), tags: [], category: rep.category };
   };
 

@@ -204,7 +204,7 @@ export function TableOrderView() {
                   <HintStrip
                     hints={guestHints[guest.client_id] ?? []}
                     onAdd={(hint) => addHintDishLocally(guest.client_id, hint, guest.hunger, guestRestrictions(guest), guest.checkedIn)}
-                    onReplace={(hint) => replaceHint(guest.client_id, hint)}
+                    onReplace={(hint, dir) => replaceHint(guest.client_id, hint, dir)}
                   />
                 </div>
               );

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { getBasket, modifyBasket, removeBasketDish, getRecommendations } from "@/shared/api";
 import { fetchRealHints, type HintDish, type Recommendation } from "@/entities/recommendation";
-import { pickReplacement } from "@/entities/menu";
+import { pickNextInCategory } from "@/entities/menu";
 import type { BasketItem } from "@/entities/dish";
 import type { HungerLevel } from "@/shared/lib/hunger";
 
@@ -19,7 +19,6 @@ export function useGuestBasket(clientId: number, showToast: (m: string, t?: "ok"
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [hints, setHints] = useState<HintDish[]>([]);
   const [loading, setLoading] = useState(true);
-  const usedHintIds = useRef<Set<number>>(new Set());
 
   const loadBasket = () => {
     getBasket(clientId)
@@ -89,17 +88,11 @@ export function useGuestBasket(clientId: number, showToast: (m: string, t?: "ok"
     });
   };
 
-  // Swipe → return another dish of the same category (slot owns the display).
-  const replaceHint = async (hint: HintDish): Promise<HintDish | null> => {
-    const exclude = new Set<number>([
-      ...basket.map((i) => i.dish_id),
-      ...hints.map((h) => h.id),
-      ...usedHintIds.current,
-      hint.id,
-    ]);
-    const rep = await pickReplacement(hint.category, exclude);
+  // Swipe → cycle to the next/previous dish of the same category (wraps around).
+  const replaceHint = async (hint: HintDish, dir: "up" | "down"): Promise<HintDish | null> => {
+    const exclude = new Set<number>(basket.map((i) => i.dish_id));
+    const rep = await pickNextInCategory(hint.category, hint.id, exclude, dir);
     if (!rep) return null;
-    usedHintIds.current.add(rep.id);
     return { id: rep.id, name: rep.name, price: Number(rep.price), tags: [], category: rep.category };
   };
 
