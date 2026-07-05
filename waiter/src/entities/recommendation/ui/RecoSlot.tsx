@@ -112,34 +112,41 @@ export function RecoSlot({
 
   return (
     <div ref={el} data-tour={dataTour} className="relative w-28 h-[92px] flex-shrink-0 overflow-hidden rounded-xl touch-pan-x">
-      {anim ? (
-        <>
-          {/* outgoing card leaves in the swipe direction, continuing from the
-              finger's release offset (no snap back to 0) */}
-          <div
-            className="absolute inset-0"
-            style={{ transform: anim.run ? `translateY(${anim.dir === "up" ? "-100%" : "100%"})` : `translateY(${anim.from}px)`, transition: anim.run ? "transform 360ms cubic-bezier(0.22,1,0.36,1)" : "none" }}
-          >
-            <RecommendationCard hint={card} color={recColorFor(card.category)} onAdd={() => onAdd(card)} />
-          </div>
-          {/* incoming card enters from the opposite edge; the swap commits on ITS
-              transitionend so the settle is seamless */}
-          <div
-            className="absolute inset-0"
-            style={{ transform: anim.run ? "translateY(0)" : `translateY(${anim.dir === "up" ? "100%" : "-100%"})`, transition: anim.run ? "transform 360ms cubic-bezier(0.22,1,0.36,1)" : "none" }}
-            onTransitionEnd={(e) => { if (e.target === e.currentTarget && e.propertyName === "transform") settleRef.current?.(); }}
-          >
-            <RecommendationCard hint={anim.to} color={recColorFor(anim.to.category)} onAdd={() => onAdd(anim.to)} />
-          </div>
-        </>
-      ) : (
-        <div
-          className="absolute inset-0"
-          style={{ transform: `translateY(${drag}px)`, transition: dragging ? "none" : "transform 260ms cubic-bezier(0.22,1,0.36,1)" }}
-        >
-          <RecommendationCard hint={card} color={recColorFor(card.category)} onAdd={() => onAdd(card)} />
-        </div>
-      )}
+      {/* Both states render a KEYED ARRAY at the same level, so the div showing a
+          given dish is the SAME DOM node across the whole lifecycle. Before this,
+          the branch switch (fragment ↔ single div) remounted the visible card at
+          commit — the DOM churn read as a jump right after the card settled. Now
+          the settled incoming div is reused verbatim (transform 0 → 0, no churn). */}
+      {(anim
+        ? [
+            // outgoing card: continues from the finger's release offset
+            <div
+              key={`c-${card.id}`}
+              className="absolute inset-0"
+              style={{ transform: anim.run ? `translateY(${anim.dir === "up" ? "-100%" : "100%"})` : `translateY(${anim.from}px)`, transition: anim.run ? "transform 360ms cubic-bezier(0.22,1,0.36,1)" : "none" }}
+            >
+              <RecommendationCard hint={card} color={recColorFor(card.category)} onAdd={() => onAdd(card)} />
+            </div>,
+            // incoming card: slides in from the opposite edge; the swap commits
+            // on ITS transitionend so the settle is exact
+            <div
+              key={`c-${anim.to.id}`}
+              className="absolute inset-0"
+              style={{ transform: anim.run ? "translateY(0)" : `translateY(${anim.dir === "up" ? "100%" : "-100%"})`, transition: anim.run ? "transform 360ms cubic-bezier(0.22,1,0.36,1)" : "none" }}
+              onTransitionEnd={(e) => { if (e.target === e.currentTarget && e.propertyName === "transform") settleRef.current?.(); }}
+            >
+              <RecommendationCard hint={anim.to} color={recColorFor(anim.to.category)} onAdd={() => onAdd(anim.to)} />
+            </div>,
+          ]
+        : [
+            <div
+              key={`c-${card.id}`}
+              className="absolute inset-0"
+              style={{ transform: `translateY(${drag}px)`, transition: dragging ? "none" : "transform 260ms cubic-bezier(0.22,1,0.36,1)" }}
+            >
+              <RecommendationCard hint={card} color={recColorFor(card.category)} onAdd={() => onAdd(card)} />
+            </div>,
+          ])}
     </div>
   );
 }
