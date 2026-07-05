@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { getIikoTables, getActiveTables, createTableSession } from "@/shared/api";
 import { Toast } from "@/shared/ui/Toast";
 import { useToast } from "@/shared/lib/use-toast";
-import { startTour } from "@/features/onboarding";
 import type { IikoTable } from "../model/types";
 import { TableStep } from "./steps/TableStep";
 import { GuestsStep } from "./steps/GuestsStep";
@@ -101,15 +100,7 @@ function NewOrderPage() {
               <p className="text-xs text-ink-muted">{selectedTable.section_name}</p>
             )}
           </div>
-          <button
-            onClick={() => { startTour(); router.push("/dashboard"); }}
-            className="flex items-center gap-1 text-blue-500 text-xs font-semibold flex-shrink-0 active:scale-95 transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 10a8 8 0 11-16 0 8 8 0 0116 0z M12 8v4M12 16h.01" />
-            </svg>
-            Обучение
-          </button>
+          <div className="w-16" />
         </div>
       </header>
 

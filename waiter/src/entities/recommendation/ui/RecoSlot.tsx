@@ -34,6 +34,9 @@ export function RecoSlot({
   const st = useRef<{ x: number; y: number; lock: 0 | 1 | 2 } | null>(null);
   const dragRef = useRef(0);
   const busy = useRef(false);
+  // Commit-the-swap callback; fired by the incoming card's transitionend (the
+  // fixed timeout used before could beat the transition → end-of-slide snap).
+  const settleRef = useRef<(() => void) | null>(null);
 
   // Re-seed when the parent hands a fresh recommendation set.
   useEffect(() => { setCard(initial); setAnim(null); setDrag(0); busy.current = false; }, [initial.id]);
@@ -79,7 +82,19 @@ export function RecoSlot({
         setDrag(0);
         dragRef.current = 0;
         requestAnimationFrame(() => requestAnimationFrame(() => setAnim((a) => (a ? { ...a, run: true } : a))));
-        window.setTimeout(() => { setCard(next); setAnim(null); busy.current = false; }, 380);
+        // Swap state exactly when the slide transition finishes (transitionend),
+        // never mid-flight — the timeout is only a fallback (hidden tab etc.).
+        let fired = false;
+        const finish = () => {
+          if (fired) return;
+          fired = true;
+          settleRef.current = null;
+          setCard(next);
+          setAnim(null);
+          busy.current = false;
+        };
+        settleRef.current = finish;
+        window.setTimeout(finish, 650);
       });
     };
 
@@ -107,10 +122,12 @@ export function RecoSlot({
           >
             <RecommendationCard hint={card} color={recColorFor(card.category)} onAdd={() => onAdd(card)} />
           </div>
-          {/* incoming card enters from the opposite edge */}
+          {/* incoming card enters from the opposite edge; the swap commits on ITS
+              transitionend so the settle is seamless */}
           <div
             className="absolute inset-0"
             style={{ transform: anim.run ? "translateY(0)" : `translateY(${anim.dir === "up" ? "100%" : "-100%"})`, transition: anim.run ? "transform 360ms cubic-bezier(0.22,1,0.36,1)" : "none" }}
+            onTransitionEnd={(e) => { if (e.target === e.currentTarget && e.propertyName === "transform") settleRef.current?.(); }}
           >
             <RecommendationCard hint={anim.to} color={recColorFor(anim.to.category)} onAdd={() => onAdd(anim.to)} />
           </div>
