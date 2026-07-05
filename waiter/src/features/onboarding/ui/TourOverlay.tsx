@@ -85,10 +85,11 @@ export function TourOverlay() {
       {/* Tap catcher (blocks the page; controls sit above it) */}
       <div className="absolute inset-0" onClick={(e) => e.stopPropagation()} />
 
-      {/* Spotlight — one element, dim + white ring via box-shadow, hugs the shape */}
+      {/* Spotlight — one element that hugs the anchor's shape: crisp thin ring,
+          a soft halo, and the surrounding dim, all via layered box-shadows. */}
       {hole ? (
         <div
-          key={step.id}
+          key={`spot-${step.id}`}
           className="absolute pointer-events-none"
           style={{
             top: hole.top,
@@ -96,14 +97,15 @@ export function TourOverlay() {
             width: hole.width,
             height: hole.height,
             borderRadius: hole.radius,
-            boxShadow: "0 0 0 3px rgba(255,255,255,0.9), 0 0 0 9999px rgba(0,0,0,0.62)",
+            boxShadow:
+              "0 0 0 1.5px rgba(255,255,255,0.85), 0 0 22px 2px rgba(255,255,255,0.18), 0 0 0 9999px rgba(6,10,18,0.68)",
             animation: step.demo === "drag"
               ? "tour-drag-bob 1.4s ease-in-out infinite"
-              : "tour-pop 0.28s ease-out",
+              : "tour-pop 0.3s cubic-bezier(0.2,0.9,0.25,1)",
           }}
         />
       ) : (
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0" style={{ background: "rgba(6,10,18,0.68)" }} />
       )}
 
       {/* Demo affordances */}
@@ -117,45 +119,50 @@ export function TourOverlay() {
 
       {/* Tooltip */}
       <div
-        className="absolute animate-panel-expand"
+        key={`tip-${step.id}`}
+        className="absolute animate-tour-tip"
         style={{ left: ttLeft, top: ttTop, width: TT_W, transform: below ? undefined : "translateY(-100%)" }}
       >
         <div
-          className={`absolute w-3 h-3 rotate-45 bg-surface ${below ? "-top-1.5" : "-bottom-1.5"}`}
+          className={`absolute w-3.5 h-3.5 rotate-45 rounded-[3px] bg-surface ${below ? "-top-1.5" : "-bottom-1.5"}`}
           style={{ left: arrowLeft }}
         />
-        <div className="relative bg-surface rounded-2xl shadow-xl p-4">
-          <p className="text-[15px] font-semibold text-ink leading-snug">{step.text}</p>
-          <div className="flex items-center justify-between mt-4">
-            <button
-              onClick={prevStep}
-              disabled={index === 0}
-              className={`text-sm font-semibold px-3 py-1.5 rounded-lg ${index === 0 ? "text-ink-subtle/40" : "text-ink-muted active:bg-inset"}`}
-            >
-              Назад
+        <div className="relative bg-surface rounded-[20px] p-4 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.45)] ring-1 ring-black/5">
+          {/* eyebrow: step counter + slim progress */}
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="text-[11px] font-bold tracking-wide uppercase text-ink-subtle">
+              Обучение · {index + 1}/{TOUR_STEPS.length}
+            </span>
+            <button onClick={finishTour} className="text-[11px] font-semibold text-ink-subtle active:text-ink-muted transition">
+              Пропустить
             </button>
-            <div className="flex items-center gap-1.5">
-              {TOUR_STEPS.map((_, i) => (
-                <span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === index ? "w-4 bg-blue-500" : "w-1.5 bg-ink-subtle/40"}`} />
-              ))}
-            </div>
+          </div>
+          <div className="h-1 rounded-full bg-inset overflow-hidden mb-3">
+            <div className="h-full rounded-full bg-blue-500 transition-[width] duration-300 ease-out" style={{ width: `${((index + 1) / TOUR_STEPS.length) * 100}%` }} />
+          </div>
+
+          <p className="text-[15px] font-semibold text-ink leading-snug">{step.text}</p>
+
+          <div className="flex items-center justify-between mt-4">
+            {index > 0 ? (
+              <button onClick={prevStep} className="text-sm font-semibold text-ink-muted px-2 py-1.5 -ml-2 rounded-lg active:bg-inset transition">
+                Назад
+              </button>
+            ) : <span />}
             <button
               onClick={nextStep}
-              className="text-sm font-bold px-4 py-1.5 rounded-lg bg-blue-500 text-white active:scale-95 transition"
+              className="inline-flex items-center gap-1 text-sm font-bold pl-5 pr-4 py-2 rounded-full bg-blue-500 text-white shadow-sm active:scale-[0.97] transition"
             >
               {isLast ? "Готово" : "Далее"}
+              {!isLast && (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              )}
             </button>
           </div>
         </div>
       </div>
-
-      {/* Skip */}
-      <button
-        onClick={finishTour}
-        className="absolute top-4 right-4 text-xs font-semibold text-white/80 bg-black/40 rounded-full px-3 py-1.5 active:scale-95 transition"
-      >
-        Пропустить
-      </button>
     </div>
   );
 }

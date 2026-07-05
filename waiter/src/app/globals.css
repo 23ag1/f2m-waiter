@@ -249,11 +249,17 @@
   35% { opacity: 1; }
   100% { transform: translateY(-14px); opacity: 0; }
 }
-/* spotlight ring appears with a soft pop when a step changes */
+/* spotlight settles in with a soft scale when a step changes */
 @keyframes tour-pop {
-  from { box-shadow: 0 0 0 6px rgba(255,255,255,0), 0 0 0 9999px rgba(0,0,0,0.62); }
-  to { box-shadow: 0 0 0 3px rgba(255,255,255,0.9), 0 0 0 9999px rgba(0,0,0,0.62); }
+  from { transform: scale(0.94); opacity: 0.6; }
+  to { transform: scale(1); opacity: 1; }
 }
+/* tooltip enters with a gentle spring */
+@keyframes tour-tip-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-tour-tip { animation: tour-tip-in 0.26s cubic-bezier(0.2, 0.9, 0.25, 1); }
 
 /* Hide scrollbar for horizontal scroll areas */
 .scrollbar-hide {
