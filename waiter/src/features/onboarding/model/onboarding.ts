@@ -29,7 +29,7 @@ export const TOUR_STEPS: TourStep[] = [
   { id: "rec-color",     phase: "recset",    anchor: "rec-dot",       text: "Нажмите на кружок, чтобы сменить цвет шапки категории", placement: "bottom", demo: "tap" },
   { id: "rec-done",      phase: "recset",    anchor: "rec-back",       text: "Всё настроено! Теперь можно начинать принимать заказы", placement: "bottom" },
   { id: "order-hints",   phase: "order",     anchor: "hint-strip",    text: "Здесь вы найдёте подсказки для гостя", placement: "bottom" },
-  { id: "order-swipe",   phase: "order",     anchor: "hint-card",     text: "Свайпните карточку вверх — её заменит другое блюдо той же категории", placement: "bottom", demo: "swipe" },
+  { id: "order-swipe",   phase: "order",     anchor: "hint-card",     text: "Свайпните карточку вверх или вниз — её заменит другое блюдо той же категории", placement: "bottom", demo: "swipe" },
   { id: "order-collapse",phase: "order",     anchor: "hint-collapse", text: "Нажмите сюда, чтобы свернуть подсказки", placement: "bottom" },
 ];
 

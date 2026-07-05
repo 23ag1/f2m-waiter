@@ -80,23 +80,15 @@ export function TourOverlay() {
   const below = !hole || step.placement === "bottom";
   const ttTop = hole ? (below ? hole.top + hole.height + 12 : hole.top - 12) : vh / 2;
 
-  // On the swipe step, leave the highlighted card interactive so the waiter can
-  // actually swipe it during the tour — the catcher becomes 4 rects around the hole.
-  const interactiveHole = hole && step.demo === "swipe";
+  // On demo steps (drag / pick colour / swipe) the whole screen stays interactive
+  // so the waiter can actually try the gesture during the tour. Other steps block
+  // the page and advance via the buttons.
+  const interactive = !!step.demo;
 
   return (
     <div className="fixed inset-0 z-[100] pointer-events-none" role="dialog" aria-modal="true">
-      {/* Tap catcher — blocks the page, but opens a gap over an interactive hole */}
-      {interactiveHole ? (
-        <>
-          <div className="absolute left-0 right-0 top-0 pointer-events-auto" style={{ height: Math.max(0, hole.top) }} onClick={(e) => e.stopPropagation()} />
-          <div className="absolute left-0 right-0 pointer-events-auto" style={{ top: hole.top + hole.height, bottom: 0 }} onClick={(e) => e.stopPropagation()} />
-          <div className="absolute pointer-events-auto" style={{ top: hole.top, left: 0, width: Math.max(0, hole.left), height: hole.height }} onClick={(e) => e.stopPropagation()} />
-          <div className="absolute pointer-events-auto" style={{ top: hole.top, left: hole.left + hole.width, right: 0, height: hole.height }} onClick={(e) => e.stopPropagation()} />
-        </>
-      ) : (
-        <div className="absolute inset-0 pointer-events-auto" onClick={(e) => e.stopPropagation()} />
-      )}
+      {/* Tap catcher — blocks the page except on interactive demo steps */}
+      {!interactive && <div className="absolute inset-0 pointer-events-auto" onClick={(e) => e.stopPropagation()} />}
 
       {/* Spotlight — one element that hugs the anchor's shape: crisp thin ring,
           a soft halo, and the surrounding dim, all via layered box-shadows. */}
@@ -180,19 +172,19 @@ export function TourOverlay() {
   );
 }
 
-// Clean upward "swipe" affordance: a stacked double chevron in a soft pill,
-// floating up over the card centre, on loop.
+// "Swipe both ways" affordance: a soft pill with up + down chevrons that rocks
+// vertically over the card centre, on loop.
 function SwipeHint({ hole }: { hole: Hole }) {
   const cx = hole.left + hole.width / 2;
   const top = hole.top + hole.height / 2 - 16;
   return (
     <div
       className="absolute pointer-events-none flex items-center justify-center rounded-full bg-blue-500/90 shadow-lg"
-      style={{ left: cx - 16, top, width: 32, height: 32, animation: "tour-swipe-up 1.15s ease-in-out infinite" }}
+      style={{ left: cx - 16, top, width: 32, height: 32, animation: "tour-swipe-both 1.5s ease-in-out infinite" }}
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 13l6-6 6 6" />
-        <path d="M6 19l6-6 6 6" opacity="0.5" />
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M8 9l4-4 4 4" />
+        <path d="M8 15l4 4 4-4" />
       </svg>
     </div>
   );

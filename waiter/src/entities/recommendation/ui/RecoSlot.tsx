@@ -75,7 +75,7 @@ export function RecoSlot({
         if (!next) { busy.current = false; return; }
         setAnim({ to: next, dir, run: false });
         requestAnimationFrame(() => requestAnimationFrame(() => setAnim((a) => (a ? { ...a, run: true } : a))));
-        window.setTimeout(() => { setCard(next); setAnim(null); busy.current = false; }, 300);
+        window.setTimeout(() => { setCard(next); setAnim(null); busy.current = false; }, 360);
       });
     };
 
@@ -97,23 +97,23 @@ export function RecoSlot({
         <>
           {/* outgoing card leaves in the swipe direction */}
           <div
-            className="absolute inset-0 transition-transform duration-300 ease-out"
-            style={{ transform: anim.run ? `translateY(${anim.dir === "up" ? "-100%" : "100%"})` : "translateY(0)" }}
+            className="absolute inset-0"
+            style={{ transform: anim.run ? `translateY(${anim.dir === "up" ? "-100%" : "100%"})` : "translateY(0)", transition: "transform 360ms cubic-bezier(0.22,1,0.36,1)" }}
           >
             <RecommendationCard hint={card} color={recColorFor(card.category)} onAdd={() => onAdd(card)} />
           </div>
           {/* incoming card enters from the opposite edge */}
           <div
-            className="absolute inset-0 transition-transform duration-300 ease-out"
-            style={{ transform: anim.run ? "translateY(0)" : `translateY(${anim.dir === "up" ? "100%" : "-100%"})` }}
+            className="absolute inset-0"
+            style={{ transform: anim.run ? "translateY(0)" : `translateY(${anim.dir === "up" ? "100%" : "-100%"})`, transition: "transform 360ms cubic-bezier(0.22,1,0.36,1)" }}
           >
             <RecommendationCard hint={anim.to} color={recColorFor(anim.to.category)} onAdd={() => onAdd(anim.to)} />
           </div>
         </>
       ) : (
         <div
-          className={`absolute inset-0 ${dragging ? "" : "transition-transform duration-200 ease-out"}`}
-          style={{ transform: `translateY(${drag}px)` }}
+          className="absolute inset-0"
+          style={{ transform: `translateY(${drag}px)`, transition: dragging ? "none" : "transform 260ms cubic-bezier(0.22,1,0.36,1)" }}
         >
           <RecommendationCard hint={card} color={recColorFor(card.category)} onAdd={() => onAdd(card)} />
         </div>

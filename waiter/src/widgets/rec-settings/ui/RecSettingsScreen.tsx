@@ -28,7 +28,7 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
   // Smooth reorder: the dragged row follows the finger; the others slide out of
   // the way with a transition (FLIP-style). The array is only committed on drop,
   // so nothing jumps mid-drag.
-  const [drag, setDrag] = useState<{ startIndex: number; dy: number } | null>(null);
+  const [drag, setDrag] = useState<{ startIndex: number; dy: number; settling?: boolean } | null>(null);
   const startY = useRef(0);
 
   useEffect(() => {
@@ -56,6 +56,7 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
     : null;
 
   const onDown = (e: React.PointerEvent, idx: number) => {
+    if (drag?.settling) return;
     e.preventDefault();
     (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     startY.current = e.clientY;
@@ -64,7 +65,7 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
   };
   const onMove = (e: React.PointerEvent) => {
     setDrag((d) => {
-      if (!d) return d;
+      if (!d || d.settling) return d;
       const maxUp = -d.startIndex * ROW_H;
       const maxDown = (order.length - 1 - d.startIndex) * ROW_H;
       const dy = Math.max(maxUp, Math.min(maxDown, e.clientY - startY.current));
@@ -72,14 +73,22 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
     });
   };
   const onUp = () => {
-    if (drag && targetIndex !== null && targetIndex !== drag.startIndex) {
-      const next = [...order];
-      const [m] = next.splice(drag.startIndex, 1);
-      next.splice(targetIndex, 0, m);
-      setLocalOrder(next);
-      setOrder(next);
-    }
-    setDrag(null);
+    if (!drag || drag.settling) return;
+    const target = targetIndex ?? drag.startIndex;
+    const startIndex = drag.startIndex;
+    // Glide the dragged row into its target slot first, then commit the order —
+    // so the row settles smoothly instead of snapping on release.
+    setDrag({ startIndex, dy: (target - startIndex) * ROW_H, settling: true });
+    window.setTimeout(() => {
+      if (target !== startIndex) {
+        const next = [...order];
+        const [m] = next.splice(startIndex, 1);
+        next.splice(target, 0, m);
+        setLocalOrder(next);
+        setOrder(next);
+      }
+      setDrag(null);
+    }, 190);
   };
 
   return (
@@ -116,7 +125,7 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
             return (
               <div
                 key={cat}
-                className={`relative ${isDrag ? "z-20" : "z-0 transition-transform duration-200 ease-out"}`}
+                className={`relative ${isDrag ? (drag?.settling ? "z-20 transition-transform duration-200 ease-out" : "z-20") : "z-0 transition-transform duration-200 ease-out"}`}
                 style={{ transform: `translateY(${translate}px)` }}
               >
                 {/* Row */}
