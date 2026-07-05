@@ -17,6 +17,8 @@ export function TourOverlay() {
   const router = useRouter();
   const pathname = usePathname();
   const [hole, setHole] = useState<Hole | null>(null);
+  const [altActive, setAltActive] = useState(false); // alt anchor (e.g. opened picker) matched
+  const [orderWaited, setOrderWaited] = useState(false); // safety valve for the order-phase veil
   const navigating = useRef(false);
 
   // Order phase needs a real order card — jump to the first active table.
@@ -35,15 +37,28 @@ export function TourOverlay() {
       .catch(() => finishTour());
   }, [step, pathname, router]);
 
+  // The order-phase veil hides the page until the hint strip is on screen; the
+  // timer is a safety valve so an order with no recommendations can't veil forever.
+  useEffect(() => {
+    if (step?.phase !== "order") { setOrderWaited(false); return; }
+    const t = window.setTimeout(() => setOrderWaited(true), 5000);
+    return () => window.clearTimeout(t);
+  }, [step?.phase]);
+
   // Keep the highlight glued to the anchor (and match its border-radius) while
   // overlays / scroll animate.
   useEffect(() => {
-    if (!step) { setHole(null); return; }
+    setHole(null); // drop the previous step's rect so stale anchors don't linger
+    if (!step) return;
     let raf = 0;
     let last = "";
     const pad = 6;
     const tick = () => {
-      const el = document.querySelector(`[data-tour="${step.anchor}"]`);
+      // Prefer the alt anchor when it exists (e.g. the colour picker once opened),
+      // so the spotlight + tooltip move to what the waiter is actually using.
+      const altEl = step.anchorAlt ? document.querySelector(`[data-tour="${step.anchorAlt}"]`) : null;
+      const el = altEl || document.querySelector(`[data-tour="${step.anchor}"]`);
+      setAltActive(!!altEl);
       if (el) {
         const r = el.getBoundingClientRect();
         const cr = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
@@ -85,6 +100,21 @@ export function TourOverlay() {
   // the page and advance via the buttons.
   const interactive = !!step.demo;
 
+  // While hopping to the order card (recset → order) the dashboard/loading page
+  // would flash through — cover the whole transition with an opaque veil until
+  // the hint strip is actually on screen (or the safety timer fires).
+  if (step.phase === "order" && (!pathname.startsWith("/dashboard/basket/") || (!hole && !orderWaited))) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-app flex flex-col items-center justify-center gap-3" role="dialog" aria-modal="true">
+        <svg className="h-7 w-7 text-blue-500 animate-spin" viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+          <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+        </svg>
+        <p className="text-sm font-semibold text-ink-muted">Открываем заказ…</p>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-[100] pointer-events-none" role="dialog" aria-modal="true">
       {/* Tap catcher — blocks the page except on interactive demo steps */}
@@ -115,7 +145,7 @@ export function TourOverlay() {
 
       {/* Demo affordances */}
       {hole && step.demo === "swipe" && <SwipeHint hole={hole} />}
-      {hole && step.demo === "tap" && (
+      {hole && step.demo === "tap" && !altActive && (
         <span
           className="absolute pointer-events-none ring-2 ring-white/80 animate-ping"
           style={{ top: hole.top, left: hole.left, width: hole.width, height: hole.height, borderRadius: hole.radius }}

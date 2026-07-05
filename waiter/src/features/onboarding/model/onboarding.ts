@@ -17,6 +17,7 @@ export interface TourStep {
   id: string;
   phase: TourPhase;
   anchor: string;              // data-tour value to point at
+  anchorAlt?: string;          // preferred anchor when present (e.g. an expanded panel)
   text: string;
   placement: "top" | "bottom";
   demo?: TourDemo;             // optional animated affordance
@@ -26,7 +27,7 @@ export const TOUR_STEPS: TourStep[] = [
   { id: "avatar",        phase: "dashboard", anchor: "avatar",        text: "Настрой рекомендации под себя — начни здесь", placement: "bottom" },
   { id: "profile-rec",   phase: "profile",   anchor: "profile-rec",   text: "Открой «Настройки рекомендаций»", placement: "bottom" },
   { id: "rec-drag",      phase: "recset",    anchor: "rec-handle",    text: "Перетащите категорию за ручку, чтобы изменить порядок", placement: "bottom", demo: "drag" },
-  { id: "rec-color",     phase: "recset",    anchor: "rec-dot",       text: "Нажмите на кружок, чтобы сменить цвет шапки категории", placement: "bottom", demo: "tap" },
+  { id: "rec-color",     phase: "recset",    anchor: "rec-dot",       anchorAlt: "rec-picker", text: "Нажмите на кружок и выберите цвет шапки категории", placement: "bottom", demo: "tap" },
   { id: "rec-done",      phase: "recset",    anchor: "rec-back",       text: "Всё настроено! Теперь можно начинать принимать заказы", placement: "bottom" },
   { id: "order-hints",   phase: "order",     anchor: "hint-strip",    text: "Здесь вы найдёте подсказки для гостя", placement: "bottom" },
   { id: "order-swipe",   phase: "order",     anchor: "hint-card",     text: "Свайпните карточку вверх или вниз — её заменит другое блюдо той же категории", placement: "bottom", demo: "swipe" },

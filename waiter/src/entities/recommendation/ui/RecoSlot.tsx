@@ -26,7 +26,9 @@ export function RecoSlot({
   const [card, setCard] = useState(initial);
   const [drag, setDrag] = useState(0);
   const [dragging, setDragging] = useState(false);
-  const [anim, setAnim] = useState<{ to: HintDish; dir: "up" | "down"; run: boolean } | null>(null);
+  // `from` = the finger offset at release, so the outgoing card CONTINUES from
+  // where it was let go instead of snapping back to 0 first (that was the jerk).
+  const [anim, setAnim] = useState<{ to: HintDish; dir: "up" | "down"; from: number; run: boolean } | null>(null);
 
   const el = useRef<HTMLDivElement>(null);
   const st = useRef<{ x: number; y: number; lock: 0 | 1 | 2 } | null>(null);
@@ -66,16 +68,18 @@ export function RecoSlot({
       setDragging(false);
       if (!wasV || busy.current) { setDrag(0); dragRef.current = 0; return; }
       const d = dragRef.current;
-      setDrag(0);
-      dragRef.current = 0;
-      if (Math.abs(d) < THRESHOLD) return;
+      if (Math.abs(d) < THRESHOLD) { setDrag(0); dragRef.current = 0; return; }
       const dir: "up" | "down" = d < 0 ? "up" : "down";
       busy.current = true;
+      // HOLD the card at the release offset while the replacement resolves —
+      // resetting to 0 here caused a visible snap-back before the slide-out.
       onReplace(card, dir).then((next) => {
-        if (!next) { busy.current = false; return; }
-        setAnim({ to: next, dir, run: false });
+        if (!next) { busy.current = false; setDrag(0); dragRef.current = 0; return; }
+        setAnim({ to: next, dir, from: dragRef.current, run: false });
+        setDrag(0);
+        dragRef.current = 0;
         requestAnimationFrame(() => requestAnimationFrame(() => setAnim((a) => (a ? { ...a, run: true } : a))));
-        window.setTimeout(() => { setCard(next); setAnim(null); busy.current = false; }, 360);
+        window.setTimeout(() => { setCard(next); setAnim(null); busy.current = false; }, 380);
       });
     };
 
@@ -95,17 +99,18 @@ export function RecoSlot({
     <div ref={el} data-tour={dataTour} className="relative w-28 h-[92px] flex-shrink-0 overflow-hidden rounded-xl touch-pan-x">
       {anim ? (
         <>
-          {/* outgoing card leaves in the swipe direction */}
+          {/* outgoing card leaves in the swipe direction, continuing from the
+              finger's release offset (no snap back to 0) */}
           <div
             className="absolute inset-0"
-            style={{ transform: anim.run ? `translateY(${anim.dir === "up" ? "-100%" : "100%"})` : "translateY(0)", transition: "transform 360ms cubic-bezier(0.22,1,0.36,1)" }}
+            style={{ transform: anim.run ? `translateY(${anim.dir === "up" ? "-100%" : "100%"})` : `translateY(${anim.from}px)`, transition: anim.run ? "transform 360ms cubic-bezier(0.22,1,0.36,1)" : "none" }}
           >
             <RecommendationCard hint={card} color={recColorFor(card.category)} onAdd={() => onAdd(card)} />
           </div>
           {/* incoming card enters from the opposite edge */}
           <div
             className="absolute inset-0"
-            style={{ transform: anim.run ? "translateY(0)" : `translateY(${anim.dir === "up" ? "100%" : "-100%"})`, transition: "transform 360ms cubic-bezier(0.22,1,0.36,1)" }}
+            style={{ transform: anim.run ? "translateY(0)" : `translateY(${anim.dir === "up" ? "100%" : "-100%"})`, transition: anim.run ? "transform 360ms cubic-bezier(0.22,1,0.36,1)" : "none" }}
           >
             <RecommendationCard hint={anim.to} color={recColorFor(anim.to.category)} onAdd={() => onAdd(anim.to)} />
           </div>

@@ -30,6 +30,9 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
   // so nothing jumps mid-drag.
   const [drag, setDrag] = useState<{ startIndex: number; dy: number; settling?: boolean } | null>(null);
   const startY = useRef(0);
+  // The tour anchors stick to ONE category (the initial top row). Anchoring by
+  // index made the spotlight jump to whatever row landed on top after a drop.
+  const tourCat = useRef<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -45,6 +48,7 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
       const initial = [...base, ...extra];
       setLocalOrder(initial);
       setSelected((s) => s ?? initial[0] ?? null);
+      if (!tourCat.current) tourCat.current = initial[0] ?? null;
     });
     return () => { alive = false; };
   }, [open]);
@@ -137,7 +141,7 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
                   {/* drag handle */}
                   <button
                     aria-label="Перетащить"
-                    data-tour={idx === 0 ? "rec-handle" : undefined}
+                    data-tour={cat === tourCat.current ? "rec-handle" : undefined}
                     className="shrink-0 -ml-1 p-1 text-ink-subtle touch-none cursor-grab active:cursor-grabbing"
                     onPointerDown={(e) => onDown(e, idx)}
                     onPointerMove={onMove}
@@ -153,12 +157,12 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
                   </button>
                   <span className="flex-1 min-w-0 truncate text-[15px] font-semibold text-ink">{cat}</span>
                   {/* current colour dot — also toggles the picker */}
-                  <span data-tour={idx === 0 ? "rec-dot" : undefined} className={`shrink-0 w-7 h-7 rounded-full ${color.dot} transition ${isSel ? "ring-2 ring-offset-2 ring-offset-surface ring-ink/40" : ""}`} />
+                  <span data-tour={cat === tourCat.current ? "rec-dot" : undefined} className={`shrink-0 w-7 h-7 rounded-full ${color.dot} transition ${isSel ? "ring-2 ring-offset-2 ring-offset-surface ring-ink/40" : ""}`} />
                 </div>
 
                 {/* Inline colour picker for this category */}
                 {showPicker && (
-                  <div className="animate-panel-expand bg-inset/50 px-3 pt-2 pb-3">
+                  <div data-tour="rec-picker" className="animate-panel-expand bg-inset/50 px-3 pt-2 pb-3">
                     <div className="flex items-center justify-between gap-1">
                       {REC_COLOR_KEYS.map((key) => {
                         const active = colorKeyFor(cat) === key;
