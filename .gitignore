@@ -13,3 +13,9 @@ build/
 .idea/
 .claude/
 f2m_pg_schema-screenshot.png
+# Word-документы (генерятся из md)
+*.docx
+# Внутренние доки Кофемании (не держим в репо)
+coffemania/SPEC_AB_recommendations.md
+coffemania/report.md
+coffemania/PLAN_coffeemania_integration.md

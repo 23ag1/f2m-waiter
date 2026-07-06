@@ -36,6 +36,9 @@ services:
       dockerfile: Dockerfile
     container_name: f2m_engine
     restart: unless-stopped
+    ports:
+      # host 1489 -> container 1488. 1488 на хосте занят движком X5 (не трогаем).
+      - "127.0.0.1:1489:1488"
     env_file: .env
     environment:
       - POSTGRES_HOST=postgres
@@ -189,6 +192,11 @@ services:
       - POSTGRES_DB=f2m_platform
       - PREMIUM_BONUS_API_KEY=${PREMIUM_BONUS_API_KEY}
       - PREMIUMBONUS_API_TOKEN=${PREMIUMBONUS_API_TOKEN}
+      - F2M_ENGINE_URL=http://f2m-engine:1488
+      - COFFEEMANIA_API_KEY=${COFFEEMANIA_API_KEY:-}
+      - COFFEEMANIA_DATA_DIR=/data/coffeemania
+    volumes:
+      - ./coffemania:/data/coffeemania:ro
     networks:
       - food2mood_net
     depends_on:
@@ -214,6 +222,27 @@ services:
     depends_on:
       - f2m-engine
       - postgres
+
+  coffeemania-puller:
+    build:
+      context: ./integrations/coffeemania
+      dockerfile: Dockerfile
+    container_name: f2m_coffeemania_puller
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=f2m_platform
+      - COFFEEMANIA_INFO_URL=https://relay2.coffeemania.ru:5015
+      - MENU_INTERVAL_SEC=3600
+      - STOPLIST_INTERVAL_SEC=900
+    networks:
+      - food2mood_net
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   nginx:
     image: nginx:alpine

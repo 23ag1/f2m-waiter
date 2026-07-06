@@ -8,7 +8,8 @@ from backend.schemas.waiter import (
     QRScanRequest, ClientResponse,
     DishModifyRequest, DishRemoveRequest,
     PrintBillRequest, OrderSendRequest,
-    CreateTableSessionRequest, SendSessionRequest
+    CreateTableSessionRequest, SendSessionRequest,
+    SendCourseRequest, SplitDishRequest
 )
 
 # Using existing Database logic to not break the system
@@ -16,6 +17,7 @@ from iiko_f.iiko_order import (
     send_order_to_iiko, get_iiko_token, get_organization_id,
     get_terminal_group_id, print_iiko_bill, get_all_tables,
     get_table_id, get_active_order_for_table, resolve_basket_to_iiko_items,
+    get_order_item_statuses,
     create_iiko_order, add_items_to_iiko_order, get_iiko_stop_list
 )
 
@@ -72,11 +74,122 @@ async def _sync_stop_list_to_engine(dish_ids: list[int]) -> None:
 _stop_list_cache: Dict[str, Dict[str, Any]] = {}
 STOP_LIST_TTL = 60  # seconds
 
+# In-memory cache for kitchen (per-dish) statuses, keyed by iiko table id.
+# Frontend polls this every few seconds (see waiter/STATUS-CONTRACT.md) — cache
+# keeps us from hammering iiko's order/by_table on every poll.
+_kitchen_status_cache: Dict[str, Dict[str, Any]] = {}
+KITCHEN_STATUS_TTL = 5  # seconds
+
+# iiko OrderItemStatus -> our status key (matches DISH_STATUS_MAP / BACKEND_STATUS_MAP
+# in waiter/src/entities/dish/model/dish-status.ts and entities/table/model/status.ts)
+_ITEM_STATUS_MAP = {
+    "PrintedNotCooking": "printed",
+    "CookingStarted": "printed",
+    "CookingCompleted": "ready",
+    "Served": "served",
+}
+# iiko order-level status -> our table status key
+_ORDER_STATUS_MAP = {
+    "Bill": "precheck",
+}
+
+
+def _get_kitchen_status(iiko_table_id: str, waiter_id: int, db) -> Dict[str, Any]:
+    """Returns {'table_status': str, 'dish_statuses': {dish_id(int): status_key}}.
+
+    Cached per iiko table id for KITCHEN_STATUS_TTL seconds. Never raises — on any
+    error (no iiko key configured, iiko unreachable, no active order) falls back to
+    an empty result, which the frontend already treats as 'not sent yet' (blue/new).
+    """
+    empty = {"table_status": None, "dish_statuses": {}}
+    if not iiko_table_id:
+        return empty
+
+    now = time.time()
+    cached = _kitchen_status_cache.get(iiko_table_id)
+    if cached and (now - cached["timestamp"]) < KITCHEN_STATUS_TTL:
+        return cached["data"]
+
+    try:
+        token, org_id, _terminal_id = _get_iiko_credentials(waiter_id, db)
+        raw = get_order_item_statuses(token, org_id, iiko_table_id)
+    except HTTPException:
+        _kitchen_status_cache[iiko_table_id] = {"data": empty, "timestamp": now}
+        return empty
+    except Exception as e:
+        print(f"[KITCHEN-STATUS] ⚠️ {e}")
+        _kitchen_status_cache[iiko_table_id] = {"data": empty, "timestamp": now}
+        return empty
+
+    if not raw.get("order_id"):
+        _kitchen_status_cache[iiko_table_id] = {"data": empty, "timestamp": now}
+        return empty
+
+    all_menu = db.menu_get()
+    iiko_id_to_dish_id = {dish[10]: dish[0] for dish in all_menu if len(dish) > 10 and dish[10]}
+
+    status_priority = {"printed": 0, "ready": 1, "served": 2}
+    dish_statuses: Dict[int, str] = {}
+    item_status_keys = set()
+    for it in raw.get("items", []):
+        product_id = it.get("productId")
+        dish_id = iiko_id_to_dish_id.get(product_id)
+        status_key = _ITEM_STATUS_MAP.get(it.get("status"))
+        if dish_id is None or status_key is None:
+            continue
+        # If a dish has multiple lines (e.g. split halves), show the "least done" status.
+        current = dish_statuses.get(dish_id)
+        if current is None or status_priority[status_key] < status_priority[current]:
+            dish_statuses[dish_id] = status_key
+        item_status_keys.add(status_key)
+
+    order_status_key = _ORDER_STATUS_MAP.get(raw.get("order_status"))
+    if order_status_key:
+        table_status = order_status_key
+    elif not item_status_keys:
+        table_status = "new"
+    elif "printed" in item_status_keys:
+        table_status = "printed"
+    elif "ready" in item_status_keys:
+        table_status = "ready"
+    else:
+        table_status = "served"
+
+    result = {"table_status": table_status, "dish_statuses": dish_statuses}
+    _kitchen_status_cache[iiko_table_id] = {"data": result, "timestamp": now}
+    return result
+
+
+def _get_dish_statuses_for_client(client_id: int, db) -> Dict[int, str]:
+    """Looks up which active table this guest belongs to (if any) and returns its
+    per-dish kitchen status map. Empty dict if the guest isn't seated at a table
+    with a live iiko order yet (nothing has been sent to the kitchen)."""
+    row = db.cursor.execute(
+        """
+        SELECT t.waiter_id, t.iiko_table_id
+        FROM waiter_active_table_guests g
+        JOIN waiter_active_tables t ON t.id = g.active_table_id
+        WHERE g.client_id = ? AND t.status = 'open'
+        """,
+        (client_id,)
+    ).fetchone()
+    if not row or not row[1]:
+        return {}
+    return _get_kitchen_status(row[1], row[0], db)["dish_statuses"]
+
 # Restaurant passwords loaded from env RESTAURANT_PASSWORDS_JSON={"IQ":"...",...}
 import json as _json_pwd
 RESTAURANT_PASSWORDS: Dict[str, str] = _json_pwd.loads(
     os.getenv("RESTAURANT_PASSWORDS_JSON", "{}")
 )
+
+def _is_split_entry(dish_data: list) -> bool:
+    """True if this basket entry is one half of a dish split between two guests
+    (index 5 = {'split_guest_id': client_id}, set by /table/{id}/split-dish).
+    Such entries must stay as separate order lines — never merged by dish name —
+    so iiko keeps the guestId tag on each half for check-splitting."""
+    return len(dish_data) > 5 and isinstance(dish_data[5], dict) and dish_data[5].get("split_guest_id") is not None
+
 
 _db_instance = None
 
@@ -242,24 +355,25 @@ async def get_client_basket(client_id: int, db = Depends(get_db)):
         basket = {}
         
     all_menu = db.menu_get()
-    
+    dish_statuses = _get_dish_statuses_for_client(client_id, db)
+
     items = []
     total_cost = 0
     for dish_name, dish_data in basket.items():
         if not dish_data: continue
         dish_id = dish_data[0]
         quantity = dish_data[1]
-        
+
         # find price
         dish_price = 0
         for menu_dish in all_menu:
             if menu_dish[0] == dish_id:
                 dish_price = menu_dish[8] if len(menu_dish) > 8 and menu_dish[8] else 0
                 break
-                
+
         if dish_price:
             total_cost += int(dish_price) * quantity
-            
+
         # Extract modifiers if present (index 3 in basket array)
         item_modifiers = dish_data[3] if len(dish_data) > 3 and isinstance(dish_data[3], list) else []
         # Extract comment if present (index 4 in basket array)
@@ -272,7 +386,8 @@ async def get_client_basket(client_id: int, db = Depends(get_db)):
             "price": dish_price,
             "subtotal": int(dish_price) * quantity,
             "modifiers": item_modifiers,
-            "comment": item_comment
+            "comment": item_comment,
+            "status": dish_statuses.get(dish_id)
         })
         
     mood = db.get_temp_users_mood(client_id) or "Не указано"
@@ -383,12 +498,16 @@ async def send_table_order(data: PrintBillRequest, waiter_token: str = Header(No
             # Merge baskets (handle duplicate keys by adding prefixes or combining)
             # For simplicity, if same dish added by different guests, we combine them for iiko
             # but in the future we might want separate lines.
+            # Split halves (see _is_split_entry) must stay on their own line so their
+            # guestId survives to iiko — never merge them into another entry.
             for dish_name, dish_data in g_basket.items():
-                if dish_name in combined_basket:
+                if _is_split_entry(dish_data):
+                    combined_basket[f"{dish_name}#{client_id}"] = dish_data
+                elif dish_name in combined_basket:
                     combined_basket[dish_name][1] += dish_data[1] # Sum quantity
                 else:
                     combined_basket[dish_name] = dish_data
-                    
+
     if not combined_basket:
         raise HTTPException(status_code=400, detail="Корзины всех гостей пусты")
         
@@ -482,14 +601,17 @@ async def get_active_tables(waiter_token: str = Header(None, alias="waiter-token
     
     tables = []
     for row in rows:
-        # row: (id, waiter_id, client_id, table_number, basket_snapshot, total_price, created_at)
+        # row: (id, waiter_id, client_id, table_number, basket_snapshot, total_price, created_at, iiko_table_id)
         table_id = row[0]
+        iiko_table_id = row[7] if len(row) > 7 else None
         guests_rows = db.get_table_guests(table_id)
-        
+
+        kitchen = _get_kitchen_status(iiko_table_id, waiter_id, db) if iiko_table_id else {"table_status": None, "dish_statuses": {}}
+
         guests = []
         total_dish_count = 0
         all_dish_names = []
-        
+
         for idx, g in enumerate(guests_rows):
             # g: (id, client_id, basket_snapshot, name, created_at)
             client_id = g[1]
@@ -515,9 +637,10 @@ async def get_active_tables(waiter_token: str = Header(None, alias="waiter-token
             "dish_count": total_dish_count,
             "dish_names": all_dish_names[:5],
             "created_at": str(row[6]) if row[6] else "",
+            "status": kitchen["table_status"],
             "guests": guests
         })
-    
+
     return {"tables": tables}
 
 @router.get("/table/{table_id}/guests")
@@ -525,6 +648,14 @@ async def get_table_guests_endpoint(table_id: int, waiter_token: str = Header(No
     """Return all guests for a table with their basket contents."""
     guests_rows = db.get_table_guests(table_id)
     all_menu = db.menu_get()
+
+    table_row = db.cursor.execute(
+        "SELECT waiter_id, iiko_table_id FROM waiter_active_tables WHERE id = ?", (table_id,)
+    ).fetchone()
+    dish_statuses: Dict[int, str] = {}
+    if table_row and table_row[1]:
+        kitchen = _get_kitchen_status(table_row[1], table_row[0], db)
+        dish_statuses = kitchen["dish_statuses"]
 
     guests = []
     for idx, g in enumerate(guests_rows):
@@ -564,7 +695,8 @@ async def get_table_guests_endpoint(table_id: int, waiter_token: str = Header(No
                 "price": dish_price,
                 "subtotal": int(dish_price) * quantity,
                 "modifiers": item_mods,
-                "comment": item_comment
+                "comment": item_comment,
+                "status": dish_statuses.get(resolved_id)
             })
 
         mood = db.get_temp_users_mood(client_id) or "Не указано"
@@ -577,6 +709,25 @@ async def get_table_guests_endpoint(table_id: int, waiter_token: str = Header(No
         })
 
     return {"guests": guests}
+
+@router.get("/table/{table_id}/kitchen-status")
+async def get_table_kitchen_status(table_id: int, db = Depends(get_db)):
+    """Polling endpoint (ТЗ п.3): статус стола + статус каждого блюда активного
+    заказа, полученный из iiko (order/by_table), с коротким серверным кэшем.
+    Фронт дергает это раз в несколько секунд, пока стол открыт."""
+    table_row = db.cursor.execute(
+        "SELECT waiter_id, iiko_table_id FROM waiter_active_tables WHERE id = ?", (table_id,)
+    ).fetchone()
+    if not table_row:
+        raise HTTPException(status_code=404, detail="Стол не найден")
+    if not table_row[1]:
+        return {"table_status": None, "dish_statuses": {}}
+
+    kitchen = _get_kitchen_status(table_row[1], table_row[0], db)
+    return {
+        "table_status": kitchen["table_status"],
+        "dish_statuses": {str(k): v for k, v in kitchen["dish_statuses"].items()}
+    }
 
 @router.post("/table/{table_id}/close")
 async def close_table(table_id: int, waiter_token: str = Header(None, alias="waiter-token"), db = Depends(get_db)):
@@ -1146,7 +1297,10 @@ async def send_session_order(data: SendSessionRequest, waiter_token: str = Heade
         g_basket = db.get_basket(client_id)
         if g_basket and isinstance(g_basket, dict):
             for dish_name, dish_data in g_basket.items():
-                if dish_name in combined_basket:
+                if _is_split_entry(dish_data):
+                    # Split halves stay on their own line so guestId reaches iiko (see _is_split_entry).
+                    combined_basket[f"{dish_name}#{client_id}"] = list(dish_data)
+                elif dish_name in combined_basket:
                     combined_basket[dish_name][1] += dish_data[1]
                 else:
                     combined_basket[dish_name] = list(dish_data)
@@ -1226,3 +1380,149 @@ async def send_session_order(data: SendSessionRequest, waiter_token: str = Heade
     if not is_first_send:
         msg = f"Дозаказ для стола {table_number}: +{delta_count} позиций"
     return {"success": True, "message": msg}
+
+
+# ====== COURSES (ТЗ п.1) ======
+
+@router.post("/order/send_course")
+async def send_course(data: SendCourseRequest, waiter_token: str = Header(None, alias="waiter-token"), db = Depends(get_db)):
+    """Отправляет выбранные позиции («курс») на кухню отдельной волной, не трогая
+    остальную корзину стола — её можно отправить последующими вызовами этого же
+    эндпоинта. Использует add_items с servicePrint=True (если заказ в iiko уже
+    создан) либо order/create (если это первая отправка по столу)."""
+    if not waiter_token or not (waiter_token.isdigit() and waiter_token.isascii()):
+        raise HTTPException(status_code=401, detail="waiter-token обязателен")
+    waiter_id = int(waiter_token)
+
+    if not data.dish_ids:
+        raise HTTPException(status_code=400, detail="Не указаны блюда для отправки")
+
+    table_row = db.cursor.execute(
+        "SELECT id, table_number, iiko_table_id, guests_count, sent_snapshot FROM waiter_active_tables WHERE id = ? AND status IN ('open', 'draft')",
+        (data.table_id,)
+    ).fetchone()
+    if not table_row:
+        raise HTTPException(status_code=404, detail="Активный стол не найден")
+
+    table_number = table_row[1]
+    iiko_table_id = table_row[2]
+    guests_count = table_row[3] or 1
+    prev_sent_raw = table_row[4]
+    prev_sent = {}
+    if prev_sent_raw:
+        try:
+            prev_sent = json.loads(prev_sent_raw)
+        except Exception:
+            prev_sent = {}
+
+    guests = db.get_table_guests(data.table_id)
+    if not guests:
+        raise HTTPException(status_code=400, detail="У стола нет гостей")
+
+    # Combine all guest baskets (same merge rule as /order/send-session: split
+    # halves — see _is_split_entry — stay on their own line, never merged by name).
+    combined_basket: Dict[str, list] = {}
+    for g in guests:
+        client_id = g[1]
+        g_basket = db.get_basket(client_id)
+        if g_basket and isinstance(g_basket, dict):
+            for dish_name, dish_data in g_basket.items():
+                if _is_split_entry(dish_data):
+                    combined_basket[f"{dish_name}#{client_id}"] = list(dish_data)
+                elif dish_name in combined_basket:
+                    combined_basket[dish_name][1] += dish_data[1]
+                else:
+                    combined_basket[dish_name] = list(dish_data)
+
+    dish_id_set = set(data.dish_ids)
+    course_basket = {name: d for name, d in combined_basket.items() if d and d[0] in dish_id_set}
+    if not course_basket:
+        raise HTTPException(status_code=400, detail="Указанные блюда не найдены в корзине стола")
+
+    token, org_id, terminal_id = _get_iiko_credentials(waiter_id, db)
+    items = resolve_basket_to_iiko_items(course_basket, db)
+    if not items:
+        raise HTTPException(status_code=400, detail="Не удалось подготовить позиции для iiko (нет iiko_id у блюд)")
+
+    existing_order_id = get_active_order_for_table(token, org_id, iiko_table_id) if iiko_table_id else None
+    if existing_order_id:
+        result = add_items_to_iiko_order(token, org_id, existing_order_id, items)
+    else:
+        result = create_iiko_order(token, org_id, terminal_id, items, table_id=iiko_table_id,
+                                    table_number=table_number, guests_count=guests_count, waiter_id=waiter_id)
+
+    if not result:
+        raise HTTPException(status_code=500, detail="Ошибка отправки курса в iiko")
+
+    # Mark these dishes as sent so a later full /order/send-session doesn't resend them.
+    prev_sent.update(course_basket)
+    db.cursor.execute(
+        "UPDATE waiter_active_tables SET sent_snapshot = ?, status = 'open' WHERE id = ?",
+        (json.dumps(prev_sent, ensure_ascii=False), data.table_id)
+    )
+    db.connection.commit()
+
+    sent_count = sum(d[1] for d in course_basket.values())
+    return {"success": True, "message": f"Курс отправлен на кухню: {sent_count} позиций (стол {table_number})"}
+
+
+# ====== SPLIT DISH BETWEEN GUESTS (ТЗ п.2) ======
+
+@router.post("/table/{table_id}/split-dish")
+async def split_dish_between_guests(table_id: int, data: SplitDishRequest,
+                                     waiter_token: str = Header(None, alias="waiter-token"), db = Depends(get_db)):
+    """Делит одну порцию блюда пополам между двумя гостями: каждая половина —
+    отдельная строка с amount=0.5, помеченная guestId при сборке заказа для iiko
+    (см. _is_split_entry / resolve_basket_to_iiko_items)."""
+    if not waiter_token or not (waiter_token.isdigit() and waiter_token.isascii()):
+        raise HTTPException(status_code=401, detail="waiter-token обязателен")
+
+    if len(data.target_client_ids) != 2:
+        raise HTTPException(status_code=400, detail="Разделить блюдо можно ровно между двумя гостями")
+
+    table_guests = db.get_table_guests(table_id)
+    table_guest_ids = {g[1] for g in table_guests}
+    if data.source_client_id not in table_guest_ids:
+        raise HTTPException(status_code=404, detail="Гость-источник не найден за этим столом")
+    for cid in data.target_client_ids:
+        if cid not in table_guest_ids:
+            raise HTTPException(status_code=404, detail=f"Гость {cid} не найден за этим столом")
+
+    source_basket = db.get_basket(data.source_client_id)
+    if not isinstance(source_basket, dict):
+        source_basket = {}
+
+    dish_name_found = None
+    for dish_name, dish_data in source_basket.items():
+        if dish_data and dish_data[0] == data.dish_id and not _is_split_entry(dish_data):
+            dish_name_found = dish_name
+            break
+
+    if not dish_name_found:
+        raise HTTPException(status_code=404, detail="Блюдо не найдено в корзине гостя (или уже разделено)")
+
+    original = source_basket[dish_name_found]
+    modifiers = original[3] if len(original) > 3 and isinstance(original[3], list) else []
+    comment = original[4] if len(original) > 4 and isinstance(original[4], str) else ""
+
+    # Take one whole portion out of the source guest's basket.
+    new_qty = original[1] - 1
+    if new_qty <= 0:
+        source_basket.pop(dish_name_found, None)
+    else:
+        source_basket[dish_name_found][1] = new_qty
+    db.set_basket(data.source_client_id, source_basket)
+
+    # Give each target guest their half, tagged so it reaches iiko as amount 0.5 + guestId.
+    half_label = f"{dish_name_found} (½)"
+    for cid in data.target_client_ids:
+        target_basket = db.get_basket(cid)
+        if not isinstance(target_basket, dict):
+            target_basket = {}
+        target_basket[half_label] = [data.dish_id, 0.5, [None], modifiers, comment, {"split_guest_id": cid}]
+        db.set_basket(cid, target_basket)
+
+    return {
+        "success": True,
+        "message": f"«{dish_name_found}» разделено между гостями {data.target_client_ids[0]} и {data.target_client_ids[1]}"
+    }

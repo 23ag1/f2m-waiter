@@ -2790,7 +2790,7 @@ class Database:
         try:
             with self.connection:
                 result = self.cursor.execute("""
-                    SELECT id, waiter_id, client_id, table_number, basket_snapshot, total_price, created_at
+                    SELECT id, waiter_id, client_id, table_number, basket_snapshot, total_price, created_at, iiko_table_id
                     FROM waiter_active_tables
                     WHERE waiter_id = ? AND status = 'open'
                     ORDER BY created_at DESC

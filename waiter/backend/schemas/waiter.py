@@ -53,3 +53,12 @@ class CreateTableSessionRequest(BaseModel):
 class SendSessionRequest(BaseModel):
     table_id: int  # waiter_active_tables.id
     order_comment: Optional[str] = None  # general order comment
+
+class SendCourseRequest(BaseModel):
+    table_id: int  # waiter_active_tables.id
+    dish_ids: List[int]  # Menu.Dish_id positions to fire on the kitchen now
+
+class SplitDishRequest(BaseModel):
+    source_client_id: int  # guest currently holding the whole (unsplit) dish
+    dish_id: int
+    target_client_ids: List[int]  # exactly 2 guests to split the dish between
