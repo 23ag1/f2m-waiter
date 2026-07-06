@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { getBasket, getTableGuests, addGuestToTable, removeGuestFromTable } from "@/shared/api";
+import { getBasket, getTableGuests, addGuestToTable, removeGuestFromTable, modifyBasket } from "@/shared/api";
 import { fetchRealHints, type HintDish } from "@/entities/recommendation";
 import { pickNextInCategory } from "@/entities/menu";
 import { nextLoyaltyProfile, type GuestData } from "@/entities/guest";
@@ -79,17 +79,22 @@ export function useTableSession(
     });
   };
 
-  const addHintDishLocally = (cid: number, hint: HintDish, hunger?: string, restr: string[] = [], checkedIn?: boolean) => {
+  // Add a recommended dish. Optimistic for instant feedback, but ALSO persisted
+  // to the backend (was local-only → the dish vanished on the next refresh and
+  // couldn't be split, since the server never knew about it).
+  const addHintDishLocally = (cid: number, hint: HintDish) => {
     setGuestBaskets((prev) => {
       const current = prev[cid] || [];
       const existing = current.find((i) => i.dish_id === hint.id);
       const updated = existing
         ? current.map((i) => (i.dish_id === hint.id ? { ...i, quantity: i.quantity + 1, subtotal: Number(i.subtotal) + Number(hint.price) } : i))
         : [...current, { dish_id: hint.id, dish_name: hint.name, quantity: 1, price: Number(hint.price), subtotal: Number(hint.price) }];
-      fetchRealHints(cid, { hunger, allergies: restr, checkedIn }).then((hints) => setGuestHints((ph) => ({ ...ph, [cid]: hints })));
       return { ...prev, [cid]: updated };
     });
     setGuestDismissed((prev) => ({ ...prev, [cid]: new Set() }));
+    modifyBasket(cid, hint.id, 1)
+      .then(() => refreshGuest(cid))
+      .catch(() => showToast("Не удалось добавить блюдо", "err"));
   };
 
   // Swipe → cycle to the next/previous dish of the SAME category (wraps around,

@@ -77,15 +77,18 @@ export function useGuestBasket(clientId: number, showToast: (m: string, t?: "ok"
     }
   };
 
+  // Add a recommended dish — optimistic, then persisted to the backend so it
+  // survives refreshes (was local-only → vanished / couldn't be split).
   const addHintLocally = (hint: HintDish) => {
     setBasket((prev) => {
       const existing = prev.find((i) => i.dish_id === hint.id);
-      const updated = existing
+      return existing
         ? prev.map((i) => (i.dish_id === hint.id ? { ...i, quantity: i.quantity + 1, subtotal: Number(i.subtotal) + Number(hint.price) } : i))
         : [...prev, { dish_id: hint.id, dish_name: hint.name, quantity: 1, price: Number(hint.price), subtotal: Number(hint.price) }];
-      fetchRealHints(clientId, { hunger }).then(setHints);
-      return updated;
     });
+    modifyBasket(clientId, hint.id, 1)
+      .then(() => loadBasket())
+      .catch(() => showToast("Не удалось добавить блюдо", "err"));
   };
 
   // Swipe → cycle to the next/previous dish of the same category (wraps around).

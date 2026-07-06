@@ -9,7 +9,7 @@ import { IconButton } from "@/shared/ui/IconButton";
 import { DishRow } from "@/entities/dish";
 import { MenuPanel } from "@/widgets/menu-panel";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { modifyBasket, removeBasketDish } from "@/shared/api";
+import { modifyBasket, removeBasketDish, splitDish } from "@/shared/api";
 import { DISH_INGREDIENTS, HintStrip } from "@/entities/recommendation";
 import { QRScannerModal } from "@/shared/ui/QRScannerModal";
 import { GuestRow, type GuestData } from "@/entities/guest";
@@ -71,6 +71,8 @@ export function TableOrderView() {
   // Dish quantity popup (enter number) + course picker (local only — backend has no course field)
   const [qtyEdit, setQtyEdit] = useState<{ clientId: number; dishId: number; current: number; value: string } | null>(null);
   const [courseFor, setCourseFor] = useState<{ clientId: number; dishId: number } | null>(null);
+  // Split-with-guest picker: the dish held by `sourceCid` is split between it and a chosen guest.
+  const [splitFor, setSplitFor] = useState<{ sourceCid: number; dishId: number; name: string } | null>(null);
   const [courses, setCourses] = useState<Record<string, string>>({});
   // Header ⋯ menu + order type + sort-by-course (order type / discounts have no backend yet)
   const [headerMenu, setHeaderMenu] = useState(false);
@@ -85,6 +87,20 @@ export function TableOrderView() {
     ...(g.allergies ?? []),
     ...(g.dislikes ?? []),
   ];
+
+  // Split a whole dish into halves shared between its owner and the chosen guest.
+  const doSplit = async (sourceCid: number, dishId: number, targetCid: number) => {
+    setSplitFor(null);
+    if (!tableIdParam) return;
+    try {
+      await splitDish(Number(tableIdParam), sourceCid, dishId, [sourceCid, targetCid]);
+      refreshGuest(sourceCid);
+      refreshGuest(targetCid);
+      showToast("Блюдо разделено", "ok");
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Не удалось разделить", "err");
+    }
+  };
 
   // Filtered menu
   const filteredMenu = useMemo(() => {
@@ -193,7 +209,11 @@ export function TableOrderView() {
                             onCourse={() => setCourseFor({ clientId: guest.client_id, dishId: item.dish_id })}
                             onOpen={() => addDish.openForExisting(guest.client_id, item)}
                             onComment={() => setEditingComment({ clientId: guest.client_id, dishId: item.dish_id, value: item.comment || "" })}
-                            onSplit={() => { if (guests.length > 1) showToast("Разделить — скоро"); else showToast("Нет других гостей для разделения", "err"); }}
+                            onSplit={() => {
+                              if (item.quantity < 1 || item.dish_name.includes("½")) { showToast("Блюдо уже разделено", "err"); return; }
+                              if (guests.length < 2) { showToast("Нужно минимум 2 гостя для разделения", "err"); return; }
+                              setSplitFor({ sourceCid: guest.client_id, dishId: item.dish_id, name: item.dish_name });
+                            }}
                             onRemove={async () => { await removeBasketDish(guest.client_id, item.dish_id); refreshGuest(guest.client_id); }}
                           />
                         );
@@ -203,7 +223,7 @@ export function TableOrderView() {
                   {/* Collapsible hint strip per guest (рекомендации) */}
                   <HintStrip
                     hints={guestHints[guest.client_id] ?? []}
-                    onAdd={(hint) => addHintDishLocally(guest.client_id, hint, guest.hunger, guestRestrictions(guest), guest.checkedIn)}
+                    onAdd={(hint) => addHintDishLocally(guest.client_id, hint)}
                     onReplace={(hint, dir) => replaceHint(guest.client_id, hint, dir)}
                   />
                 </div>
@@ -278,6 +298,22 @@ export function TableOrderView() {
           disabled={totalDishes === 0}
           onSend={() => { setSendSheet(false); send(orderComment); }}
           onPrint={() => { setSendSheet(false); print(); }}
+        />
+
+        {/* Разделить блюдо — выбор второго гостя */}
+        <ActionSheet
+          open={!!splitFor}
+          onClose={() => setSplitFor(null)}
+          header={splitFor ? `Разделить «${splitFor.name}» с гостем` : undefined}
+          actions={splitFor
+            ? guests
+                .map((g, i) => ({ g, i }))
+                .filter(({ g }) => g.client_id !== splitFor.sourceCid)
+                .map(({ g, i }) => ({
+                  label: g.name?.trim() || `Гость ${i + 1}`,
+                  onClick: () => doSplit(splitFor.sourceCid, splitFor.dishId, g.client_id),
+                }))
+            : []}
         />
 
         {/* Header ⋯ */}

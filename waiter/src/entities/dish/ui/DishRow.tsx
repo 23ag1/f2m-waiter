@@ -29,11 +29,13 @@ export interface DishRowProps {
 
 export function DishRow({ item, course, warn, onQty, onCourse, onOpen, onComment, onSplit, onRemove }: DishRowProps) {
   const s = dishStatus(item.status); // iiko colour by kitchen status (default = new/blue)
+  // A dish already split into halves (qty 0.5 / "(½)" line) can't be split again.
+  const isSplit = item.quantity < 1 || item.dish_name.includes("½");
   return (
     <SwipeRow
       leftActions={[{ label: "Коммент", bg: "bg-blue-500", icon: IconComment, onClick: onComment }]}
       rightActions={[
-        { label: "Разделить", bg: "bg-orange-500", icon: IconSplit, onClick: onSplit },
+        ...(isSplit ? [] : [{ label: "Разделить", bg: "bg-orange-500", icon: IconSplit, onClick: onSplit }]),
         { label: "Удалить", bg: "bg-red-500", icon: IconTrash, onClick: () => { void onRemove(); } },
       ]}
     >

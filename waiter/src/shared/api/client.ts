@@ -157,6 +157,20 @@ export async function getTableGuests(tableId: number) {
   return res.json();
 }
 
+// Split one whole portion of a dish into halves shared between exactly two
+// guests. target_client_ids are the two guests each getting a ½ (usually the
+// source guest + one other). Backend: POST /table/{id}/split-dish.
+export async function splitDish(tableId: number, sourceClientId: number, dishId: number, targetClientIds: number[]) {
+  const res = await fetch(`${API_BASE_URL}/waiter/table/${tableId}/split-dish`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "waiter-token": getToken() },
+    body: JSON.stringify({ source_client_id: sourceClientId, dish_id: dishId, target_client_ids: targetClientIds }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data && data.detail) || "Не удалось разделить блюдо");
+  return data;
+}
+
 export async function addGuestToTable(tableId: number) {
   const res = await fetch(`${API_BASE_URL}/waiter/table/${tableId}/add-guest`, {
     method: "POST",
