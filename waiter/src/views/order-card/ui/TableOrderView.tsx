@@ -186,6 +186,7 @@ export function TableOrderView() {
                   <GuestRow
                     guest={guest}
                     total={guestTotal}
+                    active={!menuCollapsed && idx === activeGuestIdx}
                     onSelect={() => setActiveGuestIdx(idx)}
                     onHunger={(v) => setGuestHunger(guest.client_id, v)}
                     onPlus={() => { setActiveGuestIdx(idx); setMenuCollapsed(false); }}
