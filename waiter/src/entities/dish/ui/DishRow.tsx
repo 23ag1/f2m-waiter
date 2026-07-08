@@ -2,6 +2,7 @@
 
 import { SwipeRow } from "@/shared/ui/SwipeRow";
 import { formatMoney } from "@/shared/lib/utils";
+import { useLongPress } from "@/shared/lib/use-long-press";
 import { dishStatus } from "../model/dish-status";
 import type { BasketItem, ModifierInfo } from "../model/types";
 
@@ -25,13 +26,45 @@ export interface DishRowProps {
   onComment: () => void;
   onSplit: () => void;
   onRemove: () => void | Promise<void>;
+  // Multi-select (iiko long-press) mode
+  selecting?: boolean;
+  selected?: boolean;
+  onLongPress?: () => void; // enter selection mode with this dish picked
+  onToggleSelect?: () => void;
 }
 
-export function DishRow({ item, course, warn, onQty, onCourse, onOpen, onComment, onSplit, onRemove }: DishRowProps) {
+export function DishRow({ item, course, warn, onQty, onCourse, onOpen, onComment, onSplit, onRemove, selecting = false, selected = false, onLongPress, onToggleSelect }: DishRowProps) {
   const s = dishStatus(item.status); // iiko colour by kitchen status (default = new/blue)
   // A dish already split into halves (qty 0.5 / "(½)" line) can't be split again.
   const isSplit = item.quantity < 1 || item.dish_name.includes("½");
+  const lp = useLongPress(onLongPress);
+
+  // ── Selection mode: whole row toggles a checkbox; no swipe, no inner buttons ──
+  if (selecting) {
+    return (
+      <div
+        onClick={() => onToggleSelect?.()}
+        className={`px-3 py-2.5 flex items-center gap-3 cursor-pointer select-none [-webkit-touch-callout:none] transition-colors ${selected ? "bg-blue-500/10" : "active:bg-inset"}`}
+      >
+        <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition ${selected ? "bg-blue-500" : "border-2 border-hair"}`}>
+          {selected && (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+          )}
+        </span>
+        <span className={`flex-shrink-0 w-6 text-center text-sm font-semibold ${s.text}`}>{item.quantity}</span>
+        <p className={`flex-1 min-w-0 truncate text-sm font-medium ${s.text}`}>{item.dish_name}</p>
+        <p className={`flex-shrink-0 text-sm font-semibold ${s.text}`}>{formatMoney(item.subtotal)} ₽</p>
+      </div>
+    );
+  }
+
+  // ── Normal mode: swipe actions + long-press to enter selection ──
   return (
+    <div
+      className="select-none [-webkit-touch-callout:none]"
+      {...lp.handlers}
+      onClickCapture={(e) => lp.consumeClick(e)}
+    >
     <SwipeRow
       leftActions={[{ label: "Коммент", bg: "bg-blue-500", icon: IconComment, onClick: onComment }]}
       rightActions={[
@@ -84,5 +117,6 @@ export function DishRow({ item, course, warn, onQty, onCourse, onOpen, onComment
         {item.comment && <p className="text-xs text-blue-500 mt-1 pl-10 truncate">{item.comment}</p>}
       </div>
     </SwipeRow>
+    </div>
   );
 }

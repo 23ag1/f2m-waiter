@@ -171,6 +171,19 @@ export async function splitDish(tableId: number, sourceClientId: number, dishId:
   return data;
 }
 
+// Fire ONLY the selected dishes on the kitchen as a separate course, without
+// touching the rest of the order. Backend: POST /order/send_course (already live).
+export async function sendDishes(tableId: number, dishIds: number[]) {
+  const res = await fetch(`${API_BASE_URL}/waiter/order/send_course`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "waiter-token": getToken() },
+    body: JSON.stringify({ table_id: tableId, dish_ids: dishIds }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data && data.detail) || "Не удалось отправить блюда на кухню");
+  return data;
+}
+
 export async function addGuestToTable(tableId: number) {
   const res = await fetch(`${API_BASE_URL}/waiter/table/${tableId}/add-guest`, {
     method: "POST",

@@ -9,7 +9,7 @@ import { IconButton } from "@/shared/ui/IconButton";
 import { DishRow } from "@/entities/dish";
 import { MenuPanel } from "@/widgets/menu-panel";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { modifyBasket, removeBasketDish, splitDish } from "@/shared/api";
+import { modifyBasket, removeBasketDish, splitDish, sendDishes } from "@/shared/api";
 import { DISH_INGREDIENTS, HintStrip } from "@/entities/recommendation";
 import { QRScannerModal } from "@/shared/ui/QRScannerModal";
 import { GuestRow, type GuestData } from "@/entities/guest";
@@ -73,6 +73,16 @@ export function TableOrderView() {
   const [courseFor, setCourseFor] = useState<{ clientId: number; dishId: number } | null>(null);
   // Split-with-guest picker: the dish held by `sourceCid` is split between it and a chosen guest.
   const [splitFor, setSplitFor] = useState<{ sourceCid: number; dishId: number; name: string } | null>(null);
+  // Multi-select (iiko long-press) mode. Keys are `${clientId}:${dishId}`.
+  const [selecting, setSelecting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const selKey = (cid: number, dishId: number) => `${cid}:${dishId}`;
+  const enterSelect = (cid: number, dishId: number) => { setSelecting(true); setSelected(new Set([selKey(cid, dishId)])); };
+  const toggleSelect = (cid: number, dishId: number) => setSelected((prev) => {
+    const n = new Set(prev); const k = selKey(cid, dishId); n.has(k) ? n.delete(k) : n.add(k); return n;
+  });
+  const exitSelect = () => { setSelecting(false); setSelected(new Set()); };
+  const selectedList = () => [...selected].map((k) => { const [c, d] = k.split(":"); return { cid: Number(c), dishId: Number(d) }; });
   const [courses, setCourses] = useState<Record<string, string>>({});
   // Header ⋯ menu + order type + sort-by-course (order type / discounts have no backend yet)
   const [headerMenu, setHeaderMenu] = useState(false);
@@ -87,6 +97,44 @@ export function TableOrderView() {
     ...(g.allergies ?? []),
     ...(g.dislikes ?? []),
   ];
+
+  // ── Selection-mode bulk actions ──
+  const deleteSelected = async () => {
+    const items = selectedList();
+    exitSelect();
+    const cids = new Set<number>();
+    for (const { cid, dishId } of items) { try { await removeBasketDish(cid, dishId); cids.add(cid); } catch { /* ignore */ } }
+    cids.forEach((c) => refreshGuest(c));
+    showToast("Удалено");
+  };
+
+  // Send ONLY the selected dishes to the kitchen (iiko), not the whole order.
+  const sendSelected = async () => {
+    if (!tableIdParam) return;
+    const items = selectedList();
+    if (items.length === 0) return;
+    const dishIds = [...new Set(items.map((i) => i.dishId))];
+    try {
+      const res = await sendDishes(Number(tableIdParam), dishIds);
+      exitSelect();
+      items.forEach(({ cid }) => refreshGuest(cid));
+      showToast(res?.message || "Отправлено на кухню");
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Не удалось отправить", "err");
+    }
+  };
+
+
+  const splitSelected = () => {
+    const items = selectedList();
+    if (items.length !== 1) { showToast("Разделить можно одно блюдо", "err"); return; }
+    if (guests.length < 2) { showToast("Нужно минимум 2 гостя для разделения", "err"); return; }
+    const { cid, dishId } = items[0];
+    const it = (guestBaskets[cid] ?? []).find((i) => i.dish_id === dishId);
+    if (!it || it.quantity < 1 || it.dish_name.includes("½")) { showToast("Это блюдо нельзя разделить", "err"); return; }
+    exitSelect();
+    setSplitFor({ sourceCid: cid, dishId, name: it.dish_name });
+  };
 
   // Split a whole dish into halves shared between its owner and the chosen guest.
   const doSplit = async (sourceCid: number, dishId: number, targetCid: number) => {
@@ -141,7 +189,14 @@ export function TableOrderView() {
 
   return (
       <div className="h-screen bg-app flex flex-col overflow-hidden">
-        {/* Header — iiko style */}
+        {/* Header — selection mode shows count + Готово; otherwise the iiko header */}
+        {selecting ? (
+          <header className="shrink-0 bg-inset px-4 pt-3 pb-2 flex items-center justify-between gap-3 z-10">
+            <span className="w-16" />
+            <h1 className="text-lg font-bold text-ink">{selected.size}</h1>
+            <button onClick={exitSelect} className="w-16 text-right text-blue-500 font-bold text-base active:opacity-60">Готово</button>
+          </header>
+        ) : (
         <header className="shrink-0 bg-inset px-3 pt-3 pb-2 flex items-center gap-3 z-10">
           <BackButton onClick={() => router.push("/dashboard")} />
           <div className="flex-1 min-w-0 text-center">
@@ -168,6 +223,7 @@ export function TableOrderView() {
             </IconButton>
           </div>
         </header>
+        )}
 
         {/* Guest list — always visible, takes remaining space, scrolls independently */}
         <div className="flex-1 min-h-0 bg-surface border-b border-hair overflow-y-auto">
@@ -216,6 +272,10 @@ export function TableOrderView() {
                               setSplitFor({ sourceCid: guest.client_id, dishId: item.dish_id, name: item.dish_name });
                             }}
                             onRemove={async () => { await removeBasketDish(guest.client_id, item.dish_id); refreshGuest(guest.client_id); }}
+                            selecting={selecting}
+                            selected={selected.has(selKey(guest.client_id, item.dish_id))}
+                            onLongPress={() => enterSelect(guest.client_id, item.dish_id)}
+                            onToggleSelect={() => toggleSelect(guest.client_id, item.dish_id)}
                           />
                         );
                       })}
@@ -256,7 +316,32 @@ export function TableOrderView() {
           addedIds={addDish.addedIds}
         />
 
-        {/* Bottom bar — search + send (iiko) */}
+        {/* Bottom action bar in selection mode (iiko): delete · split · send-to-kitchen */}
+        {selecting ? (
+          <div className="shrink-0 bg-surface border-t border-hair px-4 pt-3 pb-8 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] flex items-center justify-around">
+            {/* Удалить */}
+            <button onClick={deleteSelected} disabled={selected.size === 0} className="w-11 h-11 rounded-full bg-inset flex items-center justify-center text-ink active:scale-90 transition disabled:opacity-30">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </button>
+            {/* Перенести в новый заказ (нужен бэкенд переноса между заказами) */}
+            <button onClick={() => { if (selected.size === 0) return; showToast("Перенос в новый заказ — скоро"); }} disabled={selected.size === 0} className="w-11 h-11 rounded-full bg-inset flex items-center justify-center text-ink active:scale-90 transition disabled:opacity-30">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </button>
+            {/* Разделить — только 1 блюдо и 2+ гостя */}
+            <button onClick={splitSelected} disabled={selected.size !== 1 || guests.length < 2} className="w-11 h-11 rounded-full bg-inset flex items-center justify-center text-ink active:scale-90 transition disabled:opacity-30">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.121 14.121a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0 0L19 4m-9.879 10.121L12 12m0 0l7 7m-7-7L9.121 9.879m0 0a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" /></svg>
+            </button>
+            {/* Перенести в другой заказ / стол (нужен бэкенд перемещения между столами) */}
+            <button onClick={() => { if (selected.size === 0) return; showToast("Перенос в другой заказ — скоро"); }} disabled={selected.size === 0} className="w-11 h-11 rounded-full bg-inset flex items-center justify-center text-ink active:scale-90 transition disabled:opacity-30">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4" /></svg>
+            </button>
+            {/* Отправить на кухню — ключевая: только выбранные блюда */}
+            <button onClick={sendSelected} disabled={selected.size === 0} className="w-11 h-11 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-md active:scale-90 transition disabled:opacity-30">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 -ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" /></svg>
+            </button>
+          </div>
+        ) : (
+        /* Bottom bar — search + send (iiko) */
         <div className="shrink-0 bg-surface border-t border-hair px-3 pt-2 pb-8 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
@@ -288,6 +373,7 @@ export function TableOrderView() {
             </button>
           </div>
         </div>
+        )}
 
         {/* Отправить на печать (feature) */}
         <SendOrderSheet
