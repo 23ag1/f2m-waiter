@@ -54,6 +54,8 @@ const IcoComment = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" 
 const IcoRename = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>);
 const IcoPrint = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a1 1 0 001-1v-4a1 1 0 00-1-1H9a1 1 0 00-1 1v4a1 1 0 001 1zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>);
 const IcoTrash = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>);
+const IcoSwapTable = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" /></svg>);
+const IcoMerge = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8a2 2 0 012 2v3m0 0l-2.5-2.5M18 12l2.5-2.5M6 17H4a2 2 0 01-2-2V5a2 2 0 012-2h4m6 18h4a2 2 0 002-2v-4" /></svg>);
 
 export function OrdersView() {
   const router = useRouter();
@@ -171,6 +173,8 @@ export function OrdersView() {
   const cardMenuItems: ContextMenuItem[] = cardMenu ? [
     { label: "Оплатить", icon: IcoPay, onClick: () => setAction({ type: "pay", table: cardMenu.table }) },
     { label: "Сменить официанта", icon: IcoWaiter, onClick: () => setAction({ type: "waiter", table: cardMenu.table }) },
+    { label: "Поменять стол", icon: IcoSwapTable, onClick: () => { setCardMenu(null); showToast("Поменять стол — скоро"); } },
+    { label: "Объединить заказы", icon: IcoMerge, onClick: () => { setCardMenu(null); showToast("Объединить заказы — скоро"); } },
     { label: "Комментарий", icon: IcoComment, onClick: () => setAction({ type: "comment", table: cardMenu.table }) },
     { label: "Переименовать", icon: IcoRename, onClick: () => setAction({ type: "rename", table: cardMenu.table }) },
     { label: "Распечатать пречек", icon: IcoPrint, onClick: () => setAction({ type: "precheck", table: cardMenu.table }) },
