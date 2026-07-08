@@ -184,6 +184,30 @@ export async function sendDishes(tableId: number, dishIds: number[]) {
   return data;
 }
 
+// Move an order to a different table. Frontend is ready; backend endpoint pending.
+export async function changeTable(tableId: number, newIikoTableId: string, newTableNumber: string) {
+  const res = await fetch(`${API_BASE_URL}/waiter/table/${tableId}/change-table`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "waiter-token": getToken() },
+    body: JSON.stringify({ new_iiko_table_id: newIikoTableId, new_table_number: newTableNumber }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data && data.detail) || "Перенос стола пока не поддержан бэкендом");
+  return data;
+}
+
+// Merge one active order into another. Frontend is ready; backend endpoint pending.
+export async function mergeOrders(sourceTableId: number, targetTableId: number) {
+  const res = await fetch(`${API_BASE_URL}/waiter/order/merge`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "waiter-token": getToken() },
+    body: JSON.stringify({ source_table_id: sourceTableId, target_table_id: targetTableId }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data && data.detail) || "Объединение заказов пока не поддержано бэкендом");
+  return data;
+}
+
 export async function addGuestToTable(tableId: number) {
   const res = await fetch(`${API_BASE_URL}/waiter/table/${tableId}/add-guest`, {
     method: "POST",

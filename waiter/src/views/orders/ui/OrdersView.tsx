@@ -5,13 +5,14 @@ import { useEffect, useState, useCallback } from "react";
 import { Toast } from "@/shared/ui/Toast";
 import { useToast } from "@/shared/lib/use-toast";
 import { useRouter } from "next/navigation";
-import { getActiveTables, closeTable, getIikoTables, printBill } from "@/shared/api";
+import { getActiveTables, closeTable, getIikoTables, printBill, changeTable as apiChangeTable, mergeOrders as apiMergeOrders } from "@/shared/api";
+import type { IikoTable } from "@/views/new-order/model/types";
 import { getCookie, deleteCookie } from "@/shared/lib/cookies";
 import { OrdersList } from "@/widgets/orders-list";
 import type { ActiveTable } from "@/entities/table";
 import { ProfileSheet } from "@/widgets/profile";
 import { ContextMenu, type ContextMenuItem } from "@/shared/ui/ContextMenu";
-import { ActionSheet } from "@/shared/ui/Sheet";
+import { ActionSheet, Sheet } from "@/shared/ui/Sheet";
 import { Avatar } from "@/shared/ui/Avatar";
 import { IconButton } from "@/shared/ui/IconButton";
 import { SegmentedControl } from "@/shared/ui/SegmentedControl";
@@ -88,6 +89,10 @@ export function OrdersView() {
   const [tick, setTick] = useState(0);
   // table_number → section_name mapping from iiko
   const [sectionMap, setSectionMap] = useState<Record<string, string>>({});
+  const [iikoTables, setIikoTables] = useState<IikoTable[]>([]);
+  // "Поменять стол" / "Объединить заказы" pickers (act on the chosen order)
+  const [changeTableFor, setChangeTableFor] = useState<ActiveTable | null>(null);
+  const [mergeFor, setMergeFor] = useState<ActiveTable | null>(null);
 
   useEffect(() => {
     const t = getCookie("waiter_token");
@@ -110,12 +115,12 @@ export function OrdersView() {
     if (!token) return;
     fetchTables();
     const interval = setInterval(fetchTables, 15000);
-    // Load iiko section mapping once
+    // Load iiko section mapping + full table list once (for the change-table picker)
     getIikoTables().then((data) => {
+      const list: IikoTable[] = data.tables || [];
+      setIikoTables(list);
       const map: Record<string, string> = {};
-      for (const t of (data.tables || [])) {
-        map[String(t.number)] = t.section_name || "Зал";
-      }
+      for (const t of list) map[String(t.number)] = t.section_name || "Зал";
       setSectionMap(map);
     }).catch(() => {});
     return () => clearInterval(interval);
@@ -141,6 +146,34 @@ export function OrdersView() {
   };
 
   const orderClientId = (t: ActiveTable) => t.guests?.[0]?.client_id ?? t.client_id;
+
+  // Move the order to a different table (backend endpoint pending — front is ready).
+  const doChangeTable = async (target: IikoTable) => {
+    const order = changeTableFor;
+    setChangeTableFor(null);
+    if (!order) return;
+    try {
+      await apiChangeTable(order.id, target.id, String(target.number));
+      showToast(`Заказ перенесён на стол ${target.number}`);
+      fetchTables();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Перенос стола — нужен бэкенд", "err");
+    }
+  };
+
+  // Merge this order with another active order (backend endpoint pending).
+  const doMerge = async (target: ActiveTable) => {
+    const order = mergeFor;
+    setMergeFor(null);
+    if (!order) return;
+    try {
+      await apiMergeOrders(order.id, target.id);
+      showToast(`Заказы столов ${order.table_number} и ${target.table_number} объединены`);
+      fetchTables();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Объединение — нужен бэкенд", "err");
+    }
+  };
 
   const handlePaid = async (table: ActiveTable) => {
     setAction(null);
@@ -173,8 +206,8 @@ export function OrdersView() {
   const cardMenuItems: ContextMenuItem[] = cardMenu ? [
     { label: "Оплатить", icon: IcoPay, onClick: () => setAction({ type: "pay", table: cardMenu.table }) },
     { label: "Сменить официанта", icon: IcoWaiter, onClick: () => setAction({ type: "waiter", table: cardMenu.table }) },
-    { label: "Поменять стол", icon: IcoSwapTable, onClick: () => { setCardMenu(null); showToast("Поменять стол — скоро"); } },
-    { label: "Объединить заказы", icon: IcoMerge, onClick: () => { setCardMenu(null); showToast("Объединить заказы — скоро"); } },
+    { label: "Поменять стол", icon: IcoSwapTable, onClick: () => { const t = cardMenu.table; setCardMenu(null); setChangeTableFor(t); } },
+    { label: "Объединить заказы", icon: IcoMerge, onClick: () => { const t = cardMenu.table; setCardMenu(null); setMergeFor(t); } },
     { label: "Комментарий", icon: IcoComment, onClick: () => setAction({ type: "comment", table: cardMenu.table }) },
     { label: "Переименовать", icon: IcoRename, onClick: () => setAction({ type: "rename", table: cardMenu.table }) },
     { label: "Распечатать пречек", icon: IcoPrint, onClick: () => setAction({ type: "precheck", table: cardMenu.table }) },
@@ -255,6 +288,63 @@ export function OrdersView() {
       {cardMenu && (
         <ContextMenu anchor={cardMenu.anchor} items={cardMenuItems} onClose={() => setCardMenu(null)} />
       )}
+
+      {/* Поменять стол — table picker (Мои столы + залы), iiko-style */}
+      <Sheet open={!!changeTableFor} onClose={() => setChangeTableFor(null)} title="Поменять стол">
+        {(() => {
+          const mine = new Set(tables.map((t) => String(t.table_number)));
+          const sections = iikoTables.reduce<Record<string, IikoTable[]>>((acc, t) => {
+            (acc[t.section_name || "Зал"] ||= []).push(t); return acc;
+          }, {});
+          const myTiles = iikoTables.filter((t) => mine.has(String(t.number)));
+          const tile = (t: IikoTable) => {
+            const isCurrent = changeTableFor && String(t.number) === String(changeTableFor.table_number);
+            const isMine = mine.has(String(t.number));
+            return (
+              <button key={t.id} onClick={() => doChangeTable(t)}
+                className={`h-12 rounded-xl flex items-center justify-center font-bold text-sm active:scale-95 transition ${isCurrent ? "bg-blue-500 text-white" : isMine ? "bg-inset text-ink border border-hair" : "bg-surface text-ink border border-hair"}`}>
+                {t.number}
+              </button>
+            );
+          };
+          return (
+            <div className="max-h-[55vh] overflow-y-auto space-y-4 pb-2">
+              {myTiles.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-ink-muted mb-2">Мои столы</p>
+                  <div className="grid grid-cols-5 gap-2">{myTiles.map(tile)}</div>
+                </div>
+              )}
+              {Object.entries(sections).map(([name, ts]) => (
+                <div key={name}>
+                  <p className="text-xs font-bold text-ink-muted mb-2">{name}</p>
+                  <div className="grid grid-cols-5 gap-2">{ts.map(tile)}</div>
+                </div>
+              ))}
+              {iikoTables.length === 0 && <p className="text-center text-ink-subtle py-6 text-sm">Загрузка столов…</p>}
+            </div>
+          );
+        })()}
+      </Sheet>
+
+      {/* Объединить заказы — pick another active order to merge into */}
+      <Sheet open={!!mergeFor} onClose={() => setMergeFor(null)} title="Объединить с заказом">
+        <div className="max-h-[55vh] overflow-y-auto space-y-2 pb-2">
+          {tables.filter((t) => t.id !== mergeFor?.id).map((t) => (
+            <button key={t.id} onClick={() => doMerge(t)}
+              className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-inset border border-hair active:scale-[0.99] transition text-left">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-ink">Стол {t.table_number}</p>
+                <p className="text-xs text-ink-subtle truncate">{(t.dish_names || []).slice(0, 2).join(", ") || "—"}</p>
+              </div>
+              <span className="text-sm font-semibold text-ink flex-shrink-0">{Number(t.total_price).toLocaleString("ru-RU")} ₽</span>
+            </button>
+          ))}
+          {tables.filter((t) => t.id !== mergeFor?.id).length === 0 && (
+            <p className="text-center text-ink-subtle py-6 text-sm">Нет других активных заказов</p>
+          )}
+        </div>
+      </Sheet>
 
       {/* Sort sheet (↑↓) */}
       <ActionSheet

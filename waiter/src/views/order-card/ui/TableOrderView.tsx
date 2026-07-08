@@ -71,8 +71,9 @@ export function TableOrderView() {
   // Dish quantity popup (enter number) + course picker (local only — backend has no course field)
   const [qtyEdit, setQtyEdit] = useState<{ clientId: number; dishId: number; current: number; value: string } | null>(null);
   const [courseFor, setCourseFor] = useState<{ clientId: number; dishId: number } | null>(null);
-  // Split-with-guest picker: the dish held by `sourceCid` is split between it and a chosen guest.
+  // Split picker: the dish held by `sourceCid` is split among the checked guests.
   const [splitFor, setSplitFor] = useState<{ sourceCid: number; dishId: number; name: string } | null>(null);
+  const [splitTargets, setSplitTargets] = useState<Set<number>>(new Set());
   // Multi-select (iiko long-press) mode. Keys are `${clientId}:${dishId}`.
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -125,25 +126,33 @@ export function TableOrderView() {
   };
 
 
+  // ONE split entry point — used by the dish swipe, the long-press toolbar and
+  // the row action. Only the trigger differs; the action is identical.
+  const openSplit = (cid: number, dishId: number) => {
+    const it = (guestBaskets[cid] ?? []).find((i) => i.dish_id === dishId);
+    if (!it || it.quantity < 1 || it.dish_name.includes("½")) { showToast("Это блюдо нельзя разделить", "err"); return; }
+    if (guests.length < 2) { showToast("Нужно минимум 2 гостя для разделения", "err"); return; }
+    exitSelect();
+    setSplitFor({ sourceCid: cid, dishId, name: it.dish_name });
+    setSplitTargets(new Set([cid])); // the dish owner always shares in the split
+  };
+
   const splitSelected = () => {
     const items = selectedList();
     if (items.length !== 1) { showToast("Разделить можно одно блюдо", "err"); return; }
-    if (guests.length < 2) { showToast("Нужно минимум 2 гостя для разделения", "err"); return; }
-    const { cid, dishId } = items[0];
-    const it = (guestBaskets[cid] ?? []).find((i) => i.dish_id === dishId);
-    if (!it || it.quantity < 1 || it.dish_name.includes("½")) { showToast("Это блюдо нельзя разделить", "err"); return; }
-    exitSelect();
-    setSplitFor({ sourceCid: cid, dishId, name: it.dish_name });
+    openSplit(items[0].cid, items[0].dishId);
   };
 
-  // Split a whole dish into halves shared between its owner and the chosen guest.
-  const doSplit = async (sourceCid: number, dishId: number, targetCid: number) => {
+  // Split a whole dish into halves shared between the checked guests (iiko: each
+  // gets amount 0.5, tagged with their guestId). Backend supports exactly 2.
+  const doSplit = async () => {
+    if (!splitFor || !tableIdParam) return;
+    const targets = [...splitTargets];
+    const { sourceCid, dishId } = splitFor;
     setSplitFor(null);
-    if (!tableIdParam) return;
     try {
-      await splitDish(Number(tableIdParam), sourceCid, dishId, [sourceCid, targetCid]);
-      refreshGuest(sourceCid);
-      refreshGuest(targetCid);
+      await splitDish(Number(tableIdParam), sourceCid, dishId, targets);
+      [...new Set([sourceCid, ...targets])].forEach((c) => refreshGuest(c));
       showToast("Блюдо разделено", "ok");
     } catch (e) {
       showToast(e instanceof Error ? e.message : "Не удалось разделить", "err");
@@ -266,11 +275,7 @@ export function TableOrderView() {
                             onCourse={() => setCourseFor({ clientId: guest.client_id, dishId: item.dish_id })}
                             onOpen={() => addDish.openForExisting(guest.client_id, item)}
                             onComment={() => setEditingComment({ clientId: guest.client_id, dishId: item.dish_id, value: item.comment || "" })}
-                            onSplit={() => {
-                              if (item.quantity < 1 || item.dish_name.includes("½")) { showToast("Блюдо уже разделено", "err"); return; }
-                              if (guests.length < 2) { showToast("Нужно минимум 2 гостя для разделения", "err"); return; }
-                              setSplitFor({ sourceCid: guest.client_id, dishId: item.dish_id, name: item.dish_name });
-                            }}
+                            onSplit={() => openSplit(guest.client_id, item.dish_id)}
                             onRemove={async () => { await removeBasketDish(guest.client_id, item.dish_id); refreshGuest(guest.client_id); }}
                             selecting={selecting}
                             selected={selected.has(selKey(guest.client_id, item.dish_id))}
@@ -387,21 +392,35 @@ export function TableOrderView() {
           onPrint={() => { setSendSheet(false); print(); }}
         />
 
-        {/* Разделить блюдо — выбор второго гостя */}
-        <ActionSheet
-          open={!!splitFor}
-          onClose={() => setSplitFor(null)}
-          header={splitFor ? `Разделить «${splitFor.name}» с гостем` : undefined}
-          actions={splitFor
-            ? guests
-                .map((g, i) => ({ g, i }))
-                .filter(({ g }) => g.client_id !== splitFor.sourceCid)
-                .map(({ g, i }) => ({
-                  label: g.name?.trim() || `Гость ${i + 1}`,
-                  onClick: () => doSplit(splitFor.sourceCid, splitFor.dishId, g.client_id),
-                }))
-            : []}
-        />
+        {/* Разделить блюдо — отметить галочками, между кем делим (мин. 2, бэк = 2) */}
+        <Sheet open={!!splitFor} onClose={() => setSplitFor(null)} title={splitFor ? `Разделить «${splitFor.name}»` : "Разделить"}>
+          <p className="text-xs text-ink-muted mb-3">Между кем разделить (по ½ каждому):</p>
+          <div className="space-y-2 mb-4 max-h-[40vh] overflow-y-auto">
+            {guests.map((g, i) => {
+              const on = splitTargets.has(g.client_id);
+              const isOwner = splitFor?.sourceCid === g.client_id;
+              return (
+                <button
+                  key={g.client_id}
+                  onClick={() => setSplitTargets((prev) => { const n = new Set(prev); n.has(g.client_id) ? n.delete(g.client_id) : n.add(g.client_id); return n; })}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl border transition ${on ? "bg-blue-500/10 border-blue-500" : "bg-inset border-hair"}`}
+                >
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${on ? "bg-blue-500" : "border-2 border-hair"}`}>
+                    {on && <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                  </span>
+                  <span className="flex-1 text-left text-sm font-semibold text-ink">{g.name?.trim() || `Гость ${i + 1}`}{isOwner && <span className="text-ink-subtle font-normal"> · владелец</span>}</span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={doSplit}
+            disabled={splitTargets.size !== 2}
+            className="w-full py-4 rounded-2xl bg-blue-500 text-white font-bold text-base active:scale-[0.98] transition disabled:opacity-40"
+          >
+            {splitTargets.size === 2 ? "Разделить" : "Отметьте 2 гостей"}
+          </button>
+        </Sheet>
 
         {/* Header ⋯ */}
         <ActionSheet
