@@ -61,7 +61,7 @@ function V2() {
       {ITEMS.map((it, i) => {
         const r = REASONS[it.r];
         return (
-          <div key={i} className="flex items-center gap-3 px-3 py-2.5">
+          <div key={i} className="flex items-center gap-3 px-3 py-2">
             <span className={`w-8 h-8 rounded-lg border flex items-center justify-center text-sm flex-shrink-0 ${r.chip}`}>{r.icon}</span>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-ink truncate">{it.name}</p>
@@ -84,12 +84,12 @@ function V3() {
         const c = categoryColor(it.cat);
         const r = REASONS[it.r];
         return (
-          <div key={i} className={`rounded-xl ${c.bg} border ${c.border} p-2 flex flex-col gap-1.5`}>
+          <div key={i} className={`rounded-xl ${c.bg} border ${c.border} p-2 flex flex-col gap-2`}>
             <p className="text-xs font-semibold text-gray-800 leading-tight line-clamp-2 min-h-[2rem]">{it.name}</p>
-            <span className={`inline-flex items-center gap-1 self-start text-[10px] font-bold px-1.5 py-0.5 rounded-full border ${r.chip}`}>
+            <span className={`inline-flex items-center gap-1 self-start text-[10px] font-bold px-2 py-1 rounded-full border ${r.chip}`}>
               {r.icon} {r.label}
             </span>
-            <div className="flex items-center justify-between mt-auto pt-0.5">
+            <div className="flex items-center justify-between mt-auto pt-1">
               <span className="text-xs font-bold text-gray-800">{it.price} ₽</span>
               <AddBtn small />
             </div>

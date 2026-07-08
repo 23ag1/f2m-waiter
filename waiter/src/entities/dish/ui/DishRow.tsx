@@ -97,13 +97,13 @@ export function DishRow({ item, course, warn, onQty, onCourse, onOpen, onComment
             {s.key === "new" ? (
               <button
                 onClick={(e) => { e.stopPropagation(); onCourse(); }}
-                className="inline-flex items-center gap-1 text-xs text-blue-500 leading-4 mt-0.5 active:opacity-60"
+                className="inline-flex items-center gap-1 text-xs text-blue-500 leading-4 mt-1 active:opacity-60"
               >
                 {course === "vip" ? "VIP" : `Курс ${course}`}
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
               </button>
             ) : (
-              <span className={`inline-block text-xs leading-4 mt-0.5 ${s.text}`}>
+              <span className={`inline-block text-xs leading-4 mt-1 ${s.text}`}>
                 {s.label}
               </span>
             )}

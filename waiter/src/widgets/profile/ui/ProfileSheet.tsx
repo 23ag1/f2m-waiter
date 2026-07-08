@@ -149,7 +149,7 @@ export function ProfileSheet({
           <span className="text-lg leading-none">💡</span>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-ink">Настройки рекомендаций</p>
-            <p className="text-xs text-ink-subtle mt-0.5">Порядок категорий и цвет шапок</p>
+            <p className="text-xs text-ink-subtle mt-1">Порядок категорий и цвет шапок</p>
           </div>
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-ink-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
@@ -166,7 +166,7 @@ export function ProfileSheet({
           <span className="text-lg leading-none">🎓</span>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-ink">Пройти обучение</p>
-            <p className="text-xs text-ink-subtle mt-0.5">Повторить знакомство с рекомендациями</p>
+            <p className="text-xs text-ink-subtle mt-1">Повторить знакомство с рекомендациями</p>
           </div>
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-ink-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />

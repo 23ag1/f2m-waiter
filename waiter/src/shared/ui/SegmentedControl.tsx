@@ -25,7 +25,7 @@ export function SegmentedControl<T extends string>({
 }) {
   const track = variant === "raised" ? "bg-inset" : "bg-surface";
   const selected = variant === "raised" ? "bg-surface text-ink shadow-sm" : "bg-inset text-ink";
-  const item = size === "sm" ? "px-4 py-1.5" : "flex-1 py-2";
+  const item = size === "sm" ? "px-4 py-2" : "flex-1 py-2";
   return (
     <div className={`flex rounded-full p-1 ${track} ${className}`}>
       {options.map((o) => (

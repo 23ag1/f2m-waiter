@@ -164,7 +164,7 @@ export function TourOverlay() {
         />
         <div className="relative bg-surface rounded-[20px] p-4 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.45)] ring-1 ring-black/5">
           {/* eyebrow: step counter + slim progress */}
-          <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold tracking-wide uppercase text-ink-subtle">
               Обучение · {index + 1}/{TOUR_STEPS.length}
             </span>
@@ -180,7 +180,7 @@ export function TourOverlay() {
 
           <div className="flex items-center justify-between mt-4">
             {index > 0 ? (
-              <button onClick={prevStep} className="text-sm font-semibold text-ink-muted px-2 py-1.5 -ml-2 rounded-lg active:bg-inset transition">
+              <button onClick={prevStep} className="text-sm font-semibold text-ink-muted px-2 py-2 -ml-2 rounded-lg active:bg-inset transition">
                 Назад
               </button>
             ) : <span />}

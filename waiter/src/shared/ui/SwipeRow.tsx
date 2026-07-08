@@ -90,7 +90,7 @@ export function SwipeRow({
     <button
       key={i}
       onClick={() => { a.onClick(); close(); }}
-      className={`flex-1 my-1 rounded-full ${a.bg} text-white flex items-center justify-center gap-1.5 text-sm font-semibold active:brightness-95`}
+      className={`flex-1 my-1 rounded-full ${a.bg} text-white flex items-center justify-center gap-2 text-sm font-semibold active:brightness-95`}
     >
       {a.icon}
       <span>{a.label}</span>

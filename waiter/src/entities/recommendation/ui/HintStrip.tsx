@@ -44,7 +44,7 @@ export function HintStrip({
       <button
         data-tour="hint-collapse"
         onClick={toggle}
-        className="w-full flex items-center gap-1.5 px-4 py-1.5 active:opacity-70 transition"
+        className="w-full flex items-center gap-2 px-4 py-2 active:opacity-70 transition"
       >
         <span className="text-xs">💡</span>
         <span className="text-[11px] font-bold text-ink-muted uppercase tracking-wide">Рекомендации гостю</span>

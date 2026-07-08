@@ -23,9 +23,9 @@ function reasonOf(hint: HintDish): { icon: string; text: string } {
   return { icon: r?.icon ?? "💡", text: r?.label ?? tag };
 }
 
-// Recommendation card: coloured by its category (colour configurable in the
-// waiter's settings), reason chip readable at a glance, no price, native round
-// "+". Dismissal is a swipe-up (handled by the parent wrapper), not a × button.
+// Recommendation card: coloured by its category (configurable in the waiter's
+// settings), a reason chip readable at a glance, no price. The WHOLE card is the
+// tap target to add — no "+" button — so the name gets the full height.
 export function RecommendationCard({
   hint,
   color,
@@ -37,23 +37,19 @@ export function RecommendationCard({
 }) {
   const reason = reasonOf(hint);
   return (
-    <div className={`relative w-full h-full rounded-xl p-2 ${color.bg} border ${color.border} flex flex-col`}>
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); onAdd(); }}
+      aria-label={`Добавить ${hint.name}`}
+      className={`w-full h-full rounded-xl p-2 ${color.bg} border ${color.border} flex flex-col gap-1 text-left active:scale-[0.97] transition`}
+    >
       {/* reason chip */}
-      <span className="inline-flex items-center gap-0.5 self-start bg-white/80 rounded-full pl-1 pr-1.5 py-0.5 text-[10px] font-bold text-gray-700 max-w-full">
+      <span className="inline-flex items-center gap-1 self-start bg-white/80 rounded-full px-2 py-1 text-[10px] font-bold text-gray-700 max-w-full">
         <span className="leading-none">{reason.icon}</span>
         <span className="truncate">{reason.text}</span>
       </span>
-      {/* name gets the FULL width (2 lines); button sits on its own row below */}
-      <p className="mt-0.5 flex-1 min-h-0 text-[12px] font-bold text-gray-900 leading-tight line-clamp-2">{hint.name}</p>
-      <button
-        onClick={(e) => { e.stopPropagation(); onAdd(); }}
-        aria-label="Добавить"
-        className={`self-end w-6 h-6 rounded-full ${color.bar} text-white flex items-center justify-center shadow-sm active:scale-90 transition`}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 5v14M5 12h14" />
-        </svg>
-      </button>
-    </div>
+      {/* name fills the rest of the card */}
+      <span className="flex-1 min-h-0 w-full text-[13px] font-bold text-gray-900 leading-tight line-clamp-3 overflow-hidden">{hint.name}</span>
+    </button>
   );
 }

@@ -206,7 +206,7 @@ export function TableOrderView() {
             <button onClick={exitSelect} className="w-16 text-right text-blue-500 font-bold text-base active:opacity-60">Готово</button>
           </header>
         ) : (
-        <header className="shrink-0 bg-inset px-3 pt-2.5 pb-1.5 flex items-center gap-3 z-10">
+        <header className="shrink-0 bg-inset px-3 pt-2 pb-2 flex items-center gap-3 z-10">
           <BackButton onClick={() => router.push("/dashboard")} />
           <div className="flex-1 min-w-0 text-center">
             <h1 className="text-lg font-bold text-ink leading-tight truncate">Стол {tableParam}</h1>
@@ -299,7 +299,7 @@ export function TableOrderView() {
           <div className="flex justify-center py-4 border-t border-dashed border-hair">
             <button
               onClick={addGuest}
-              className="px-6 py-2.5 rounded-full bg-surface border border-hair shadow-sm text-sm font-bold text-blue-500 active:scale-95 transition"
+              className="px-6 py-2 rounded-full bg-surface border border-hair shadow-sm text-sm font-bold text-blue-500 active:scale-95 transition"
             >
               + Гость
             </button>
@@ -342,7 +342,7 @@ export function TableOrderView() {
             </button>
             {/* Отправить на кухню — ключевая: только выбранные блюда */}
             <button onClick={sendSelected} disabled={selected.size === 0} className="w-11 h-11 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-md active:scale-90 transition disabled:opacity-30">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 -ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 -ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" /></svg>
             </button>
           </div>
         ) : (
