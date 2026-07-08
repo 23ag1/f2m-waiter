@@ -206,7 +206,7 @@ export function TableOrderView() {
             <button onClick={exitSelect} className="w-16 text-right text-blue-500 font-bold text-base active:opacity-60">Готово</button>
           </header>
         ) : (
-        <header className="shrink-0 bg-inset px-3 pt-3 pb-2 flex items-center gap-3 z-10">
+        <header className="shrink-0 bg-inset px-3 pt-2.5 pb-1.5 flex items-center gap-3 z-10">
           <BackButton onClick={() => router.push("/dashboard")} />
           <div className="flex-1 min-w-0 text-center">
             <h1 className="text-lg font-bold text-ink leading-tight truncate">Стол {tableParam}</h1>

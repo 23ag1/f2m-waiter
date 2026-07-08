@@ -25,7 +25,7 @@ export function GuestRow({
   onMenu: () => void;
 }) {
   return (
-    <div onClick={onSelect} className={`px-4 py-3 flex items-center justify-between gap-2 cursor-pointer transition-colors ${active ? "bg-blue-500" : ""}`}>
+    <div onClick={onSelect} className={`flex items-center justify-between gap-2 cursor-pointer transition-all ${active ? "mx-2 my-1 px-3 py-2 rounded-2xl bg-blue-500 shadow-sm" : "px-4 py-2.5"}`}>
       <div className="flex items-center gap-2 flex-wrap min-w-0">
         <span className={`text-sm font-bold ${active ? "text-white" : "text-ink"}`}>{guest.name}</span>
         <span className={`text-xs ${active ? "text-white/75" : "text-ink-subtle"}`}>· {formatMoney(total)} ₽</span>

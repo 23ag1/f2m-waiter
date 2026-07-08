@@ -44,7 +44,7 @@ export function DishRow({ item, course, warn, onQty, onCourse, onOpen, onComment
     return (
       <div
         onClick={() => onToggleSelect?.()}
-        className={`px-3 py-2.5 flex items-center gap-3 cursor-pointer select-none [-webkit-touch-callout:none] transition-colors ${selected ? "bg-blue-500/10" : "active:bg-inset"}`}
+        className={`px-3 py-2 flex items-center gap-3 cursor-pointer select-none [-webkit-touch-callout:none] transition-colors ${selected ? "bg-blue-500/10" : "active:bg-inset"}`}
       >
         <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition ${selected ? "bg-blue-500" : "border-2 border-hair"}`}>
           {selected && (
@@ -72,7 +72,7 @@ export function DishRow({ item, course, warn, onQty, onCourse, onOpen, onComment
         { label: "Удалить", bg: "bg-red-500", icon: IconTrash, onClick: () => { void onRemove(); } },
       ]}
     >
-      <div className="px-3 py-2.5">
+      <div className="px-3 py-2">
         <div className="flex items-start gap-3">
           {/* Количество — синяя цифра слева, на одной линии с названием */}
           <button
