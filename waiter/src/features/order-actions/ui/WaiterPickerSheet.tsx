@@ -1,6 +1,7 @@
 "use client";
 
 import { Sheet } from "@/shared/ui/Sheet";
+import { Check } from "lucide-react";
 import { Avatar } from "@/shared/ui/Avatar";
 import { WAITERS } from "../model/waiters";
 
@@ -30,9 +31,7 @@ export function WaiterPickerSheet({
               <Avatar initial={w.initial} size="sm" />
               <span className={`flex-1 text-base font-medium ${active ? "text-blue-600" : "text-ink"}`}>{w.name}</span>
               {active && (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                </svg>
+                <Check className="h-5 w-5 text-blue-500" strokeWidth={2.5} />
               )}
             </button>
           );

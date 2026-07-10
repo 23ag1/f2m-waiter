@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { getActiveTables } from "@/shared/api";
+import { LoaderCircle, ChevronRight, ChevronsUpDown } from "lucide-react";
 import { TOUR_STEPS, useTour, nextStep, prevStep, finishTour } from "../model/onboarding";
 
 interface Hole { top: number; left: number; width: number; height: number; radius: number }
@@ -106,10 +107,7 @@ export function TourOverlay() {
   if (step.phase === "order" && (!pathname.startsWith("/dashboard/basket/") || (!hole && !orderWaited))) {
     return (
       <div className="fixed inset-0 z-[100] bg-app flex flex-col items-center justify-center gap-3" role="dialog" aria-modal="true">
-        <svg className="h-7 w-7 text-blue-500 animate-spin" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-          <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-        </svg>
+        <LoaderCircle className="h-7 w-7 text-blue-500 animate-spin" strokeWidth={3} />
         <p className="text-sm font-semibold text-ink-muted">Открываем заказ…</p>
       </div>
     );
@@ -190,9 +188,7 @@ export function TourOverlay() {
             >
               {isLast ? "Готово" : "Далее"}
               {!isLast && (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
+                <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
               )}
             </button>
           </div>
@@ -212,10 +208,7 @@ function SwipeHint({ hole }: { hole: Hole }) {
       className="absolute pointer-events-none flex items-center justify-center rounded-full bg-blue-500/90 shadow-lg"
       style={{ left: cx - 16, top, width: 32, height: 32, animation: "tour-swipe-both 1.5s ease-in-out infinite" }}
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M8 9l4-4 4 4" />
-        <path d="M8 15l4 4 4-4" />
-      </svg>
+      <ChevronsUpDown width={20} height={20} className="text-white" strokeWidth={2.4} />
     </div>
   );
 }

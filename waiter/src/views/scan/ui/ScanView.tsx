@@ -3,6 +3,7 @@
 import { Suspense, useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { scanQr } from "@/shared/api";
+import { ArrowLeft } from "lucide-react";
 import { Scanner } from "@yudiel/react-qr-scanner";
 
 type CameraStatus = "requesting" | "granted" | "denied" | "unsupported";
@@ -159,9 +160,7 @@ function QRScannerPage() {
     <div className="min-h-screen bg-black text-white flex flex-col">
       <header className="p-4 flex items-center border-b border-gray-800">
         <button onClick={() => router.back()} className="text-ink-subtle p-2 -ml-2">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
+          <ArrowLeft className="h-6 w-6" />
         </button>
         <h1 className="text-lg font-medium mx-auto">Сканирование QR</h1>
         <div className="w-6"></div>

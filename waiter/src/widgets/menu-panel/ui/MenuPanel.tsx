@@ -3,10 +3,9 @@
 import { categoryColor } from "@/shared/lib/category-color";
 import type { Category, Dish } from "@/entities/menu";
 
-// Collapsible inline menu for the order card: coloured category grid → dish list.
+// Inline menu body for the order card: coloured category grid → dish list.
+// Rendered only while open; the search bar above it owns the collapse handle.
 export function MenuPanel({
-  collapsed,
-  onToggle,
   loading,
   categories,
   search,
@@ -17,8 +16,6 @@ export function MenuPanel({
   adding,
   addedIds,
 }: {
-  collapsed: boolean;
-  onToggle: () => void;
   loading: boolean;
   categories: Category[];
   search: string;
@@ -30,15 +27,7 @@ export function MenuPanel({
   addedIds: Set<number>;
 }) {
   return (
-    <div className="shrink-0 bg-surface border-t-2 border-hair shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
-      {/* Gray handle — always visible, acts as toggle */}
-      <button onClick={onToggle} className="w-full flex flex-col items-center py-1 active:bg-inset transition">
-        <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-6 text-ink-subtle transition-transform ${collapsed ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      {!collapsed && (
+    <div className="shrink-0 bg-surface">
         <div className="overflow-y-auto max-h-[32vh]">
           <div className="p-2 pb-3">
             {loading ? (
@@ -54,25 +43,17 @@ export function MenuPanel({
                     <button
                       key={i}
                       onClick={() => onCategory(cat.category_name)}
-                      className="relative h-12 rounded-lg bg-inset border border-hair overflow-hidden flex items-center justify-center px-2 text-center active:scale-[0.97] transition"
+                      className="relative h-16 rounded-lg bg-inset border border-hair overflow-hidden flex items-center justify-center px-2 text-center active:scale-[0.97] transition"
                     >
                       <span className={`absolute left-0 inset-y-0 w-1 ${c.bar}`} />
-                      <h3 className="text-[11px] font-bold text-ink leading-tight line-clamp-2">{cat.category_name}</h3>
+                      <h3 className="text-xs font-bold text-ink leading-tight line-clamp-3">{cat.category_name}</h3>
                     </button>
                   );
                 })}
               </div>
             ) : (
-              /* Dish list */
+              /* Dish list — «назад ко всем категориям» живёт в строке поиска над панелью */
               <>
-                {activeCategory && !search && (
-                  <button onClick={() => onCategory(null)} className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink transition mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    Все категории
-                  </button>
-                )}
                 {(activeCategory ? categories.filter((c) => c.category_name === activeCategory) : categories).map((cat, i) => {
                   const cc = categoryColor(cat.category_name);
                   return (
@@ -87,13 +68,13 @@ export function MenuPanel({
                               key={dish.id}
                               onClick={() => { if (!stopped) onAdd(dish); }}
                               disabled={adding || stopped}
-                              className={`relative h-16 rounded-lg bg-surface border border-hair-soft overflow-hidden flex flex-col items-center justify-center px-2 pb-1 text-center transition ${stopped ? "opacity-40" : "active:scale-[0.97]"}`}
+                              className={`relative h-24 rounded-lg bg-surface border border-hair-soft overflow-hidden flex flex-col items-center justify-center px-2 pb-1 text-center transition ${stopped ? "opacity-40" : "active:scale-[0.97]"}`}
                             >
-                              <p className={`text-[11px] font-semibold leading-tight line-clamp-2 ${stopped ? "text-ink-subtle line-through" : "text-ink"}`}>{dish.name}</p>
-                              <p className="text-[10px] text-ink-muted mt-1">{dish.price} ₽</p>
+                              <p className={`text-xs font-semibold leading-tight line-clamp-3 ${stopped ? "text-ink-subtle line-through" : "text-ink"}`}>{dish.name}</p>
+                              <p className="text-[11px] text-ink-muted mt-1">{dish.price} ₽</p>
                               <span className={`absolute bottom-0 inset-x-0 h-1 ${cc.bar}`} />
-                              {stopped && <span className="absolute top-1 right-1 text-[8px] font-bold text-red-500 bg-red-50 px-1 rounded">СТОП</span>}
-                              {added && <span className="absolute inset-0 bg-green-500/15 flex items-center justify-center text-green-600 text-lg font-bold">✓</span>}
+                              {stopped && <span className="absolute top-1 right-1 text-[9px] font-bold text-red-500 bg-red-50 px-1 rounded">СТОП</span>}
+                              {added && <span className="absolute inset-0 bg-green-500/15 flex items-center justify-center text-green-600 text-xl font-bold">✓</span>}
                             </button>
                           );
                         })}
@@ -105,7 +86,6 @@ export function MenuPanel({
             )}
           </div>
         </div>
-      )}
     </div>
   );
 }

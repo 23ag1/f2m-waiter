@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Scanner } from "@yudiel/react-qr-scanner";
+import { ArrowLeft } from "lucide-react";
 
 type CameraStatus = "requesting" | "granted" | "denied" | "unsupported";
 
@@ -55,9 +56,7 @@ export function QRScannerModal({ onClose, onCheckin }: { onClose: () => void; on
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
       <div className="flex items-center p-4 border-b border-gray-800">
         <button onClick={onClose} className="text-ink-subtle p-1 -ml-1">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
+          <ArrowLeft className="h-6 w-6" />
         </button>
         <span className="text-white text-base font-semibold ml-3">Сканирование QR</span>
       </div>

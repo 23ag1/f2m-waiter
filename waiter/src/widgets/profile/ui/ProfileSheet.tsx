@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { LogOut, ChevronRight } from "lucide-react";
 import { Sheet } from "@/shared/ui/Sheet";
 import { BackButton } from "@/shared/ui/BackButton";
 import { Avatar } from "@/shared/ui/Avatar";
 import { SegmentedControl } from "@/shared/ui/SegmentedControl";
-import { useTheme, type ThemeMode } from "@/shared/lib/theme";
+import { ThemeSwitch } from "@/shared/ui/ThemeSwitch";
+import { useTheme } from "@/shared/lib/theme";
 import { RecSettingsScreen } from "@/widgets/rec-settings";
 import { startTour, useTourPhase } from "@/features/onboarding";
 
@@ -119,9 +121,7 @@ export function ProfileSheet({
           onClick={onLogout}
           className="w-full py-4 rounded-2xl bg-inset text-blue-500 text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
+          <LogOut className="h-5 w-5" />
           Выйти
         </button>
       </div>
@@ -129,13 +129,11 @@ export function ProfileSheet({
       {/* Тема оформления */}
       <div className="px-4 mb-3">
         <div className="bg-surface rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3">
-          <p className="text-sm font-bold text-ink">Тема оформления</p>
-          <SegmentedControl<ThemeMode>
-            size="sm"
-            options={[{ value: "light", label: "Светлая" }, { value: "dark", label: "Тёмная" }]}
-            value={mode}
-            onChange={setTheme}
-          />
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-ink">Тема оформления</p>
+            <p className="text-xs text-ink-muted mt-1">{mode === "dark" ? "Тёмная" : "Светлая"}</p>
+          </div>
+          <ThemeSwitch dark={mode === "dark"} onChange={(d) => setTheme(d ? "dark" : "light")} />
         </div>
       </div>
 
@@ -151,9 +149,7 @@ export function ProfileSheet({
             <p className="text-sm font-bold text-ink">Настройки рекомендаций</p>
             <p className="text-xs text-ink-subtle mt-1">Порядок категорий и цвет шапок</p>
           </div>
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-ink-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-          </svg>
+          <ChevronRight className="h-4 w-4 text-ink-subtle" strokeWidth={2.5} />
         </button>
       </div>
 
@@ -168,9 +164,7 @@ export function ProfileSheet({
             <p className="text-sm font-bold text-ink">Пройти обучение</p>
             <p className="text-xs text-ink-subtle mt-1">Повторить знакомство с рекомендациями</p>
           </div>
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-ink-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-          </svg>
+          <ChevronRight className="h-4 w-4 text-ink-subtle" strokeWidth={2.5} />
         </button>
       </div>
 
@@ -179,9 +173,7 @@ export function ProfileSheet({
         <div className="bg-surface rounded-2xl p-4 shadow-sm">
           <div className="flex items-center justify-between mb-1">
             <p className="text-sm font-bold text-ink">Допродажи за сегодня</p>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-ink-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-            </svg>
+            <ChevronRight className="h-4 w-4 text-ink-subtle" strokeWidth={2.5} />
           </div>
           <p className="text-2xl font-extrabold text-ink">{fmtMoney(0)} ₽</p>
           <p className="text-xs text-ink-subtle mt-1">0 Блюд</p>

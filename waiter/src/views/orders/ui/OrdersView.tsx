@@ -24,6 +24,7 @@ import {
   PrecheckSheet,
 } from "@/features/order-actions";
 import { useTourPhase, startTour, hasCompletedTour } from "@/features/onboarding";
+import { CreditCard, User, MessageCircle, Pencil, Printer, Trash2, ArrowLeftRight, Merge, ArrowUpDown, Ellipsis, LoaderCircle, Plus } from "lucide-react";
 
 type TabType = "mine" | "all" | "external";
 type SortKey = "time_desc" | "time_asc" | "table" | "amount";
@@ -49,14 +50,14 @@ function sortTables(list: ActiveTable[], key: SortKey): ActiveTable[] {
 }
 
 // Icons for the long-press card menu (iiko-style).
-const IcoPay = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>);
-const IcoWaiter = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>);
-const IcoComment = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>);
-const IcoRename = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>);
-const IcoPrint = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a1 1 0 001-1v-4a1 1 0 00-1-1H9a1 1 0 00-1 1v4a1 1 0 001 1zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>);
-const IcoTrash = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>);
-const IcoSwapTable = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" /></svg>);
-const IcoMerge = (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8a2 2 0 012 2v3m0 0l-2.5-2.5M18 12l2.5-2.5M6 17H4a2 2 0 01-2-2V5a2 2 0 012-2h4m6 18h4a2 2 0 002-2v-4" /></svg>);
+const IcoPay = (<CreditCard className="h-5 w-5" />);
+const IcoWaiter = (<User className="h-5 w-5" />);
+const IcoComment = (<MessageCircle className="h-5 w-5" />);
+const IcoRename = (<Pencil className="h-5 w-5" />);
+const IcoPrint = (<Printer className="h-5 w-5" />);
+const IcoTrash = (<Trash2 className="h-5 w-5" />);
+const IcoSwapTable = (<ArrowLeftRight className="h-5 w-5" />);
+const IcoMerge = (<Merge className="h-5 w-5" />);
 
 export function OrdersView() {
   const router = useRouter();
@@ -236,15 +237,11 @@ export function OrdersView() {
           {/* Icons — separate white pill */}
           <div className="flex items-center bg-surface rounded-full shadow-sm px-1 flex-shrink-0">
             <IconButton size="tall" ariaLabel="Сортировка" onClick={() => setSortSheet(true)}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
-              </svg>
+              <ArrowUpDown className="h-5 w-5" strokeWidth={2.2} />
             </IconButton>
             <IconButton size="tall" ariaLabel="Меню" onClick={() => setMenuSheet(true)}>
               <span className="w-7 h-7 rounded-full border-2 border-current flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 12h.01M12 12h.01M19 12h.01" />
-                </svg>
+                <Ellipsis className="h-4 w-4" strokeWidth={3} />
               </span>
             </IconButton>
           </div>
@@ -259,10 +256,7 @@ export function OrdersView() {
       <main className="px-3 py-3 pb-28">
         {loadingTables && displayTables.length === 0 && (
           <div className="flex items-center justify-center p-12 text-ink-subtle">
-            <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
+            <LoaderCircle className="animate-spin h-5 w-5 mr-2" />
             Загрузка...
           </div>
         )}
@@ -423,9 +417,7 @@ export function OrdersView() {
         href="/dashboard/new-order?new=1"
         className="fixed bottom-7 right-5 w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center shadow-xl active:scale-95 transition-transform z-20"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-        </svg>
+        <Plus className="h-8 w-8 text-white" strokeWidth={2.5} />
       </Link>
 
       {/* Profile — full-screen iiko-style */}

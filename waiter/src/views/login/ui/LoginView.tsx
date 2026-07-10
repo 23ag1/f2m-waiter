@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 import { loginWaiter, registerWaiter } from "@/shared/api";
 import { setCookie, getCookie, deleteCookie } from "@/shared/lib/cookies";
 
@@ -127,9 +128,7 @@ export function LoginView() {
     <div className="flex min-h-screen flex-col bg-surface py-16 px-6">
       <div className="flex items-center mb-6">
         <button onClick={() => { setTab("login"); setError(""); }} className="text-blue-500 font-medium flex items-center gap-1">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+          <ChevronLeft className="h-5 w-5" />
           Назад
         </button>
       </div>

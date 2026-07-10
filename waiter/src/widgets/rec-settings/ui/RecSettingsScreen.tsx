@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { GripVertical, Check } from "lucide-react";
 import { BackButton } from "@/shared/ui/BackButton";
 import { loadCatalog } from "@/entities/menu";
 import {
@@ -157,11 +158,7 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
                     onPointerCancel={onUp}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                      <circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" />
-                      <circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" />
-                      <circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" />
-                    </svg>
+                    <GripVertical className="h-5 w-5" />
                   </button>
                   <span className="flex-1 min-w-0 truncate text-[15px] font-semibold text-ink">{cat}</span>
                   {/* current colour dot — also toggles the picker */}
@@ -182,9 +179,7 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
                             className={`w-8 h-8 rounded-full flex items-center justify-center ${REC_COLORS[key].dot} active:scale-90 transition ${active ? "ring-2 ring-offset-2 ring-offset-inset ring-ink" : ""}`}
                           >
                             {active && (
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
+                              <Check className="h-4 w-4 text-white drop-shadow" strokeWidth={3} />
                             )}
                           </button>
                         );

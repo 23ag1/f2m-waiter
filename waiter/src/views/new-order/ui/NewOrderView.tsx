@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 import { getIikoTables, getActiveTables, createTableSession } from "@/shared/api";
 import { Toast } from "@/shared/ui/Toast";
 import { useToast } from "@/shared/lib/use-toast";
@@ -87,9 +88,7 @@ function NewOrderPage() {
             onClick={() => (step === "guests" ? setStep("table") : router.push("/dashboard"))}
             className="flex items-center gap-1 text-blue-500 font-medium text-sm mr-2 flex-shrink-0"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+            <ChevronLeft className="h-5 w-5" />
             Заказы
           </button>
           <div className="flex-1 text-center">

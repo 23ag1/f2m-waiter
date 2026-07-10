@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { ChevronDown, ChevronLeft, Search, X, ScanLine, Send, Eye, QrCode, Ellipsis, Trash2, ArrowRight, ArrowLeftRight, Split, Check, Minus, Plus } from "lucide-react";
 import { Toast } from "@/shared/ui/Toast";
 import { useToast } from "@/shared/lib/use-toast";
 import { Sheet, ActionSheet } from "@/shared/ui/Sheet";
@@ -63,13 +64,13 @@ export function TableOrderView() {
   const [orderComment, setOrderComment] = useState("");
   const [editingComment, setEditingComment] = useState<{ clientId: number; dishId: number; value: string } | null>(null);
 
-  // Menu panel toggle
-  const [menuCollapsed, setMenuCollapsed] = useState(true);
+  // Menu panel toggle — open on entry: the waiter always starts by picking dishes
+  const [menuCollapsed, setMenuCollapsed] = useState(false);
   // Guest-row ⋯ action sheet + rename modal
   const [guestMenuFor, setGuestMenuFor] = useState<number | null>(null);
   const [renameGuest, setRenameGuest] = useState<{ clientId: number; value: string } | null>(null);
   // Dish quantity popup (enter number) + course picker (local only — backend has no course field)
-  const [qtyEdit, setQtyEdit] = useState<{ clientId: number; dishId: number; current: number; value: string } | null>(null);
+  const [qtyEdit, setQtyEdit] = useState<{ clientId: number; dishId: number; current: number; value: string; name: string } | null>(null);
   const [courseFor, setCourseFor] = useState<{ clientId: number; dishId: number } | null>(null);
   // Split picker: the dish held by `sourceCid` is split among the checked guests.
   const [splitFor, setSplitFor] = useState<{ sourceCid: number; dishId: number; name: string } | null>(null);
@@ -183,6 +184,63 @@ export function TableOrderView() {
 
   const isStopped = (dishId: number) => stoppedIds.has(dishId);
 
+  // The SAME search + send bar, rendered either above the expanded menu (iiko)
+  // or pinned to the bottom when the menu is collapsed.
+  const renderSearchBar = (atTop: boolean) => (
+    <div className={`shrink-0 bg-surface px-3 border-t-2 border-hair shadow-[0_-2px_8px_rgba(0,0,0,0.06)] ${atTop ? "pb-2" : "pb-8"}`}>
+      {/* Один хендл на оба состояния: ↑ раскрывает меню, ↓ сворачивает его обратно вниз */}
+      <button
+        onClick={() => setMenuCollapsed(!menuCollapsed)}
+        aria-label={atTop ? "Свернуть меню" : "Открыть меню"}
+        className="w-full flex justify-center py-1 active:bg-inset transition"
+      >
+        <ChevronDown className={`h-5 w-6 text-ink-subtle ${atTop ? "" : "rotate-180"}`} strokeWidth={2.5} />
+      </button>
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          {/* Слева: лупа, либо стрелка «назад ко всему меню», когда открыта категория или идёт поиск */}
+          {atTop && (menuSearch || activeMenuCategory) ? (
+            <button
+              onClick={() => { setMenuSearch(""); setActiveMenuCategory(null); }}
+              aria-label="Все категории"
+              className="absolute left-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-ink active:scale-90 transition"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+          ) : (
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-subtle" />
+          )}
+          <input
+            type="text"
+            value={menuSearch}
+            onChange={(e) => { setMenuSearch(e.target.value); setMenuCollapsed(false); }}
+            onFocus={() => setMenuCollapsed(false)}
+            placeholder="Поиск позиций"
+            className={`w-full py-3 bg-inset rounded-full text-sm text-ink placeholder-gray-500 focus:outline-none ${menuSearch ? "pr-20" : "pr-11"} ${atTop && (menuSearch || activeMenuCategory) ? "pl-10" : "pl-9"}`}
+          />
+          {/* Крестик — только сбрасывает текст поиска, не трогает категорию */}
+          {menuSearch && (
+            <button onClick={() => setMenuSearch("")} aria-label="Очистить поиск" className="absolute right-10 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-ink-muted active:scale-90 transition">
+              <X className="h-4 w-4" strokeWidth={2.5} />
+            </button>
+          )}
+          <button onClick={() => setShowQRScanner(true)} aria-label="Сканировать" className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-ink-muted active:scale-90 transition">
+            <ScanLine className="h-5 w-5" />
+          </button>
+        </div>
+        {/* Отправить — в обоих состояниях; меню сворачивается стрелкой сверху */}
+        <button
+          onClick={() => setSendSheet(true)}
+          disabled={totalDishes === 0}
+          aria-label="Отправить"
+          className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center shadow-md active:scale-95 transition disabled:opacity-40 bg-blue-500 text-white"
+        >
+          <Send className="h-6 w-6 -ml-1" />
+        </button>
+      </div>
+    </div>
+  );
+
   if (loading) {
     return <div className="min-h-screen bg-app flex items-center justify-center text-ink-subtle">Загрузка...</div>;
   }
@@ -215,20 +273,13 @@ export function TableOrderView() {
           {/* Right pill: глаз + скан/QR + ⋯ (iiko) */}
           <div className="flex items-center bg-surface rounded-full shadow-sm px-1 flex-shrink-0">
             <IconButton ariaLabel="Предпросмотр" onClick={() => showToast("Предпросмотр — скоро")}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
+              <Eye className="h-5 w-5" />
             </IconButton>
             <IconButton ariaLabel="Сканировать" onClick={() => setShowQRScanner(true)}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-              </svg>
+              <QrCode className="h-5 w-5" />
             </IconButton>
             <IconButton ariaLabel="Меню заказа" onClick={() => setHeaderMenu(true)}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 12h.01M12 12h.01M19 12h.01" />
-              </svg>
+              <Ellipsis className="h-5 w-5" strokeWidth={2.5} />
             </IconButton>
           </div>
         </header>
@@ -252,7 +303,8 @@ export function TableOrderView() {
                     guest={guest}
                     total={guestTotal}
                     active={!menuCollapsed && idx === activeGuestIdx}
-                    onSelect={() => setActiveGuestIdx(idx)}
+                    showPlus={menuCollapsed}
+                    onSelect={() => { setActiveGuestIdx(idx); setMenuCollapsed(false); }}
                     onHunger={(v) => setGuestHunger(guest.client_id, v)}
                     onPlus={() => { setActiveGuestIdx(idx); setMenuCollapsed(false); }}
                     onMenu={() => setGuestMenuFor(guest.client_id)}
@@ -271,7 +323,7 @@ export function TableOrderView() {
                             item={item}
                             course={courses[`${guest.client_id}-${item.dish_id}`] || "1"}
                             warn={warn}
-                            onQty={() => setQtyEdit({ clientId: guest.client_id, dishId: item.dish_id, current: item.quantity, value: String(item.quantity) })}
+                            onQty={() => setQtyEdit({ clientId: guest.client_id, dishId: item.dish_id, current: item.quantity, value: String(item.quantity), name: item.dish_name })}
                             onCourse={() => setCourseFor({ clientId: guest.client_id, dishId: item.dish_id })}
                             onOpen={() => addDish.openForExisting(guest.client_id, item)}
                             onComment={() => setEditingComment({ clientId: guest.client_id, dishId: item.dish_id, value: item.comment || "" })}
@@ -306,78 +358,49 @@ export function TableOrderView() {
           </div>
         </div>
 
+        {/* Строка поиска всегда прямо над меню: раскрытое меню уходит под неё,
+            свёрнутое — прижимает её к низу экрана (iiko) */}
+        {!selecting && renderSearchBar(!menuCollapsed)}
+
         {/* Inline menu (widget) */}
-        <MenuPanel
-          collapsed={menuCollapsed}
-          onToggle={() => setMenuCollapsed(!menuCollapsed)}
-          loading={menuLoading}
-          categories={filteredMenu}
-          search={menuSearch}
-          activeCategory={activeMenuCategory}
-          onCategory={setActiveMenuCategory}
-          isStopped={isStopped}
-          onAdd={addDish.openForDish}
-          adding={addDish.loading}
-          addedIds={addDish.addedIds}
-        />
+        {!selecting && !menuCollapsed && (
+          <MenuPanel
+            loading={menuLoading}
+            categories={filteredMenu}
+            search={menuSearch}
+            activeCategory={activeMenuCategory}
+            onCategory={setActiveMenuCategory}
+            isStopped={isStopped}
+            onAdd={addDish.openForDish}
+            adding={addDish.loading}
+            addedIds={addDish.addedIds}
+          />
+        )}
 
         {/* Bottom action bar in selection mode (iiko): delete · split · send-to-kitchen */}
-        {selecting ? (
+        {selecting && (
           <div className="shrink-0 bg-surface border-t border-hair px-4 pt-3 pb-8 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] flex items-center justify-around">
             {/* Удалить */}
             <button onClick={deleteSelected} disabled={selected.size === 0} className="w-11 h-11 rounded-full bg-inset flex items-center justify-center text-ink active:scale-90 transition disabled:opacity-30">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              <Trash2 className="h-5 w-5" />
             </button>
             {/* Перенести в новый заказ (нужен бэкенд переноса между заказами) */}
             <button onClick={() => { if (selected.size === 0) return; showToast("Перенос в новый заказ — скоро"); }} disabled={selected.size === 0} className="w-11 h-11 rounded-full bg-inset flex items-center justify-center text-ink active:scale-90 transition disabled:opacity-30">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              <ArrowRight className="h-5 w-5" />
             </button>
             {/* Разделить — только 1 блюдо и 2+ гостя */}
             <button onClick={splitSelected} disabled={selected.size !== 1 || guests.length < 2} className="w-11 h-11 rounded-full bg-inset flex items-center justify-center text-ink active:scale-90 transition disabled:opacity-30">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.121 14.121a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0 0L19 4m-9.879 10.121L12 12m0 0l7 7m-7-7L9.121 9.879m0 0a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" /></svg>
+              <Split className="h-5 w-5" />
             </button>
             {/* Перенести в другой заказ / стол (нужен бэкенд перемещения между столами) */}
             <button onClick={() => { if (selected.size === 0) return; showToast("Перенос в другой заказ — скоро"); }} disabled={selected.size === 0} className="w-11 h-11 rounded-full bg-inset flex items-center justify-center text-ink active:scale-90 transition disabled:opacity-30">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4" /></svg>
+              <ArrowLeftRight className="h-5 w-5" />
             </button>
             {/* Отправить на кухню — ключевая: только выбранные блюда */}
             <button onClick={sendSelected} disabled={selected.size === 0} className="w-11 h-11 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-md active:scale-90 transition disabled:opacity-30">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 -ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" /></svg>
+              <Send className="h-5 w-5 -ml-1" />
             </button>
           </div>
-        ) : (
-        /* Bottom bar — search + send (iiko) */
-        <div className="shrink-0 bg-surface border-t border-hair px-3 pt-2 pb-8 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-subtle" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input
-                type="text"
-                value={menuSearch}
-                onChange={(e) => { setMenuSearch(e.target.value); setMenuCollapsed(false); }}
-                onFocus={() => setMenuCollapsed(false)}
-                placeholder="Поиск позиций"
-                className="w-full pl-9 pr-11 py-3 bg-inset rounded-full text-sm text-ink placeholder-gray-500 focus:outline-none"
-              />
-              <button onClick={() => setShowQRScanner(true)} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-ink-muted active:scale-90 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M4 12h16" />
-                </svg>
-              </button>
-            </div>
-            <button
-              onClick={() => setSendSheet(true)}
-              disabled={totalDishes === 0}
-              className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-md active:scale-95 transition disabled:opacity-40"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 -ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
-              </svg>
-            </button>
-          </div>
-        </div>
         )}
 
         {/* Отправить на печать (feature) */}
@@ -406,7 +429,7 @@ export function TableOrderView() {
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl border transition ${on ? "bg-blue-500/10 border-blue-500" : "bg-inset border-hair"}`}
                 >
                   <span className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${on ? "bg-blue-500" : "border-2 border-hair"}`}>
-                    {on && <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                    {on && <Check className="h-4 w-4 text-white" strokeWidth={3} />}
                   </span>
                   <span className="flex-1 text-left text-sm font-semibold text-ink">{g.name?.trim() || `Гость ${i + 1}`}{isOwner && <span className="text-ink-subtle font-normal"> · владелец</span>}</span>
                 </button>
@@ -446,17 +469,39 @@ export function TableOrderView() {
         />
 
         {/* Количество */}
-        <Sheet open={!!qtyEdit} onClose={() => setQtyEdit(null)} title="Количество">
+        <Sheet open={!!qtyEdit} onClose={() => setQtyEdit(null)} title="Количество" subtitle={qtyEdit?.name}>
           {qtyEdit && (
             <>
-              <input
-                autoFocus
-                inputMode="numeric"
-                type="text"
-                value={qtyEdit.value}
-                onChange={(e) => setQtyEdit({ ...qtyEdit, value: e.target.value.replace(/[^0-9]/g, "") })}
-                className="w-full bg-inset rounded-2xl px-4 py-4 text-lg font-semibold text-ink outline-none mb-4"
-              />
+              {/* iiko: одна пилюля — число слева, сегмент − | + справа */}
+              <div className="flex items-center gap-3 h-16 pl-5 pr-1 rounded-full bg-inset mb-6">
+                <input
+                  autoFocus
+                  inputMode="numeric"
+                  type="text"
+                  value={qtyEdit.value}
+                  onChange={(e) => setQtyEdit({ ...qtyEdit, value: e.target.value.replace(/[^0-9]/g, "") })}
+                  aria-label="Количество"
+                  className="flex-1 min-w-0 bg-transparent text-2xl font-semibold text-ink outline-none"
+                />
+                <div className="flex items-center h-12 rounded-full bg-surface shadow-sm overflow-hidden flex-shrink-0">
+                  <button
+                    onClick={() => setQtyEdit({ ...qtyEdit, value: String(Math.max(0, (parseInt(qtyEdit.value, 10) || 0) - 1)) })}
+                    disabled={(parseInt(qtyEdit.value, 10) || 0) <= 0}
+                    aria-label="Уменьшить"
+                    className="w-14 h-12 flex items-center justify-center text-ink-muted active:bg-inset transition disabled:opacity-30"
+                  >
+                    <Minus className="h-5 w-5" strokeWidth={2.5} />
+                  </button>
+                  <span className="w-px h-6 bg-hair flex-shrink-0" />
+                  <button
+                    onClick={() => setQtyEdit({ ...qtyEdit, value: String((parseInt(qtyEdit.value, 10) || 0) + 1) })}
+                    aria-label="Увеличить"
+                    className="w-14 h-12 flex items-center justify-center text-blue-500 active:bg-inset transition"
+                  >
+                    <Plus className="h-5 w-5" strokeWidth={2.5} />
+                  </button>
+                </div>
+              </div>
               <button
                 onClick={async () => {
                   const { clientId, dishId, current, value } = qtyEdit;
@@ -469,7 +514,7 @@ export function TableOrderView() {
                     refreshGuest(clientId);
                   } catch { showToast("Не удалось изменить количество", "err"); }
                 }}
-                className="w-full py-4 rounded-2xl bg-blue-500 text-white font-bold text-base active:scale-[0.98] transition"
+                className="w-full py-4 rounded-full bg-blue-500 text-white font-bold text-base active:scale-[0.98] transition"
               >
                 Готово
               </button>

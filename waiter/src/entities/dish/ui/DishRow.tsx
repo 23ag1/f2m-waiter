@@ -5,16 +5,11 @@ import { formatMoney } from "@/shared/lib/utils";
 import { useLongPress } from "@/shared/lib/use-long-press";
 import { dishStatus } from "../model/dish-status";
 import type { BasketItem, ModifierInfo } from "../model/types";
+import { MessageSquare, Split, Trash2, Check, ChevronDown } from "lucide-react";
 
-const IconComment = (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-);
-const IconSplit = (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.121 14.121a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0 0L19 4m-9.879 10.121L12 12m0 0l7 7m-7-7L9.121 9.879m0 0a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" /></svg>
-);
-const IconTrash = (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-);
+const IconComment = <MessageSquare className="h-4 w-4" />;
+const IconSplit = <Split className="h-4 w-4" />;
+const IconTrash = <Trash2 className="h-4 w-4" />;
 
 export interface DishRowProps {
   item: BasketItem;
@@ -48,7 +43,7 @@ export function DishRow({ item, course, warn, onQty, onCourse, onOpen, onComment
       >
         <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition ${selected ? "bg-blue-500" : "border-2 border-hair"}`}>
           {selected && (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+            <Check className="h-4 w-4 text-white" strokeWidth={3} />
           )}
         </span>
         <span className={`flex-shrink-0 w-6 text-center text-sm font-semibold ${s.text}`}>{item.quantity}</span>
@@ -100,7 +95,7 @@ export function DishRow({ item, course, warn, onQty, onCourse, onOpen, onComment
                 className="inline-flex items-center gap-1 text-xs text-blue-500 leading-4 mt-1 active:opacity-60"
               >
                 {course === "vip" ? "VIP" : `Курс ${course}`}
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
+                <ChevronDown className="h-3 w-3" strokeWidth={2.5} />
               </button>
             ) : (
               <span className={`inline-block text-xs leading-4 mt-1 ${s.text}`}>

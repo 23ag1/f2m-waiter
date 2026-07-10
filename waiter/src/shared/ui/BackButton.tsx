@@ -5,6 +5,8 @@
 //    grey background (order card, profile).
 //  variant="inline": plain icon (optionally with a label), for white header bars
 //    (menu, single-guest basket) and the iiko "‹ Заказы" text back.
+import { ChevronLeft } from "lucide-react";
+
 export function BackButton({
   onClick,
   variant = "floating",
@@ -16,11 +18,7 @@ export function BackButton({
   label?: string;
   tone?: "default" | "accent";
 }) {
-  const Chevron = (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-    </svg>
-  );
+  const Chevron = <ChevronLeft className="h-6 w-6" strokeWidth={2.5} />;
 
   if (variant === "inline") {
     return (

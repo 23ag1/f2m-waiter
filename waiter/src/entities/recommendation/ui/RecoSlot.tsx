@@ -111,7 +111,7 @@ export function RecoSlot({
   }, [card, onReplace]);
 
   return (
-    <div ref={el} data-tour={dataTour} className="relative w-28 h-[108px] flex-shrink-0 overflow-hidden rounded-xl touch-pan-x">
+    <div ref={el} data-tour={dataTour} className="relative w-28 h-[96px] flex-shrink-0 overflow-hidden rounded-xl touch-pan-x">
       {/* Both states render a KEYED ARRAY at the same level, so the div showing a
           given dish is the SAME DOM node across the whole lifecycle. Before this,
           the branch switch (fragment ↔ single div) remounted the visible card at

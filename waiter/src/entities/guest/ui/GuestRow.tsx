@@ -1,6 +1,7 @@
 "use client";
 
 import { formatMoney } from "@/shared/lib/utils";
+import { Plus, Ellipsis } from "lucide-react";
 import type { HungerLevel } from "@/shared/lib/hunger";
 import type { GuestData } from "../model/types";
 import { HungerDropdown } from "./HungerDropdown";
@@ -10,6 +11,7 @@ export function GuestRow({
   guest,
   total,
   active = false,
+  showPlus = true,
   onSelect,
   onHunger,
   onPlus,
@@ -19,6 +21,8 @@ export function GuestRow({
   total: number;
   /** Highlighted (blue) as the guest new dishes go to — shown while the menu is open. */
   active?: boolean;
+  /** The + is a shortcut for "open the menu"; it is hidden once the menu is already open. */
+  showPlus?: boolean;
   onSelect: () => void;
   onHunger: (v: HungerLevel) => void;
   onPlus: () => void;
@@ -41,17 +45,19 @@ export function GuestRow({
         ))}
       </div>
       <div className="flex items-center gap-1 flex-shrink-0">
-        <button
-          onClick={(e) => { e.stopPropagation(); onPlus(); }}
-          className={`w-9 h-9 flex items-center justify-center active:scale-90 transition ${active ? "text-white" : "text-blue-500"}`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 5v14M5 12h14" /></svg>
-        </button>
+        {showPlus && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onPlus(); }}
+            className={`w-9 h-9 flex items-center justify-center active:scale-90 transition ${active ? "text-white" : "text-blue-500"}`}
+          >
+            <Plus className="h-6 w-6" strokeWidth={2.5} />
+          </button>
+        )}
         <button
           onClick={(e) => { e.stopPropagation(); onMenu(); }}
           className={`w-9 h-9 flex items-center justify-center active:scale-90 transition ${active ? "text-white/80" : "text-ink-subtle"}`}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 12h.01M12 12h.01M19 12h.01" /></svg>
+          <Ellipsis className="h-6 w-6" strokeWidth={2.5} />
         </button>
       </div>
     </div>

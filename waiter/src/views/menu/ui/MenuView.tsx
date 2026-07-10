@@ -8,6 +8,7 @@ import { getMenu, modifyBasket, getDishDetail, getDishModifiers, getStopList } f
 import type { ModifierSelection } from "@/shared/api";
 import { categoryColor } from "@/shared/lib/category-color";
 import { BackButton } from "@/shared/ui/BackButton";
+import { Search, ArrowLeft, Plus, Minus } from "lucide-react";
 
 interface Dish {
   id: number;
@@ -191,9 +192,7 @@ function MenuContent() {
       {/* Search */}
       <div className="p-4 bg-surface border-b border-hair-soft sticky top-[64px] z-10">
         <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-ink-subtle" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-ink-subtle" />
           <input
             type="text"
             value={search}
@@ -242,9 +241,7 @@ function MenuContent() {
                 onClick={() => setActiveCategory(null)}
                 className="flex items-center gap-2 text-sm text-ink-muted hover:text-ink transition mb-2"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
+                <ArrowLeft className="h-4 w-4" />
                 Все категории
               </button>
             )}
@@ -273,7 +270,7 @@ function MenuContent() {
                           </div>
                         ) : (
                           <div className="w-14 h-14 rounded-xl bg-orange-100 flex-shrink-0 flex items-center justify-center text-orange-500 relative">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                            <Plus className="h-6 w-6" strokeWidth={1.5} />
                             {stopped && (
                               <div className="absolute inset-0 bg-surface/70 rounded-xl flex items-center justify-center">
                                 <span className="text-xs font-bold text-red-500">СТОП</span>
@@ -327,7 +324,7 @@ function MenuContent() {
               </div>
             ) : (
               <div className="w-full h-32 rounded-2xl bg-orange-50 flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-orange-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                <Plus className="h-16 w-16 text-orange-300" strokeWidth={1.5} />
               </div>
             )}
 
@@ -402,7 +399,7 @@ function MenuContent() {
                               }
                               className="w-7 h-7 rounded-lg bg-surface border border-hair flex items-center justify-center text-ink-muted active:scale-95"
                             >
-                              -
+                              <Minus className="h-4 w-4" />
                             </button>
                             <span className="w-5 text-center font-bold text-sm">{amount}</span>
                             <button
@@ -414,7 +411,7 @@ function MenuContent() {
                               }
                               className="w-7 h-7 rounded-lg bg-black text-white flex items-center justify-center active:scale-95"
                             >
-                              +
+                              <Plus className="h-4 w-4" />
                             </button>
                           </div>
                         </div>

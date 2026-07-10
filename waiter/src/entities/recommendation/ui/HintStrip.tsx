@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { RecoSlot } from "./RecoSlot";
 import { categoryOrderIndex, useRecSettings } from "../model/rec-settings";
 import type { HintDish } from "../model/hints-mock";
@@ -50,9 +51,7 @@ export function HintStrip({
         <span className="text-[11px] font-bold text-ink-muted uppercase tracking-wide">Рекомендации гостю</span>
         <span className="ml-auto flex items-center gap-1 text-ink-subtle">
           {collapsed && <span className="text-[11px] font-semibold">{ordered.length}</span>}
-          <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform ${collapsed ? "" : "rotate-180"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
+          <ChevronDown className={`h-4 w-4 transition-transform ${collapsed ? "" : "rotate-180"}`} strokeWidth={2.5} />
         </span>
       </button>
 

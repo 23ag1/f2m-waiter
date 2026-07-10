@@ -1,5 +1,7 @@
 "use client";
 
+import { X as XIcon } from "lucide-react";
+
 // Close (✕) button. `circle` = grey circle (sheet headers); `plain` = bare icon
 // (modal/popup headers).
 export function CloseButton({
@@ -9,11 +11,7 @@ export function CloseButton({
   onClose: () => void;
   variant?: "circle" | "plain";
 }) {
-  const X = (
-    <svg xmlns="http://www.w3.org/2000/svg" className={variant === "circle" ? "h-4 w-4" : "h-5 w-5"} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  );
+  const X = <XIcon className={variant === "circle" ? "h-4 w-4" : "h-5 w-5"} strokeWidth={2.5} />;
   if (variant === "plain") {
     return (
       <button onClick={onClose} aria-label="Закрыть" className="text-ink-subtle hover:text-ink-muted active:scale-95 transition">
