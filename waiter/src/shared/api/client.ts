@@ -208,6 +208,17 @@ export async function mergeOrders(sourceTableId: number, targetTableId: number) 
   return data;
 }
 
+// Gamification coefficients for the waiter's venue (category → weight 0-1) +
+// target per guest. Backend derives the venue from the waiter token. Throws if
+// the endpoint isn't up yet — the caller falls back to keyword weights.
+export async function getGamification() {
+  const res = await fetch(`${API_BASE_URL}/waiter/gamification`, {
+    headers: { "waiter-token": getToken() },
+  });
+  if (!res.ok) throw new Error("gamification unavailable");
+  return res.json();
+}
+
 export async function addGuestToTable(tableId: number) {
   const res = await fetch(`${API_BASE_URL}/waiter/table/${tableId}/add-guest`, {
     method: "POST",

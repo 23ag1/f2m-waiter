@@ -160,7 +160,7 @@ export function RecSettingsScreen({ open, onClose }: { open: boolean; onClose: (
                   >
                     <GripVertical className="h-5 w-5" />
                   </button>
-                  <span className="flex-1 min-w-0 truncate text-[15px] font-semibold text-ink">{cat}</span>
+                  <span className="flex-1 min-w-0 truncate text-sm font-semibold text-ink">{cat}</span>
                   {/* current colour dot — also toggles the picker */}
                   <span data-tour={cat === tourCat.current ? "rec-dot" : undefined} className={`shrink-0 w-7 h-7 rounded-full ${color.dot} transition ${isSel ? "ring-2 ring-offset-2 ring-offset-surface ring-ink/40" : ""}`} />
                 </div>

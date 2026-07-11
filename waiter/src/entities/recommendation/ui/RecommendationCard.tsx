@@ -43,13 +43,13 @@ export function RecommendationCard({
       aria-label={`Добавить ${hint.name}`}
       className={`w-full h-full rounded-xl p-2 ${color.bg} border ${color.border} flex flex-col gap-1 text-left active:scale-[0.97] transition`}
     >
-      {/* reason chip */}
-      <span className="inline-flex items-center gap-1 self-start bg-white/80 rounded-full px-2 py-1 text-[10px] font-bold text-gray-700 max-w-full">
+      {/* reason chip — fixed light-on-tint colours (card ignores app theme) */}
+      <span className="inline-flex items-center gap-1 self-start bg-white/80 rounded-full px-2 py-1 text-xs font-bold text-gray-700 max-w-full">
         <span className="leading-none">{reason.icon}</span>
         <span className="truncate">{reason.text}</span>
       </span>
       {/* name fills the rest of the card */}
-      <span className="flex-1 min-h-0 w-full text-[13px] font-bold text-gray-900 leading-tight line-clamp-3 overflow-hidden">{hint.name}</span>
+      <span className="flex-1 min-h-0 w-full text-xs font-bold text-gray-900 leading-tight line-clamp-3 overflow-hidden">{hint.name}</span>
     </button>
   );
 }

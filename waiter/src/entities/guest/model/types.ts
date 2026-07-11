@@ -1,4 +1,4 @@
-import type { BasketItem } from "@/entities/dish";
+import type { BasketItem } from "@/shared/api";
 
 export interface GuestData {
   client_id: number;

@@ -1,6 +1,7 @@
 "use client";
 
 import { Sheet } from "@/shared/ui/Sheet";
+import { Button } from "@/shared/ui/button";
 import { Send, Receipt } from "lucide-react";
 
 // "Отправить на печать" sheet: order comment + send + calc(print).
@@ -38,14 +39,17 @@ export function SendOrderSheet({
           <button onClick={() => onComment("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-subtle text-xs">✕</button>
         )}
       </div>
-      <button
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
         onClick={onSend}
         disabled={sending || disabled}
-        className="w-full py-4 rounded-2xl bg-blue-500 text-white font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-40 mb-2"
+        className="gap-2 text-lg mb-2"
       >
         <Send className="h-5 w-5 -ml-1" />
         {sending ? "Отправка..." : "Отправить"}
-      </button>
+      </Button>
       <button onClick={onPrint} className="w-full py-3 flex items-center justify-center gap-2 text-blue-500 font-semibold active:opacity-60">
         <Receipt className="h-5 w-5" />
         Расчет

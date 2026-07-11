@@ -6,8 +6,9 @@ import { Toast } from "@/shared/ui/Toast";
 import { useToast } from "@/shared/lib/use-toast";
 import { useRouter } from "next/navigation";
 import { getActiveTables, closeTable, getIikoTables, printBill, changeTable as apiChangeTable, mergeOrders as apiMergeOrders } from "@/shared/api";
-import type { IikoTable } from "@/views/new-order/model/types";
+import type { IikoTable } from "@/shared/api";
 import { getCookie, deleteCookie } from "@/shared/lib/cookies";
+import { formatMoney } from "@/shared/lib/utils";
 import { OrdersList } from "@/widgets/orders-list";
 import type { ActiveTable } from "@/entities/table";
 import { ProfileSheet } from "@/widgets/profile";
@@ -15,6 +16,7 @@ import { ContextMenu, type ContextMenuItem } from "@/shared/ui/ContextMenu";
 import { ActionSheet, Sheet } from "@/shared/ui/Sheet";
 import { Avatar } from "@/shared/ui/Avatar";
 import { IconButton } from "@/shared/ui/IconButton";
+import { Button } from "@/shared/ui/button";
 import { SegmentedControl } from "@/shared/ui/SegmentedControl";
 import {
   PaymentSheet,
@@ -331,7 +333,7 @@ export function OrdersView() {
                 <p className="text-sm font-bold text-ink">Стол {t.table_number}</p>
                 <p className="text-xs text-ink-subtle truncate">{(t.dish_names || []).slice(0, 2).join(", ") || "—"}</p>
               </div>
-              <span className="text-sm font-semibold text-ink flex-shrink-0">{Number(t.total_price).toLocaleString("ru-RU")} ₽</span>
+              <span className="text-sm font-semibold text-ink flex-shrink-0">{formatMoney(t.total_price)} ₽</span>
             </button>
           ))}
           {tables.filter((t) => t.id !== mergeFor?.id).length === 0 && (
@@ -430,18 +432,13 @@ export function OrdersView() {
       />
 
       {/* Confirm close modal */}
-      {confirmClose !== null && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={() => setConfirmClose(null)}>
-          <div className="bg-surface w-full max-w-md rounded-t-2xl p-6 pb-8" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-ink mb-2">Закрыть стол?</h3>
-            <p className="text-sm text-ink-muted mb-6">Стол будет закрыт и удалён из списка.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setConfirmClose(null)} className="flex-1 py-3 rounded-xl border border-hair text-sm font-semibold text-ink">Отмена</button>
-              <button onClick={() => handleClose(confirmClose)} className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-semibold">Закрыть</button>
-            </div>
-          </div>
+      <Sheet open={confirmClose !== null} onClose={() => setConfirmClose(null)} title="Закрыть стол?">
+        <p className="text-sm text-ink-muted mb-6">Стол будет закрыт и удалён из списка.</p>
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1 text-ink" onClick={() => setConfirmClose(null)}>Отмена</Button>
+          <Button variant="danger" className="flex-1 bg-red-500 text-white" onClick={() => { if (confirmClose !== null) handleClose(confirmClose); }}>Закрыть</Button>
         </div>
-      )}
+      </Sheet>
 
       <Toast toast={toast} />
     </div>

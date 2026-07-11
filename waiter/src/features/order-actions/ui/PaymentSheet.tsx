@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Sheet } from "@/shared/ui/Sheet";
+import { Button } from "@/shared/ui/button";
 import { formatMoney } from "@/shared/lib/utils";
 
 export type PayMethod = "cash" | "card" | "sbp" | "bonus";
@@ -80,13 +81,16 @@ export function PaymentSheet({
         </div>
       )}
 
-      <button
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
         onClick={() => { if (canPay && method) { onPaid(method); reset(); } }}
         disabled={!canPay}
-        className="w-full py-4 rounded-2xl bg-blue-500 text-white font-bold text-base shadow-md active:scale-[0.98] transition disabled:opacity-40"
+        className="shadow-md"
       >
         Оплатить {formatMoney(total)} ₽
-      </button>
+      </Button>
     </Sheet>
   );
 }

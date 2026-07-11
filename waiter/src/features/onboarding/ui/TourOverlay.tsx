@@ -157,16 +157,16 @@ export function TourOverlay() {
         style={{ left: ttLeft, top: ttTop, width: TT_W, transform: below ? undefined : "translateY(-100%)" }}
       >
         <div
-          className={`absolute w-3.5 h-3.5 rotate-45 rounded-[3px] bg-surface ${below ? "-top-1.5" : "-bottom-1.5"}`}
+          className={`absolute w-3 h-3 rotate-45 rounded-sm bg-surface ${below ? "-top-1" : "-bottom-1"}`}
           style={{ left: arrowLeft }}
         />
         <div className="relative bg-surface rounded-[20px] p-4 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.45)] ring-1 ring-black/5">
           {/* eyebrow: step counter + slim progress */}
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wide uppercase text-ink-subtle">
+            <span className="text-xs font-bold tracking-wide uppercase text-ink-subtle">
               Обучение · {index + 1}/{TOUR_STEPS.length}
             </span>
-            <button onClick={finishTour} className="text-[11px] font-semibold text-ink-subtle active:text-ink-muted transition">
+            <button onClick={finishTour} className="text-xs font-semibold text-ink-subtle active:text-ink-muted transition">
               Пропустить
             </button>
           </div>
@@ -174,7 +174,7 @@ export function TourOverlay() {
             <div className="h-full rounded-full bg-blue-500 transition-[width] duration-300 ease-out" style={{ width: `${((index + 1) / TOUR_STEPS.length) * 100}%` }} />
           </div>
 
-          <p className="text-[15px] font-semibold text-ink leading-snug">{step.text}</p>
+          <p className="text-sm font-semibold text-ink leading-snug">{step.text}</p>
 
           <div className="flex items-center justify-between mt-4">
             {index > 0 ? (

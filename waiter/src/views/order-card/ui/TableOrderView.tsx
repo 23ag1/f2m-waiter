@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, type ReactNode } from "react";
 import { ChevronDown, ChevronLeft, Search, X, ScanLine, Send, Eye, QrCode, Ellipsis, Trash2, ArrowRight, ArrowLeftRight, Split, Check, Minus, Plus } from "lucide-react";
 import { Toast } from "@/shared/ui/Toast";
 import { useToast } from "@/shared/lib/use-toast";
 import { Sheet, ActionSheet } from "@/shared/ui/Sheet";
 import { BackButton } from "@/shared/ui/BackButton";
 import { IconButton } from "@/shared/ui/IconButton";
+import { Button } from "@/shared/ui/button";
 import { DishRow } from "@/entities/dish";
 import { MenuPanel } from "@/widgets/menu-panel";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -18,6 +19,30 @@ import { useSendOrder, SendOrderSheet } from "@/features/send-order";
 import { useAddDish, ModifiersModal } from "@/features/add-dish";
 import { useTableSession } from "../model/use-table-session";
 import { useMenu } from "@/entities/menu";
+import { GuestProgressBar } from "@/features/gamification";
+
+// Круглая кнопка нижней панели режима выделения (iiko): 5 действий одной формы.
+function SelectToolbarButton({
+  onClick,
+  disabled,
+  primary = false,
+  children,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  primary?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition disabled:opacity-30 ${primary ? "bg-blue-500 text-white shadow-md" : "bg-inset text-ink"}`}
+    >
+      {children}
+    </button>
+  );
+}
 
 // Multi-guest table order (iiko-style): guest list + inline menu + recommendations.
 export function TableOrderView() {
@@ -79,6 +104,7 @@ export function TableOrderView() {
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const selKey = (cid: number, dishId: number) => `${cid}:${dishId}`;
+  const courseKey = (cid: number, dishId: number) => `${cid}:${dishId}`;
   const enterSelect = (cid: number, dishId: number) => { setSelecting(true); setSelected(new Set([selKey(cid, dishId)])); };
   const toggleSelect = (cid: number, dishId: number) => setSelected((prev) => {
     const n = new Set(prev); const k = selKey(cid, dishId); n.has(k) ? n.delete(k) : n.add(k); return n;
@@ -183,6 +209,13 @@ export function TableOrderView() {
   );
 
   const isStopped = (dishId: number) => stoppedIds.has(dishId);
+
+  // dish_id → menu category (basket items don't carry it) — for the gamification bar.
+  const dishCategory = useMemo(() => {
+    const m = new Map<number, string>();
+    for (const cat of menu) for (const d of cat.dishes) m.set(d.id, cat.category_name);
+    return m;
+  }, [menu]);
 
   // The SAME search + send bar, rendered either above the expanded menu (iiko)
   // or pinned to the bottom when the menu is collapsed.
@@ -292,7 +325,7 @@ export function TableOrderView() {
               const rawItems = guestBaskets[guest.client_id] || [];
               const items = sortByCourse
                 ? [...rawItems].sort((a, b) => {
-                    const rank = (id: number) => { const c = courses[`${guest.client_id}-${id}`]; return c === "vip" ? 5 : c ? parseInt(c, 10) : 6; };
+                    const rank = (id: number) => { const c = courses[courseKey(guest.client_id, id)]; return c === "vip" ? 5 : c ? parseInt(c, 10) : 6; };
                     return rank(a.dish_id) - rank(b.dish_id);
                   })
                 : rawItems;
@@ -321,7 +354,7 @@ export function TableOrderView() {
                           <DishRow
                             key={item.dish_id}
                             item={item}
-                            course={courses[`${guest.client_id}-${item.dish_id}`] || "1"}
+                            course={courses[courseKey(guest.client_id, item.dish_id)] || "1"}
                             warn={warn}
                             onQty={() => setQtyEdit({ clientId: guest.client_id, dishId: item.dish_id, current: item.quantity, value: String(item.quantity), name: item.dish_name })}
                             onCourse={() => setCourseFor({ clientId: guest.client_id, dishId: item.dish_id })}
@@ -338,6 +371,8 @@ export function TableOrderView() {
                       })}
                     </div>
                   )}
+                  {/* Наполненность чека по коэффициентам (per-guest, динамически) */}
+                  <GuestProgressBar categories={items.map((i) => dishCategory.get(i.dish_id)).filter((c): c is string => !!c)} />
                   {/* Collapsible hint strip per guest (рекомендации) */}
                   <HintStrip
                     hints={guestHints[guest.client_id] ?? []}
@@ -381,25 +416,25 @@ export function TableOrderView() {
         {selecting && (
           <div className="shrink-0 bg-surface border-t border-hair px-4 pt-3 pb-8 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] flex items-center justify-around">
             {/* Удалить */}
-            <button onClick={deleteSelected} disabled={selected.size === 0} className="w-11 h-11 rounded-full bg-inset flex items-center justify-center text-ink active:scale-90 transition disabled:opacity-30">
+            <SelectToolbarButton onClick={deleteSelected} disabled={selected.size === 0}>
               <Trash2 className="h-5 w-5" />
-            </button>
+            </SelectToolbarButton>
             {/* Перенести в новый заказ (нужен бэкенд переноса между заказами) */}
-            <button onClick={() => { if (selected.size === 0) return; showToast("Перенос в новый заказ — скоро"); }} disabled={selected.size === 0} className="w-11 h-11 rounded-full bg-inset flex items-center justify-center text-ink active:scale-90 transition disabled:opacity-30">
+            <SelectToolbarButton onClick={() => { if (selected.size === 0) return; showToast("Перенос в новый заказ — скоро"); }} disabled={selected.size === 0}>
               <ArrowRight className="h-5 w-5" />
-            </button>
+            </SelectToolbarButton>
             {/* Разделить — только 1 блюдо и 2+ гостя */}
-            <button onClick={splitSelected} disabled={selected.size !== 1 || guests.length < 2} className="w-11 h-11 rounded-full bg-inset flex items-center justify-center text-ink active:scale-90 transition disabled:opacity-30">
+            <SelectToolbarButton onClick={splitSelected} disabled={selected.size !== 1 || guests.length < 2}>
               <Split className="h-5 w-5" />
-            </button>
+            </SelectToolbarButton>
             {/* Перенести в другой заказ / стол (нужен бэкенд перемещения между столами) */}
-            <button onClick={() => { if (selected.size === 0) return; showToast("Перенос в другой заказ — скоро"); }} disabled={selected.size === 0} className="w-11 h-11 rounded-full bg-inset flex items-center justify-center text-ink active:scale-90 transition disabled:opacity-30">
+            <SelectToolbarButton onClick={() => { if (selected.size === 0) return; showToast("Перенос в другой заказ — скоро"); }} disabled={selected.size === 0}>
               <ArrowLeftRight className="h-5 w-5" />
-            </button>
+            </SelectToolbarButton>
             {/* Отправить на кухню — ключевая: только выбранные блюда */}
-            <button onClick={sendSelected} disabled={selected.size === 0} className="w-11 h-11 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-md active:scale-90 transition disabled:opacity-30">
+            <SelectToolbarButton onClick={sendSelected} disabled={selected.size === 0} primary>
               <Send className="h-5 w-5 -ml-1" />
-            </button>
+            </SelectToolbarButton>
           </div>
         )}
 
@@ -436,13 +471,9 @@ export function TableOrderView() {
               );
             })}
           </div>
-          <button
-            onClick={doSplit}
-            disabled={splitTargets.size !== 2}
-            className="w-full py-4 rounded-2xl bg-blue-500 text-white font-bold text-base active:scale-[0.98] transition disabled:opacity-40"
-          >
+          <Button variant="primary" size="lg" fullWidth onClick={doSplit} disabled={splitTargets.size !== 2}>
             {splitTargets.size === 2 ? "Разделить" : "Отметьте 2 гостей"}
-          </button>
+          </Button>
         </Sheet>
 
         {/* Header ⋯ */}
@@ -502,7 +533,11 @@ export function TableOrderView() {
                   </button>
                 </div>
               </div>
-              <button
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
+                className="rounded-full"
                 onClick={async () => {
                   const { clientId, dishId, current, value } = qtyEdit;
                   const n = Math.max(0, parseInt(value, 10) || 0);
@@ -514,10 +549,9 @@ export function TableOrderView() {
                     refreshGuest(clientId);
                   } catch { showToast("Не удалось изменить количество", "err"); }
                 }}
-                className="w-full py-4 rounded-full bg-blue-500 text-white font-bold text-base active:scale-[0.98] transition"
               >
                 Готово
-              </button>
+              </Button>
             </>
           )}
         </Sheet>
@@ -531,13 +565,13 @@ export function TableOrderView() {
             ...["1", "2", "3", "4", "vip"].map((v) => ({
               label: v === "vip" ? "VIP" : `Курс ${v}`,
               onClick: () => {
-                const ck = `${courseFor.clientId}-${courseFor.dishId}`;
+                const ck = courseKey(courseFor.clientId, courseFor.dishId);
                 setCourses((prev) => ({ ...prev, [ck]: v }));
                 setCourseFor(null);
               },
             })),
             { label: "Без курса", onClick: () => {
-                const ck = `${courseFor.clientId}-${courseFor.dishId}`;
+                const ck = courseKey(courseFor.clientId, courseFor.dishId);
                 setCourses((prev) => { const n = { ...prev }; delete n[ck]; return n; });
                 setCourseFor(null);
               } },
@@ -572,15 +606,17 @@ export function TableOrderView() {
                 onChange={(e) => setRenameGuest({ ...renameGuest, value: e.target.value })}
                 className="w-full bg-inset rounded-2xl px-4 py-4 text-lg font-semibold text-ink outline-none mb-4"
               />
-              <button
+              <Button
+                variant="primary"
+                size="lg"
+                fullWidth
                 onClick={() => {
                   applyRename(renameGuest.clientId, renameGuest.value);
                   setRenameGuest(null);
                 }}
-                className="w-full py-4 rounded-2xl bg-blue-500 text-white font-bold text-base active:scale-[0.98] transition"
               >
                 Готово
-              </button>
+              </Button>
             </>
           )}
         </Sheet>
@@ -599,11 +635,9 @@ export function TableOrderView() {
         )}
 
         {/* Dish Comment Modal */}
-        {editingComment && (
-          <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center" onClick={() => setEditingComment(null)}>
-            <div className="bg-surface w-full max-w-lg rounded-t-3xl p-5" onClick={(e) => e.stopPropagation()}>
-              <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
-              <h2 className="text-lg font-bold text-ink mb-3">Комментарий к блюду</h2>
+        <Sheet open={!!editingComment} onClose={() => setEditingComment(null)} title="Комментарий к блюду">
+          {editingComment && (
+            <>
               <textarea
                 autoFocus
                 value={editingComment.value}
@@ -611,12 +645,16 @@ export function TableOrderView() {
                 maxLength={255}
                 rows={3}
                 placeholder="Без лука, аллергия на орехи..."
-                className="w-full px-3 py-3 bg-inset border border-hair rounded-xl text-sm text-ink placeholder-gray-400 focus:outline-none focus:border-black transition resize-none"
+                className="w-full px-3 py-3 bg-surface border border-hair rounded-xl text-sm text-ink placeholder-gray-400 focus:outline-none focus:border-black transition resize-none"
               />
               <p className="text-xs text-ink-subtle text-right mt-1">{editingComment.value.length}/255</p>
               <div className="flex gap-3 mt-4">
-                <button onClick={() => setEditingComment(null)} className="flex-1 py-3 rounded-xl border border-hair text-ink-muted font-semibold hover:bg-inset transition">Отмена</button>
-                <button
+                <Button variant="outline" size="md" fullWidth onClick={() => setEditingComment(null)}>Отмена</Button>
+                <Button
+                  variant="dark"
+                  size="md"
+                  fullWidth
+                  className="shadow-md"
                   onClick={async () => {
                     try {
                       await modifyBasket(editingComment.clientId, editingComment.dishId, 0, undefined, editingComment.value);
@@ -627,12 +665,11 @@ export function TableOrderView() {
                       showToast("Ошибка сохранения", "err");
                     }
                   }}
-                  className="flex-1 py-3 rounded-xl bg-black text-white font-semibold active:scale-[0.98] transition shadow-md"
-                >Сохранить</button>
+                >Сохранить</Button>
               </div>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </Sheet>
         <Toast toast={toast} />
 
         {showQRScanner && (

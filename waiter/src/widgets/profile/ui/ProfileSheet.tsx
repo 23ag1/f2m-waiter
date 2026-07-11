@@ -7,7 +7,9 @@ import { BackButton } from "@/shared/ui/BackButton";
 import { Avatar } from "@/shared/ui/Avatar";
 import { SegmentedControl } from "@/shared/ui/SegmentedControl";
 import { ThemeSwitch } from "@/shared/ui/ThemeSwitch";
+import { Button } from "@/shared/ui/button";
 import { useTheme } from "@/shared/lib/theme";
+import { formatMoney } from "@/shared/lib/utils";
 import { RecSettingsScreen } from "@/widgets/rec-settings";
 import { startTour, useTourPhase } from "@/features/onboarding";
 
@@ -40,10 +42,6 @@ const CHART: Record<Period, { label: string; value: number }[]> = {
     { label: "16", value: 75 }, { label: "21", value: 45 }, { label: "26", value: 15 },
   ],
 };
-
-function fmtMoney(n: number): string {
-  return n.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
 
 function rangeLabel(period: Period): string {
   const now = new Date();
@@ -117,13 +115,16 @@ export function ProfileSheet({
 
       {/* Выйти */}
       <div className="px-4 mb-5">
-        <button
+        <Button
+          variant="ghost"
+          size="lg"
+          fullWidth
           onClick={onLogout}
-          className="w-full py-4 rounded-2xl bg-inset text-blue-500 text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition"
+          className="bg-inset text-blue-500 text-sm font-semibold gap-2"
         >
           <LogOut className="h-5 w-5" />
           Выйти
-        </button>
+        </Button>
       </div>
 
       {/* Тема оформления */}
@@ -175,7 +176,7 @@ export function ProfileSheet({
             <p className="text-sm font-bold text-ink">Допродажи за сегодня</p>
             <ChevronRight className="h-4 w-4 text-ink-subtle" strokeWidth={2.5} />
           </div>
-          <p className="text-2xl font-extrabold text-ink">{fmtMoney(0)} ₽</p>
+          <p className="text-2xl font-extrabold text-ink">{formatMoney(0)} ₽</p>
           <p className="text-xs text-ink-subtle mt-1">0 Блюд</p>
         </div>
       </div>
@@ -190,9 +191,9 @@ export function ProfileSheet({
             </button>
           </div>
           <p className="text-xs text-ink-muted">{rangeLabel(period)}</p>
-          <p className="text-2xl font-extrabold text-ink mt-1">{fmtMoney(total)} ₽</p>
+          <p className="text-2xl font-extrabold text-ink mt-1">{formatMoney(total)} ₽</p>
           <p className="text-xs text-ink-subtle mt-1">
-            {fmtMoney(cut)} ₽ ({percent.toFixed(1).replace(".", ",")}%)
+            {formatMoney(cut)} ₽ ({percent.toFixed(1).replace(".", ",")}%)
           </p>
 
           {/* Bar chart */}
@@ -237,12 +238,9 @@ export function ProfileSheet({
           onChange={(e) => setDraft(e.target.value.replace(/[^0-9.,]/g, "").replace(".", ","))}
           className="w-full bg-inset rounded-2xl px-4 py-4 text-lg font-semibold text-ink outline-none mb-4"
         />
-        <button
-          onClick={savePercent}
-          className="w-full py-4 rounded-2xl bg-blue-500 text-white font-bold text-base active:scale-[0.98] transition"
-        >
+        <Button variant="primary" size="lg" fullWidth onClick={savePercent}>
           Готово
-        </button>
+        </Button>
       </Sheet>
 
       {/* Настройки рекомендаций — full-screen */}

@@ -16,6 +16,8 @@ export function Sheet({
   onClose,
   title,
   subtitle,
+  grabber = true,
+  scroll = false,
   children,
 }: {
   open: boolean;
@@ -23,12 +25,20 @@ export function Sheet({
   title?: string;
   /** Secondary line under the title (e.g. the dish name). */
   subtitle?: string;
+  /** Small drag handle at the top of the panel. */
+  grabber?: boolean;
+  /** Cap the panel height and scroll long content (dish detail / modifier lists). */
+  scroll?: boolean;
   children: ReactNode;
 }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[60] flex items-end bg-black/40" onClick={onClose}>
-      <div className="bg-inset w-full rounded-t-3xl px-4 pt-4 pb-8" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`bg-inset w-full rounded-t-3xl px-4 pt-4 pb-8 ${scroll ? "max-h-[80vh] overflow-y-auto" : ""}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {grabber && <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />}
         {title && (
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="min-w-0">
@@ -71,7 +81,7 @@ export function ActionSheet({
   const tone = (t?: SheetAction["tone"]) =>
     t === "danger" ? "text-red-500" : t === "primary" ? "text-blue-500 font-semibold" : "text-blue-500";
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/40" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-end bg-black/40" onClick={onClose}>
       <div className="w-full p-2 pb-6" onClick={(e) => e.stopPropagation()}>
         <div className="bg-surface rounded-2xl overflow-hidden divide-y divide-hair-soft">
           {header && <div className="py-3 text-center text-sm font-semibold text-ink-muted">{header}</div>}

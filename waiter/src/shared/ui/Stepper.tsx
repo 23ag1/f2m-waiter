@@ -4,9 +4,9 @@ import { Minus, Plus } from "lucide-react";
 
 // −/value/+ quantity stepper. Was hand-rolled in several baskets.
 // `accent` keeps each screen's existing look (card = black, new-order = blue).
-const BTN = { sm: "w-6 h-6 rounded-md", md: "w-7 h-7 rounded-lg", lg: "w-8 h-8 rounded-lg" } as const;
-const VAL = { sm: "w-4 text-xs", md: "w-5 text-sm", lg: "w-5 text-base" } as const;
-const ICON = { sm: "h-3 w-3", md: "h-4 w-4", lg: "h-4 w-4" } as const;
+const BTN = { sm: "w-6 h-6 rounded-md", md: "w-7 h-7 rounded-lg", lg: "w-8 h-8 rounded-lg", xl: "w-16 h-16 rounded-full" } as const;
+const VAL = { sm: "w-4 text-xs", md: "w-5 text-sm", lg: "w-5 text-base", xl: "w-24 text-4xl" } as const;
+const ICON = { sm: "h-3 w-3", md: "h-4 w-4", lg: "h-4 w-4", xl: "h-7 w-7" } as const;
 
 export function Stepper({
   value,

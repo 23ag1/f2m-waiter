@@ -71,9 +71,9 @@ export function MenuPanel({
                               className={`relative h-24 rounded-lg bg-surface border border-hair-soft overflow-hidden flex flex-col items-center justify-center px-2 pb-1 text-center transition ${stopped ? "opacity-40" : "active:scale-[0.97]"}`}
                             >
                               <p className={`text-xs font-semibold leading-tight line-clamp-3 ${stopped ? "text-ink-subtle line-through" : "text-ink"}`}>{dish.name}</p>
-                              <p className="text-[11px] text-ink-muted mt-1">{dish.price} ₽</p>
+                              <p className="text-xs text-ink-muted mt-1">{dish.price} ₽</p>
                               <span className={`absolute bottom-0 inset-x-0 h-1 ${cc.bar}`} />
-                              {stopped && <span className="absolute top-1 right-1 text-[9px] font-bold text-red-500 bg-red-50 px-1 rounded">СТОП</span>}
+                              {stopped && <span className="absolute top-1 right-1 text-xs font-bold text-red-500 bg-red-50 px-1 rounded">СТОП</span>}
                               {added && <span className="absolute inset-0 bg-green-500/15 flex items-center justify-center text-green-600 text-xl font-bold">✓</span>}
                             </button>
                           );

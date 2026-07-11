@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Sheet } from "@/shared/ui/Sheet";
+import { Button } from "@/shared/ui/button";
 
 // Rename an order (local display name override).
 export function RenameOrderSheet({
@@ -34,13 +35,9 @@ export function RenameOrderSheet({
         placeholder="Название заказа"
         className="w-full bg-surface border border-hair rounded-2xl px-4 py-4 text-lg font-semibold text-ink outline-none focus:border-black transition"
       />
-      <button
-        onClick={save}
-        disabled={!value.trim()}
-        className="w-full mt-3 py-4 rounded-2xl bg-blue-500 text-white font-bold text-base active:scale-[0.98] transition disabled:opacity-40"
-      >
+      <Button variant="primary" size="lg" fullWidth onClick={save} disabled={!value.trim()} className="mt-3">
         Готово
-      </button>
+      </Button>
     </Sheet>
   );
 }

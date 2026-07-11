@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRef } from "react";
 import { Users } from "lucide-react";
+import { formatMoney } from "@/shared/lib/utils";
 import { getStatus, formatTime, type ActiveTable } from "../model/status";
 
 const LONG_PRESS_MS = 450;
@@ -106,7 +107,7 @@ export function TableCard({
           <span />
         )}
         <span className="text-sm font-bold text-ink">
-          {table.total_price.toLocaleString("ru-RU", { minimumFractionDigits: 2 })} ₽
+          {formatMoney(table.total_price)} ₽
         </span>
       </div>
     </Link>

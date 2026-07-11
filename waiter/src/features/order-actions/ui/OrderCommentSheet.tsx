@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Sheet } from "@/shared/ui/Sheet";
+import { Button } from "@/shared/ui/button";
 
 // Order-level comment editor.
 export function OrderCommentSheet({
@@ -30,12 +31,9 @@ export function OrderCommentSheet({
         className="w-full px-4 py-3 bg-surface border border-hair rounded-2xl text-base text-ink placeholder-gray-400 focus:outline-none focus:border-black transition resize-none"
       />
       <p className="text-xs text-ink-subtle text-right mt-1">{value.length}/255</p>
-      <button
-        onClick={() => onSave(value.trim())}
-        className="w-full mt-3 py-4 rounded-2xl bg-blue-500 text-white font-bold text-base active:scale-[0.98] transition"
-      >
+      <Button variant="primary" size="lg" fullWidth onClick={() => onSave(value.trim())} className="mt-3">
         Сохранить
-      </button>
+      </Button>
     </Sheet>
   );
 }

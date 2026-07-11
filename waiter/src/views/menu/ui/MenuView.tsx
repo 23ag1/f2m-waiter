@@ -8,7 +8,10 @@ import { getMenu, modifyBasket, getDishDetail, getDishModifiers, getStopList } f
 import type { ModifierSelection } from "@/shared/api";
 import { categoryColor } from "@/shared/lib/category-color";
 import { BackButton } from "@/shared/ui/BackButton";
-import { Search, ArrowLeft, Plus, Minus } from "lucide-react";
+import { Sheet } from "@/shared/ui/Sheet";
+import { Button } from "@/shared/ui/button";
+import { ModifiersModal } from "@/features/add-dish";
+import { Search, ArrowLeft, Plus } from "lucide-react";
 
 interface Dish {
   id: number;
@@ -227,7 +230,7 @@ function MenuContent() {
                   onClick={() => setActiveCategory(cat.category_name)}
                   className="relative h-16 rounded-xl bg-inset border border-hair overflow-hidden flex items-center justify-center px-2 text-center active:scale-[0.98] transition"
                 >
-                  <span className={`absolute left-0 inset-y-0 w-1.5 ${c.bar}`} />
+                  <span className={`absolute left-0 inset-y-0 w-1 ${c.bar}`} />
                   <h3 className="text-xs font-bold text-ink leading-tight line-clamp-3">{cat.category_name}</h3>
                 </button>
               );
@@ -314,133 +317,69 @@ function MenuContent() {
 
       {/* Dish Detail Modal */}
       {selectedDish && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center" onClick={() => setSelectedDish(null)}>
-          <div className="bg-surface w-full max-w-lg rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
-
-            {selectedDish.image ? (
-              <div className="w-full h-56 rounded-2xl bg-inset overflow-hidden mb-4">
-                <img src={`data:image/png;base64,${selectedDish.image}`} alt={selectedDish.name} className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div className="w-full h-32 rounded-2xl bg-orange-50 flex items-center justify-center mb-4">
-                <Plus className="h-16 w-16 text-orange-300" strokeWidth={1.5} />
-              </div>
-            )}
-
-            <h2 className="text-2xl font-bold text-ink mb-2">{selectedDish.name}</h2>
-            <p className="text-sm text-ink-muted font-medium mb-3">{selectedDish.category}</p>
-
-            {selectedDish.description && (
-              <p className="text-ink-muted mb-3">{selectedDish.description}</p>
-            )}
-            {selectedDish.weight && (
-              <p className="text-sm text-ink-subtle mb-1">Вес: {selectedDish.weight}</p>
-            )}
-            {selectedDish.ingredients && (
-              <p className="text-sm text-ink-subtle mb-4">Состав: {selectedDish.ingredients}</p>
-            )}
-
-            <div className="flex items-center justify-between mt-4">
-              <span className="text-2xl font-bold text-ink">{selectedDish.price} ₽</span>
-              {mode === "add" && clientId && selectedDish.id && !isStopped(selectedDish.id) && (
-                <button
-                  onClick={() => {
-                    openModifiersOrAdd(selectedDish);
-                    setSelectedDish(null);
-                  }}
-                  className="bg-black text-white px-6 py-3 rounded-xl font-semibold active:scale-95 transition shadow-md"
-                >
-                  + Добавить
-                </button>
-              )}
-              <button
-                onClick={() => setSelectedDish(null)}
-                className="text-ink-muted px-4 py-3 rounded-xl font-medium hover:bg-inset transition"
-              >
-                Закрыть
-              </button>
+        <Sheet open onClose={() => setSelectedDish(null)} scroll>
+          {selectedDish.image ? (
+            <div className="w-full h-56 rounded-2xl bg-inset overflow-hidden mb-4">
+              <img src={`data:image/png;base64,${selectedDish.image}`} alt={selectedDish.name} className="w-full h-full object-cover" />
             </div>
+          ) : (
+            <div className="w-full h-32 rounded-2xl bg-orange-50 flex items-center justify-center mb-4">
+              <Plus className="h-16 w-16 text-orange-300" strokeWidth={1.5} />
+            </div>
+          )}
+
+          <h2 className="text-2xl font-bold text-ink mb-2">{selectedDish.name}</h2>
+          <p className="text-sm text-ink-muted font-medium mb-3">{selectedDish.category}</p>
+
+          {selectedDish.description && (
+            <p className="text-ink-muted mb-3">{selectedDish.description}</p>
+          )}
+          {selectedDish.weight && (
+            <p className="text-sm text-ink-subtle mb-1">Вес: {selectedDish.weight}</p>
+          )}
+          {selectedDish.ingredients && (
+            <p className="text-sm text-ink-subtle mb-4">Состав: {selectedDish.ingredients}</p>
+          )}
+
+          <div className="flex items-center justify-between mt-4">
+            <span className="text-2xl font-bold text-ink">{selectedDish.price} ₽</span>
+            {mode === "add" && clientId && selectedDish.id && !isStopped(selectedDish.id) && (
+              <Button
+                variant="dark"
+                className="px-6 shadow-md"
+                onClick={() => {
+                  openModifiersOrAdd(selectedDish);
+                  setSelectedDish(null);
+                }}
+              >
+                + Добавить
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              className="px-4 text-ink-muted font-medium"
+              onClick={() => setSelectedDish(null)}
+            >
+              Закрыть
+            </Button>
           </div>
-        </div>
+        </Sheet>
       )}
 
       {/* Modifiers Modal */}
       {modifiersDish && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center" onClick={() => setModifiersDish(null)}>
-          <div className="bg-surface w-full max-w-lg rounded-t-3xl p-6 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-ink mb-1">{modifiersDish.name}</h2>
-            <p className="text-sm text-ink-muted mb-4">Выберите модификаторы</p>
-
-            <div className="space-y-5">
-              {modifierGroups.map((group) => (
-                <div key={group.group_id}>
-                  <h3 className="text-sm font-bold text-ink mb-2">
-                    {group.group_name}
-                    {group.required && <span className="text-red-500 ml-1">*</span>}
-                  </h3>
-                  <div className="space-y-2">
-                    {group.options.map((opt) => {
-                      const amount = modSelections[opt.id] || 0;
-                      return (
-                        <div key={opt.id} className="flex items-center justify-between bg-inset rounded-xl px-3 py-2">
-                          <div>
-                            <span className="text-sm font-medium text-ink">{opt.name}</span>
-                            {opt.price ? <span className="text-xs text-ink-subtle ml-2">+{opt.price} ₽</span> : null}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() =>
-                                setModSelections((prev) => ({
-                                  ...prev,
-                                  [opt.id]: Math.max(opt.min_amount, amount - 1),
-                                }))
-                              }
-                              className="w-7 h-7 rounded-lg bg-surface border border-hair flex items-center justify-center text-ink-muted active:scale-95"
-                            >
-                              <Minus className="h-4 w-4" />
-                            </button>
-                            <span className="w-5 text-center font-bold text-sm">{amount}</span>
-                            <button
-                              onClick={() =>
-                                setModSelections((prev) => ({
-                                  ...prev,
-                                  [opt.id]: Math.min(opt.max_amount, amount + 1),
-                                }))
-                              }
-                              className="w-7 h-7 rounded-lg bg-black text-white flex items-center justify-center active:scale-95"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => {
-                  setModifiersDish(null);
-                  setModifierGroups([]);
-                }}
-                className="flex-1 py-3 rounded-xl border border-hair text-ink-muted font-semibold hover:bg-inset transition"
-              >
-                Отмена
-              </button>
-              <button
-                onClick={handleModifiersConfirm}
-                className="flex-1 py-3 rounded-xl bg-black text-white font-semibold active:scale-[0.98] transition shadow-md"
-              >
-                Добавить
-              </button>
-            </div>
-          </div>
-        </div>
+        <ModifiersModal
+          dishName={modifiersDish.name}
+          groups={modifierGroups}
+          selections={modSelections}
+          onSelect={(id, amount) => setModSelections((prev) => ({ ...prev, [id]: amount }))}
+          editing={false}
+          onConfirm={handleModifiersConfirm}
+          onClose={() => {
+            setModifiersDish(null);
+            setModifierGroups([]);
+          }}
+        />
       )}
       <Toast toast={toast} />
     </div>
